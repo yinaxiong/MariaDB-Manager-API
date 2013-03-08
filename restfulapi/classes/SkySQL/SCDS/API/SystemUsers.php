@@ -31,7 +31,7 @@ use \PDOException;
 
 class SystemUsers extends ImplementAPI {
 	
-	public function getSystemUsers () {
+	public function getUsers () {
 		$query = $this->db->query("SELECT UserID AS id, UserName AS name FROM Users");
         $result = array(
             "users" => $query->fetchAll(PDO::FETCH_ASSOC)
@@ -39,7 +39,7 @@ class SystemUsers extends ImplementAPI {
         $this->sendResponse($result);
 	}
 	
-	public function createSystemUser ($uriparts) {
+	public function createUser ($uriparts) {
 		$username = @urldecode($uriparts[1]);
 		if (!preg_match('/^[A-Za-z0-9_]+$/', $username)) {
 			$errors[] = "User name must only contain alphameric and underscore, $username submitted";
@@ -67,7 +67,7 @@ class SystemUsers extends ImplementAPI {
 		}
 	}
 	
-	public function deleteSystemUser ($uriparts) {
+	public function deleteUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
 		$query = $this->db->prepare('DELETE FROM Users WHERE UserName = :username');
 		$query->execute(array(':username' => $username));
@@ -75,7 +75,7 @@ class SystemUsers extends ImplementAPI {
 		else $this->sendErrorResponse('Delete user did not match any user', 404);
 	}
 	
-	public function loginSystemUser ($uriparts) {
+	public function loginUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
 		$password = isset($_POST['password']) ? $_POST['password'] : '';
 		$query = $this->db->prepare('SELECT COUNT(*) FROM Users WHERE UserName = :username AND Password = :password');

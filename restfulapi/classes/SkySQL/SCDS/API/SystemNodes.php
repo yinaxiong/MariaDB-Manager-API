@@ -29,7 +29,6 @@
 
 namespace SkySQL\SCDS\API;
 
-use SkySQL\COMMON\AdminDatabase;
 use \PDO as PDO;
 
 class SystemNodes extends ImplementAPI {
@@ -38,8 +37,8 @@ class SystemNodes extends ImplementAPI {
 	protected $monitorid = 0;
 	protected $monitorquery = null;
 	
-	public function __construct () {
-		parent::__construct();
+	public function __construct ($controller) {
+		parent::__construct($controller);
 		$this->monitorquery = $this->db->prepare('SELECT Value, MAX(Latest) FROM MonitorData 
 			WHERE SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid');
 	}
@@ -62,6 +61,40 @@ class SystemNodes extends ImplementAPI {
 			$this->sendResponse(array('node' => $node));
 		}
 		else $this->sendErrorResponse('', 404);
+	}
+	
+	public function createSystemNode ($uriparts) {
+		$this->systemid = $uriparts[1];
+		if (!$this->validateSystem()) $this->sendErrorResponse('Create node gave non-existent system ID '.$this->systemid, 400);
+		$parms = json_decode(file_get_contents("php://input"), true);
+		$name = $parms['name'];
+		$insert = $this->db->prepare('INSERT INTO Node (SystemID, NodeName, State) VALUES (:systemid, :name, :state)');
+		$insert->execute(array(
+			':systemid' => $this->systemid,
+			':name' => $name,
+			':state' => (int) @$parms['state']
+		));
+		$nodeid = $this->db->lastInsertId();
+		if (!$name) {
+			$name = 'Node '.sprintf('%06d', $nodeid);
+			$update = $this->db->prepare('UPDATE Node SET NodeName = :nodename WHERE NodeID = :nodeid');
+			$update->execute(array(
+				':nodename' => $name,
+				':nodeid' => $nodeid
+			));
+		}
+		$this->sendResponse(array('node' => array(
+			'node' => $nodeid,
+			'system' => $this->systemid,
+			'name' => $name,
+			'status' => (int) $parms['state']
+		)));
+	}
+	
+	protected function validateSystem () {
+		$query = $this->db->prepare('SELECT COUNT(*) FROM System WHERE SystemID = :systemid');
+		$query->execute(array(':systemid' => $this->systemid));
+		return $query->fetch(PDO::FETCH_COLUMN) ? true : false;
 	}
 	
 	protected function getCommands ($status) {
@@ -97,10 +130,26 @@ class SystemNodes extends ImplementAPI {
 		return array($row->rowid, $row->CommandID);
 	}
 	
-	public function getSystemMonitors ($uriparts) {
+	public function getSystemNodeMonitorInfo ($uriparts) {
 		$this->systemid = $uriparts[1];
 		$this->nodeid = $uriparts[3];
 		$this->monitorid = $uriparts[5];
-		
+		$time = strtotime(@$_GET['time']);
+		$date = $time ? date('Y-m-d H:i:s', $time) : $this->selectDate();
+		$interval = ((int) @$_GET['interval']) ? (int) $_GET['interval'] : 30;
+		$count = ((int) @$_GET['count']) ? (int) $_GET['count'] : 15;
+	}
+	
+	protected function selectDate () {
+		$query = $this->db->prepare('SELECT MAX(Latest) FROM MonitorData WHERE
+			MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid');
+		$query->execute(array(
+			':monitorid' => $this->monitorid,
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid
+		));
+		$date = $query->fetch(PDO::FETCH_COLUMN);
+		if ($date) return $date;
+		$this->sendResponse(array('monitor_data' => array()));
 	}
 }

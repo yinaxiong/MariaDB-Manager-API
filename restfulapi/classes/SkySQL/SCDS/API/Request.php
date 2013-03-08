@@ -40,6 +40,8 @@
 
 namespace SkySQL\SCDS\API;
 
+use \PDOException;
+
 final class Request {
 	protected static $instance = null;
 	
@@ -51,18 +53,22 @@ final class Request {
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
 		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => '/backupstate', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'getSystemMonitor', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+', 'http' => 'GET'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemNodeMonitorInfo', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
-		array('class' => 'SystemUsers', 'method' => 'createSystemUser', 'uri' => 'user/.*', 'http' => 'PUT'),
-		array('class' => 'SystemUsers', 'method' => 'deleteSystemUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
-		array('class' => 'SystemUsers', 'method' => 'loginSystemUser', 'uri' => 'user/.*', 'http' => 'POST'),
-		array('class' => 'SystemUsers', 'method' => 'getSystemUsers', 'uri' => 'user', 'http' => 'GET'),
+		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'PUT'),
+		array('class' => 'SystemUsers', 'method' => 'createUser', 'uri' => 'user/.*', 'http' => 'PUT'),
+		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
+		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/.*', 'http' => 'POST'),
+		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET'),
+		array('class' => 'Systems', 'method' => 'createSystem', 'uri' => 'system', 'http' => 'PUT'),
 		array('class' => 'Buckets', 'method' => 'getData', 'uri' => 'bucket', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
 		
 	);
@@ -141,15 +147,20 @@ final class Request {
 	}
 
 	public function doControl () {
-		$this->checkSecurity();
+		//$this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			$class = __NAMESPACE__.'\\'.$link['class'];
-			$object = new $class();
+			$object = new $class($this);
 			$method = $link['method'];
-			$object->$method($uriparts);
-			$this->sendErrorResponse('Selected method $method of class $class returned to controller', 500);
+			try {
+				$object->$method($uriparts);
+				$this->sendErrorResponse('Selected method $method of class $class returned to controller', 500);
+			}
+			catch (PDOException $pe) {
+				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500);
+			}
 		}
 		else $this->sendErrorResponse ("Request {$_SERVER['REQUEST_URI']} does not match the API", 404);
 	}

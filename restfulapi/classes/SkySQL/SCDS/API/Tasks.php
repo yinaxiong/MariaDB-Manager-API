@@ -22,30 +22,17 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
+ * The Tasks class handles task related requests.
+ * 
  */
 
 namespace SkySQL\SCDS\API;
 
-use SkySQL\COMMON\AdminDatabase;
+use \PDO;
 
-abstract class ImplementAPI {
-	protected $db = null;
-	protected $requestor = null;
-
-	public function __construct ($requestor) {
-		$this->db = AdminDatabase::getInstance();
-		$this->requestor = $requestor;
-	}
+class Tasks extends ImplementAPI {
 	
-	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
-		return $this->requestor->sendResponse($body, $status, $content_type);
-	}
-
-	protected function sendErrorResponse ($errors, $status=200, $content_type='application/json') {
-		return $this->requestor->sendErrorResponse($errors, $status, $content_type);
-	}
-	
-	protected function log ($data) {
-		$this->requestor->log($data);
+	public function getTasks ($uriparts) {
+		$taskid = @$uriparts[1];
 	}
 }

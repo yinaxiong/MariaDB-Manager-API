@@ -70,6 +70,24 @@ class SkysqlCallAPI {
 		return $this->get(LOCATION_OF_SKYSQL_API."/system/$systemid");
 	}
 	
+	public function createSystem ($name='', $startdate='', $lastaccess='', $state='') {
+		$parms = json_encode(array(
+			'name' => $name,
+			'startDate' => $startdate,
+			'lastAccess' => $lastaccess,
+			'state' => $state
+		));
+		return $this->put(LOCATION_OF_SKYSQL_API."/system", $parms);
+	}
+	
+	public function createNode ($systemid, $name='', $state='') {
+		$parms = json_encode(array(
+			'name' => $name,
+			'state' => $state
+		));
+		return $this->put(LOCATION_OF_SKYSQL_API."/system/$systemid/node", $parms);
+	}
+	
 	public function getProperty ($systemid, $property) {
 		$this->checkProperty($systemid, $property);
 		return $this->get(LOCATION_OF_SKYSQL_API."/system/$systemid/property/".$property);

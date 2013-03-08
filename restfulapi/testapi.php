@@ -27,7 +27,7 @@
 namespace SkySQL\TESTING;
 
 use SkySQL\SCDS\API\API;
-use SkySQL\APIHELP\skysqlCallAPI;
+use SkySQL\APIHELP\SkysqlCallAPI;
 
 ini_set('display_errors', 1);
 error_reporting(-1);
@@ -60,6 +60,8 @@ class TestAPI {
     <h2>Choose an operation to test</h2>
 	<form action="testapi.php" method= "POST">
 		<input type="radio" name="testid" value="getAllSystems" />Get all systems<br />
+		<input type="radio" name="testid" value="createSystemForm" />Create a system<br />
+		<input type="radio" name="testid" value="createNodeForm" />Create a node<br />
 		<input type="radio" name="testid" value="getSystemForm" />Get a system<br />
 		<input type="radio" name="testid" value="getPropertyForm" />Get a property<br />
 		<input type="radio" name="testid" value="setPropertyForm" />Set a property<br />
@@ -104,6 +106,61 @@ SYSTEM_FORM;
 	
 	public function getSystem () {
 		return $this->apicall->getSystem($this->systemid);
+	}
+	
+	public function createSystemForm () {
+		echo <<<SYSTEM_FORM
+   
+    <h2>Create a system</h2>
+	<form action="testapi.php" method="POST">
+		<label for="systemname">System Name</label>
+		<input type="text" id="systemname" name="systemname" /><br />
+		<label for="startdate">Start Date</label>
+		<input type="text" id="startdate" name="startdate" /><br />
+		<label for="lastaccess">Last Access</label>
+		<input type="text" id="lastaccess" name="lastaccess" /><br />
+		<label for="status">Status</label>
+		<input type="text" id="status" name="status" /><br />
+		<input type="hidden" name="testid" value="createSystem" />
+		<input type="submit" value="Go" />
+	</form>
+
+SYSTEM_FORM;
+		
+	}
+	
+	public function createSystem () {
+		$name = @$_POST['systemname'];
+		$start = @$_POST['initialstart'];
+		$access = @$_POST['lastaccess'];
+		$state = @$_POST['state'];
+		return $this->apicall->createSystem($name, $start, $access,  $state);
+	}
+	
+	public function createNodeForm () {
+		echo <<<SYSTEM_FORM
+   
+    <h2>Create a node</h2>
+	<form action="testapi.php" method="POST">
+		<label for="systemid">System ID</label>
+		<input type="text" id="systemid" name="systemid" /><br />
+		<label for="nodename">Node Name</label>
+		<input type="text" id="nodename" name="nodename" /><br />
+		<label for="status">Status</label>
+		<input type="text" id="status" name="status" /><br />
+		<input type="hidden" name="testid" value="createNode" />
+		<input type="submit" value="Go" />
+	</form>
+
+SYSTEM_FORM;
+		
+	}
+	
+	public function createNode () {
+		$systemid = @$_POST['systemid'];
+		$name = @$_POST['systemname'];
+		$state = @$_POST['state'];
+		return $this->apicall->createNode($systemid, $name, $state);
 	}
 	
 	public function getAllSystems () {

@@ -27,7 +27,7 @@
 
 namespace SkySQL\SCDS;
 
-define ('ADMIN_DATABASE_CONNECTION', 'sqlite:/usr/local/skysql/SQLite/AdminConsole/admin.sqlite'); // The admin DB
+define ('ADMIN_DATABASE_CONNECTION', 'sqlite:/usr/local/skysql/SQLite/AdminConsole/admin'); // The admin DB
 define ('ADMIN_DATABASE_USER', ''); // Admin DB user - not required for SQLite
 define ('ADMIN_DATABASE_PASSWORD', ''); // Admin DB password - not required for SQLite
-define ('API_LOG_DIRECTORY', '/usr/local/skysql/log');
+define ('API_LOG_DIRECTORY', '/usr/local/skysql/log'); // Directory for log file

@@ -23,9 +23,9 @@
  * Date: February 2013
  * 
  * The API class is the starting point, called by the very brief index.php which is the sole
- * entry point for the SCDS API.  Its constructor calls the class CriticalInfo to set up some 
- * standard symbols.  It starts buffering of output, primarily to be able to control
- * diagnostics, and sets up a simple autoloader.
+ * entry point for the SCDS API.  Its constructor sets up some standard symbols.  It starts 
+ * buffering of output, primarily to be able to control diagnostics, and sets up a simple 
+ * autoloader.
  * 
  * The entry point from index.php is the startup method.  It enforces some security checks,
  * and aims to create a good seed for the PHP random number generator.  Standard definitions
@@ -40,24 +40,12 @@
 
 namespace SkySQL\SCDS\API;
 
-use SkySQL\COMMON\Profiler as Profiler;
-use SkySQL\COMMON\ErrorRecorder as ErrorRecorder;
+use \PDOException;
+use \Exception;
+use SkySQL\COMMON\Profiler;
+use SkySQL\COMMON\ErrorRecorder;
 
 if (!function_exists('apache_request_headers')) require ('apache_request_headers.php');
-
-final class CriticalInfo {
-	private static $instance = null;
-
-	private function __construct() {
-		define('ABSOLUTE_PATH', str_replace('\\', '/', dirname(__FILE__)));
-		if (!defined('CLASS_BASE')) define ('CLASS_BASE', ABSOLUTE_PATH);
-		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
-	}
-	
-	public static function getInstance () {
-	    return (self::$instance instanceof self) ? self::$instance : (self::$instance = new self());
-	}
-}
 
 class API {
 	private static $instance = null;
@@ -68,14 +56,20 @@ class API {
 	}
 	
 	protected function __construct () {
+		// Prevent diagnostic output leaking out
 		ob_start();
 		ob_implicit_flush(false);
-		// Force setting of defined symbols
-		CriticalInfo::getInstance();
+		
+		// Setting of defined symbols
+		define('ABSOLUTE_PATH', str_replace('\\', '/', dirname(__FILE__)));
+		if (!defined('CLASS_BASE')) define ('CLASS_BASE', ABSOLUTE_PATH);
+		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
+		
+		// Set up a simple class autoloader
 		spl_autoload_register(array(__CLASS__, 'simpleAutoload'));
 	}
 	
-	public function startup ($runController=false) {
+	public function startup ($runController=false, $controllerClass='Request') {
 
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 
@@ -112,14 +106,17 @@ class API {
 		}
 
 		try {
-			$controller = Request::getInstance();
+			$controller = call_user_func(array(__NAMESPACE__.'\\'.$controllerClass,'getInstance'));
 			$errorhandler = ErrorRecorder::getInstance();
 			set_error_handler(array($errorhandler, 'PHPerror'));
 			register_shutdown_function(array($errorhandler, 'PHPFatalError'));
 			if ($runController) $controller->doControl();
 		}
-		catch (Exception $exception) {
-			echo 'Unhandled error';
+		catch (Exception $e) {
+			echo 'Unhandled error: '.$e->getMessage();
+		}
+		catch (PDOException $pe) {
+			echo 'Unhandled error: '.$pe->getMessage();
 		}
 	}
 

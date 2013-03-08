@@ -29,15 +29,14 @@
 
 namespace SkySQL\SCDS\API;
 
-use SkySQL\COMMON\AdminDatabase;
 use \PDO;
 
 class Systems extends ImplementAPI {
 	protected $nodes_query = null;
 	protected $backups_query = null;
 	
-	public function __construct () {
-		parent::__construct();
+	public function __construct ($controller) {
+		parent::__construct($controller);
 		$this->nodes_query = $this->db->prepare('SELECT NodeID FROM Node WHERE SystemID = :systemid ORDER BY NodeID');
 		$this->backups_query = $this->db->prepare('SELECT MAX(Started) FROM Backup WHERE SystemID = :systemid');
 	}
@@ -47,13 +46,46 @@ class Systems extends ImplementAPI {
 		$results = array();
 		foreach ($systems as $system) $results[] = $this->retrieveOneSystem($system);
         $this->sendResponse(array("systems" => $results));
-        return true;
 	}
 
 	public function getSystemData ($uriparts) {
 		$data = $this->readSystemData($uriparts[1]);
 		if ($data) $this->sendResponse(array('system' => $this->retrieveOneSystem($data, true)));
 		else $this->sendErrorResponse('', 404);
+	}
+	
+	public function createSystem () {
+		$parms = json_decode(file_get_contents("php://input"), true);
+		$name = $parms['name'];
+		$start = strtotime($parms['startDate']);
+		$initialstart = date('Y-m-d H:i:s', ($start ? $start : time()));
+		$access = strtotime($parms['lastAccess']);
+		$lastaccess = date('Y-m-d H:i:s', ($access ? $access : time()));
+		$state = $parms['state'];
+		$insert = $this->db->prepare('INSERT INTO System (SystemName, InitialStart, LastAccess, State) 
+			VALUES (:systemname, :initialstart, :lastaccess, :state)');
+		$insert->execute(array(
+			':systemname' => ($name ? $name : 'System nnnnnn'),
+			':initialstart' => $initialstart,
+			':lastaccess' => $lastaccess,
+			':state' => $state
+		));
+		$systemid = $this->db->lastInsertId();
+		if (!$name) {
+			$name = 'System '.sprintf('%06d', $systemid);
+			$update = $this->db->prepare('UPDATE System SET SystemName = :systemname WHERE SystemID = :systemid');
+			$update->execute(array(
+				':systemname' => $name,
+				':systemid' => $systemid
+			));
+		}
+		$this->sendResponse(array('system' => array(
+			'system' => $systemid,
+			'name' => $name,
+			'startDate' => $initialstart,
+			'lastAccess' => $lastaccess,
+			'state' => $state
+		)));
 	}
 	
 	public function setSystemProperty ($uriparts) {
@@ -78,7 +110,7 @@ class Systems extends ImplementAPI {
 	public function deleteSystemProperty ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$property = $uriparts[3];
-		$pstatement = $this->db->prepare('DELETE FROM SystemProperties WHERE SystemID = :systemid AND Property = :property');
+		$pstatement = $this->dgetb->prepare('DELETE FROM SystemProperties WHERE SystemID = :systemid AND Property = :property');
 		$pstatement->execute(array(
 			':systemid' => $systemid,
 			':property' => $property
@@ -98,7 +130,6 @@ class Systems extends ImplementAPI {
 			$property = $uriparts[3];
 			if (isset($result['properties'][$property])) {
 				$this->sendResponse(array($property => $result['properties'][$property]));
-				exit;
 			}
 		}
 		$this->sendErrorResponse('', 404);
