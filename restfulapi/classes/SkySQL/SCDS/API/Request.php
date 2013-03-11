@@ -41,13 +41,15 @@
 namespace SkySQL\SCDS\API;
 
 use \PDOException;
+use SkySQL\COMMON\ErrorRecorder;
+use SkySQL\COMMON\Diagnostics;
 
 final class Request {
 	protected static $instance = null;
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
-		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'GET'),
+		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[SkySQL\COMMON0-9]+/property/[A-Za-z0-9]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'PUT'),
 		array('class' => 'Systems', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
@@ -159,7 +161,7 @@ final class Request {
 				$this->sendErrorResponse('Selected method $method of class $class returned to controller', 500);
 			}
 			catch (PDOException $pe) {
-				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500);
+				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500, $pe);
 			}
 		}
 		else $this->sendErrorResponse ("Request {$_SERVER['REQUEST_URI']} does not match the API", 404);
@@ -218,11 +220,11 @@ final class Request {
 				exit;
 			}
 		}
-		echo 'application/json' == $content_type ? json_encode($body) : print_r($body);
+		echo 'application/json' == $content_type ? json_encode($body) : print_r($body, true);
 		exit;
 	}
 	
-	public function sendErrorResponse ($errors, $status) {
+	public function sendErrorResponse ($errors, $status, $exception=null) {
 		$data = empty($errors) ? '' : array('errors' => (array) $errors);
 		if ($data AND 'text/html' == $this->getContentType()) {
 			$statusname = @self::$codes[$status];
@@ -230,6 +232,8 @@ final class Request {
 			foreach ($data['errors'] as $error) $text .= '</br>'.$error;
 			$data = $text.'</p>';
 		}
+		$recorder = ErrorRecorder::getInstance();
+		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $data), $exception);
 		$this->sendResponse($data, $status);
 	}
 	

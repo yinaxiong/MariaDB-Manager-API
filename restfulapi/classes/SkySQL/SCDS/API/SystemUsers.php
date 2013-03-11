@@ -32,7 +32,7 @@ use \PDOException;
 class SystemUsers extends ImplementAPI {
 	
 	public function getUsers () {
-		$query = $this->db->query("SELECT UserID AS id, UserName AS name FROM Users");
+		$query = $this->db->query("SELECT UserID AS id, UserName AS username, Name AS name FROM Users");
         $result = array(
             "users" => $query->fetchAll(PDO::FETCH_ASSOC)
         );
@@ -63,7 +63,7 @@ class SystemUsers extends ImplementAPI {
 			$this->sendResponse(array('username' => $username, 'name' => $name));
 		}
 		catch (PDOException $p) {
-			$this->sendErrorResponse('User insertion failed - perhaps username is a duplicate', 409);
+			$this->sendErrorResponse('User insertion failed - perhaps username is a duplicate', 409, $pe);
 		}
 	}
 	

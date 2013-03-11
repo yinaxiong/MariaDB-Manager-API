@@ -50,6 +50,7 @@ if (!function_exists('apache_request_headers')) require ('apache_request_headers
 class API {
 	private static $instance = null;
 	protected $timer = 0;
+	protected $ipaddress = '';
 	
 	public static function getInstance () {
 	    return (self::$instance instanceof self) ? self::$instance : (self::$instance = new self());
@@ -135,6 +136,29 @@ class API {
 			return true;
 		}
 		return false;
+	}
+	
+	public function getIP () {
+		if ($this->ipaddress) return $this->ipaddress;
+	    $ip = false;
+	    if (!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $_SERVER['HTTP_CLIENT_IP'];
+	    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+	        $ips = explode (', ', $_SERVER['HTTP_X_FORWARDED_FOR']);
+	        if ($ip != false) {
+	            array_unshift($ips,$ip);
+	            $ip = false;
+	        }
+	        $count = count($ips);
+	        // Exclude IP addresses that are reserved for LANs
+	        for ($i = 0; $i < $count; $i++) {
+	            if (!preg_match("/^(10|172\.16|192\.168)\./i", $ips[$i])) {
+	                $ip = $ips[$i];
+	                break;
+	            }
+	        }
+	    }
+	    $this->ipaddress = (false == $ip AND isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : $ip;
+	    return $this->ipaddress;
 	}
 
 	public static function trace ($error=true) {

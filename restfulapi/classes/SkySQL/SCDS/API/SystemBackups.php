@@ -89,7 +89,7 @@ class SystemBackups extends ImplementAPI {
 			$rowid = $this->db->lastInsertId();
 		}
 		catch (PDOException $p) {
-			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $node, level $level, parent $parent");
+			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $node, level $level, parent $parent", 500, $pe);
 		}
 	}
 	

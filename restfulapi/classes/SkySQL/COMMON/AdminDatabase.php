@@ -33,6 +33,9 @@ use \PDO;
 class AdminDatabase {
 	protected static $instance = null;
 	protected $pdo = null;
+	protected $sql = '';
+	protected $trace = '';
+	protected $lastcall = '';
 	
 	protected function __construct () {
 		$this->pdo = new PDO(ADMIN_DATABASE_CONNECTION, ADMIN_DATABASE_USER, ADMIN_DATABASE_PASSWORD);
@@ -41,7 +44,36 @@ class AdminDatabase {
 	}
 	
 	public function __call($name, $arguments) {
+		$this->lastcall = $name;
 		return call_user_func_array(array($this->pdo, $name), $arguments);
+	}
+	
+	public function prepare () {
+		$arguments = func_get_args();
+		$this->sql = $arguments[0];
+		$this->trace = Diagnostics::trace();
+		$this->lastcall = 'prepare';
+		return call_user_func_array(array($this->pdo, 'prepare'), $arguments);
+	}
+	
+	public function query () {
+		$arguments = func_get_args();
+		$this->sql = $arguments[0];
+		$this->trace = Diagnostics::trace();
+		$this->lastcall = 'query';
+		return call_user_func_array(array($this->pdo, 'query'), $arguments);
+	}
+	
+	public function getSQL () {
+		return $this->sql;
+	}
+	
+	public function getTrace () {
+		return $this->trace;
+	}
+	
+	public function getLastCall () {
+		return $this->lastcall;
 	}
 	
 	public static function getInstance () {

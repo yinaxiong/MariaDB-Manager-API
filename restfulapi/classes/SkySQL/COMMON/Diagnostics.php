@@ -20,15 +20,31 @@
  * Copyright 2013 (c) SkySQL Ab
  * 
  * Author: Martin Brampton
- * Date: February 2013
+ * Date: March 2013
  * 
- * Definitions required for PHP code in the SkySQL Cloud Data Suite.
+ * The Diagnostics class provides useful methods for fault finding.
+ * 
+ * The trace static method is a utility for debugging and error logging purposes.
+ * 
  */
 
-namespace SkySQL\SCDS;
+namespace SkySQL\COMMON;
 
-define ('ADMIN_DATABASE_CONNECTION', 'sqlite:/usr/local/skysql/SQLite/AdminConsole/admin'); // The admin DB
-define ('ADMIN_DATABASE_USER', ''); // Admin DB user - not required for SQLite
-define ('ADMIN_DATABASE_PASSWORD', ''); // Admin DB password - not required for SQLite
-define ('API_LOG_DIRECTORY', '/usr/local/skysql/log'); // Directory for log file
-define ('ADMIN_ERROR_NOTIFY_EMAIL', 'martin.brampton@skysql.com');
+class Diagnostics {
+	
+	public static function trace ($error=true) {
+	    static $counter = 0;
+		$html = '';
+		foreach(debug_backtrace() as $back) {
+		    if (isset($back['file']) AND $back['file']) {
+			    $html .= "\n".$back['file'].':'.$back['line'];
+			}
+		}
+		if ($error) $counter++;
+		if (1000 < $counter) {
+		    echo $html;
+		    die (T_('Program killed - Probably looping'));
+        }
+		return $html;
+	}
+}

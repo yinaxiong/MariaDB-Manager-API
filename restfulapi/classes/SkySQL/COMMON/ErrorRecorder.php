@@ -31,16 +31,20 @@
  */
 
 namespace SkySQL\COMMON;
+use SkySQL\SCDS\API\api;
 
 use SkySQL\COMMON\AdminDatabase;
+use \PDOException;
 
 final class ErrorRecorder  {
     protected static $instance = null;
 	protected $DBclass = 'aliroCoreDatabase';
 	protected $tableName = '#__error_log';
 	protected $rowKey = 'id';
+	
+	protected function __construct () {}
 
-	public static function getInstance ($request=null) {
+	public static function getInstance () {
 	    return (null == self::$instance) ? (self::$instance = new self()) : self::$instance;
 	}
 	
@@ -83,40 +87,50 @@ final class ErrorRecorder  {
 
 	public function recordError ($smessage, $errorkey, $lmessage='', $exception=null) {
 		error_log($lmessage);
-		return;
 		$database = AdminDatabase::getInstance();
-		$this->errorkey = $database->getEscaped($errorkey);
-		$database->setQuery("SELECT id FROM #__error_log WHERE errorkey = '$this->errorkey'");
-		$id = $database->loadResult();
-		if (!$id OR !$database->loadObject($this)) $this->id = 0;
-		$this->timestamp = date ('Y-m-d H:i:s');
-		$this->ip = aliroRequest::getInstance()->getIP();
-		$this->smessage = substr($smessage, 0, 250);
-		$this->lmessage = $lmessage ? $lmessage : $smessage;
-		$this->referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
-		$this->get = @$_SERVER['REQUEST_URI'];
-		$this->post = base64_encode(serialize($_POST));
-		$this->trace = aliroBase::trace();
-		if ($exception instanceof databaseException) {
-			$this->dbname = $exception->dbname;
-			$this->sql = $exception->sql;
-			$this->dberror = $exception->getCode();
-			$this->dbmessage = $exception->getMessage();
-			$this->dbtrace = $exception->dbtrace;
+		$findid = $database->prepare('UPDATE ErrorLog SET timestamp = :timestamp, ip = :ip, referer = :referer, get = :get, post = :post, trace = :trace WHERE errorkey = :errorkey');
+		$findid->execute(array(
+			':timestamp' => date ('Y-m-d H:i:s'),
+			':ip' => api::getInstance()->getIP(),
+			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
+			':get' => @$_SERVER['REQUEST_URI'],
+			':post' => base64_encode(serialize($_POST)),
+			':trace' => Diagnostics::trace(),
+			':errorkey' => $errorkey
+		));
+		if ($findid->rowCount()) return;
+		if ($exception instanceof PDOException) {
+			$sql = $database->getSQL();
+			$dberror = $exception->getCode();
+			$dbmessage = $exception->getMessage();
+			$dbtrace = $database->getTrace();
+			$dbcall = $database->getLastCall();
 		}
-		// Must set text field, has no default
-		else $this->dbname = $this->sql = $this->dberror = $this->dbmessage = '';
-		if (0 == $this->id) {
-	    	$core = aliroCore::getInstance();
-			$mailto = aliroCore::getInstance()->getCfg('errormailto');
-			if ($mailto) {
-		    	$mail = new aliroMailMessage ($core->getCfg('mailfrom'), $core->getCfg('fromname'));
-				$mail->sendMail ($mailto, sprintf(T_('Error recorded at %s'), $core->getCfg('sitename')), $lmessage);
-			}
-		}	
-		$this->store();
-		// code to prune error log - limit to max items, max days
-		$database = call_user_func(array($this->DBclass, 'getInstance'));
-		$database->doSQL("DELETE LOW_PRIORITY FROM $this->tableName WHERE timestamp < SUBDATE(NOW(), INTERVAL 7 DAY)");
+		else $dbcall = $sql = $dberror = $dbmessage = $dbtrace = '';
+		$insert = $database->prepare('INSERT INTO ErrorLog (timestamp, ip, smessage, lmessage,
+			referer, get, post, trace, sql, dberror, dbmessage, dbcall, dbtrace, errorkey)
+			VALUES (:timestamp, :ip, :smessage, :lmessage, :referer, :get, :post,
+			:trace, :sql, :dberror, :dbmessage, :dbcall, :dbtrace, :errorkey);');
+		$insert->execute(array(
+			':timestamp' => date ('Y-m-d H:i:s'),
+			':ip' => api::getInstance()->getIP(),
+			':smessage' => substr($smessage, 0, 250),
+			':lmessage' => ($lmessage ? $lmessage : $smessage),
+			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
+			':get' => @$_SERVER['REQUEST_URI'],
+			':post' => base64_encode(serialize($_POST)),
+			':trace' => Diagnostics::trace(),
+			':sql' => $sql,
+			':dberror' => $dberror,
+			':dbmessage' => $dbmessage,
+			':dbcall' => $dbcall,
+			':dbtrace' => $dbtrace,
+			':errorkey' => $errorkey
+		));
+		if (ADMIN_ERROR_NOTIFY_EMAIL) {
+			$headers = 'From: SkySQL Cloud Data Suite <no-reply@skysql.com>' . "\r\n";
+			mail(ADMIN_ERROR_NOTIFY_EMAIL, 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
+		}
+		$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");
 	}
 }
