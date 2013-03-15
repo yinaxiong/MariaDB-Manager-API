@@ -37,6 +37,10 @@ abstract class ImplementAPI {
 		$this->requestor = $requestor;
 	}
 	
+	protected function getParam ($arr, $name, $def=null, $mask=0) {
+		return $this->requestor->getParam($arr, $name, $def, $mask);
+	}
+	
 	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
 		return $this->requestor->sendResponse($body, $status, $content_type);
 	}

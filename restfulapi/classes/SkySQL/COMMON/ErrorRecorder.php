@@ -88,6 +88,14 @@ final class ErrorRecorder  {
 	public function recordError ($smessage, $errorkey, $lmessage='', $exception=null) {
 		error_log($lmessage);
 		$database = AdminDatabase::getInstance();
+		if ($exception instanceof PDOException) {
+			$sql = $database->getSQL();
+			$dberror = $exception->getCode();
+			$dbmessage = $exception->getMessage();
+			$dbtrace = $database->getTrace();
+			$dbcall = $database->getLastCall();
+		}
+		else $dbcall = $sql = $dberror = $dbmessage = $dbtrace = '';
 		$findid = $database->prepare('UPDATE ErrorLog SET timestamp = :timestamp, ip = :ip, referer = :referer, get = :get, post = :post, trace = :trace WHERE errorkey = :errorkey');
 		$findid->execute(array(
 			':timestamp' => date ('Y-m-d H:i:s'),
@@ -99,14 +107,6 @@ final class ErrorRecorder  {
 			':errorkey' => $errorkey
 		));
 		if ($findid->rowCount()) return;
-		if ($exception instanceof PDOException) {
-			$sql = $database->getSQL();
-			$dberror = $exception->getCode();
-			$dbmessage = $exception->getMessage();
-			$dbtrace = $database->getTrace();
-			$dbcall = $database->getLastCall();
-		}
-		else $dbcall = $sql = $dberror = $dbmessage = $dbtrace = '';
 		$insert = $database->prepare('INSERT INTO ErrorLog (timestamp, ip, smessage, lmessage,
 			referer, get, post, trace, sql, dberror, dbmessage, dbcall, dbtrace, errorkey)
 			VALUES (:timestamp, :ip, :smessage, :lmessage, :referer, :get, :post,

@@ -298,7 +298,7 @@ USER_FORM;
 	}
 	
 	public function createUser () {
-		return $this->apicall->createUser(@$_POST['realname'], @$_POST['username'], @$_POST['password']);
+		return $this->apicall->createUser(@$_POST['username'], @$_POST['realname'], @$_POST['password']);
 	}
 	
 	public function deleteUserForm () {

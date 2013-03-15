@@ -53,20 +53,33 @@ class SystemUsers extends ImplementAPI {
 			$this->sendErrorResponse($errors, 400);
 			exit;
 		}
+		$salt = $this->makeSalt();
+		$passwordhash = sha1($salt.$password);
 		try {
-			$query = $this->db->prepare("INSERT INTO Users (UserName, Name, Password) VALUES (:username, :name, :password)");
+			$query = $this->db->prepare("INSERT INTO Users (UserName, Name, Password, Salt) VALUES (:username, :name, :password, :salt)");
 			$query->execute(array(
 				':username' => $username,
 				':name' => $name,
-				':password' => $password
+				':password' => $passwordhash,
+				':salt' => $salt
 			));
 			$this->sendResponse(array('username' => $username, 'name' => $name));
 		}
-		catch (PDOException $p) {
+		catch (PDOException $pe) {
 			$this->sendErrorResponse('User insertion failed - perhaps username is a duplicate', 409, $pe);
 		}
 	}
+
+	protected function makeSalt () {
+		return $this->makeRandomString(24);
+	}
 	
+	protected function makeRandomString ($length=8) {
+		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!%,-:;@_{}~";
+		for ($i = 0, $makepass = '', $len = strlen($chars); $i < $length; $i++) $makepass .= $chars[mt_rand(0, $len-1)];
+		return $makepass;
+	}
+
 	public function deleteUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
 		$query = $this->db->prepare('DELETE FROM Users WHERE UserName = :username');
@@ -78,10 +91,14 @@ class SystemUsers extends ImplementAPI {
 	public function loginUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
 		$password = isset($_POST['password']) ? $_POST['password'] : '';
+		$saltquery = $this->db->prepare('SELECT Salt FROM Users WHERE UserName = :username');
+		$saltquery->execute(array(':username' => $username));
+		$salt = $saltquery->fetch(PDO::FETCH_COLUMN);
+		$passwordhash = sha1($salt.$password);
 		$query = $this->db->prepare('SELECT COUNT(*) FROM Users WHERE UserName = :username AND Password = :password');
 		$query->execute(array(
 			':username' => $username,
-			':password' => $password
+			':password' => $passwordhash
 		));
 		if ($query->fetch(PDO::FETCH_COLUMN)) $this->sendResponse('ok');
 		else $this->sendErrorResponse('Login failed', 409);

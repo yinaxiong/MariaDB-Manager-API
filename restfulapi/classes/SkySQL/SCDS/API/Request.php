@@ -69,9 +69,11 @@ final class Request {
 		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/(start|stop|restart|isolate|recover|promote)', 'http' => 'POST'),
+		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getTypes', 'uri' => 'monitortype', 'http' => 'GET'),
 		
 	);
 	
@@ -204,7 +206,25 @@ final class Request {
 	protected function uriMatch ($pattern, $actual) {
 		return @preg_match("/^$pattern$/", $actual);
 	}
-	
+
+	public function getParam ($arr, $name, $def=null, $mask=0) {
+		$result = $def;
+	    if (isset($arr[$name])) {
+	        if (is_array($arr[$name])) foreach ($arr[$name] as $key=>$element) {
+	        	$result[$key] = $this->getParam ($arr[$name], $key, $def, $mask);
+	        }
+	        else {
+	            $result = $arr[$name];
+	            if (!($mask&_MOS_NOTRIM)) $result = trim($result);
+	            if (!is_numeric($result)) {
+	            	if (get_magic_quotes_gpc() AND !($mask & _MOS_NOSTRIP)) $result = stripslashes($result);
+	                if (!($mask&_MOS_ALLOWRAW) AND is_numeric($def)) $result = $def;
+	            }
+	        }
+	    }
+	    return $result;
+	}
+
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
 	    $status_header = HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
@@ -225,15 +245,15 @@ final class Request {
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
-		$data = empty($errors) ? '' : array('errors' => (array) $errors);
-		if ($data AND 'text/html' == $this->getContentType()) {
+		if ($errors AND 'text/html' == $this->getContentType()) {
 			$statusname = @self::$codes[$status];
 			$text = "<p>Error(s) accompanying return code $status $statusname:";
-			foreach ($data['errors'] as $error) $text .= '</br>'.$error;
+			foreach ((array) $errors as $error) $text .= '</br>'.$error;
 			$data = $text.'</p>';
 		}
+		else $data = empty($errors) ? '' : array('errors' => (array) $errors);
 		$recorder = ErrorRecorder::getInstance();
-		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $data), $exception);
+		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
 		$this->sendResponse($data, $status);
 	}
 	

@@ -29,10 +29,76 @@
 namespace SkySQL\SCDS\API;
 
 use \PDO;
+use \PDOException;
 
 class Tasks extends ImplementAPI {
+	protected static $base = 'SELECT CE.TaskID AS id, CE.NodeID AS node, CE.CommandID AS command, 
+			CE.Params AS params, CE.StepIndex AS stepindex, CE.State AS status, CE.UserID AS user, CE.Start AS start, 
+			CE.Completed AS end FROM CommandExecution AS CE';
+	
+	public function getOneTask ($uriparts) {
+		$taskid = $uriparts[1];
+		$statement = $this->db->prepare(self::$base.' WHERE TaskID = :taskid');
+		$statement->execute(array(':taskid' => $taskid));
+		$this->queryResults($statement);
+	}
 	
 	public function getTasks ($uriparts) {
-		$taskid = @$uriparts[1];
+		$sql = self::$base;
+		$bind = array();
+		$status = empty($_GET['status']) ? 0 : (int) $_GET['status'];
+		if ($status) {
+			$where[] = 'CE.State = :state';
+			$bind[':state'] = $status;
+		}
+		$group = empty($_GET['group']) ? '' : urldecode($_GET['group']);
+		if ($group) {
+			$sql .= ' INNER JOIN Commands AS C ON CE.CommandID = C.CommandID';
+			$where[] = 'C.UIGroup = :group';
+			$bind[':group'] = $group;
+			$node = empty($_GET['node']) ? 0 : (int) $_GET['node'];
+			if ($node) {
+				$where[] = 'CE.NodeID = :nodeid';
+				$bind[':nodeid'] = $node;
+			}
+		}
+		if (isset($where)) $sql .= ' WHERE '.implode(' AND ', $where);
+		$statement = $this->db->prepare($sql);
+		$statement->execute($bind);
+		$this->queryResults($statement);
+	}
+	
+	protected function queryResults ($statement) {
+		$this->sendResponse(array('tasks' => $statement->fetchAll(PDO::FETCH_ASSOC)));
+	}
+	
+	public function runCommand ($uriparts) {
+		$command = urldecode($uriparts[1]);
+		$systemid = $this->getParam($_POST, 'system', 0);
+		$nodeid = $this->getParam($_POST, 'node', 0);
+		$userid = $this->getParam($_POST, 'user', 0);
+		if ($systemid AND $nodeid AND $userid) {
+			$params = urldecode($this->getParam($_POST, 'params'));
+			$now = new DateTime("now", new DateTimeZone(API_TIME_ZONE));
+			$time = $now->format('Y-m-d H:i:s');
+			$insert = $this->db->prepare("INSERT INTO CommandExecution 
+				(SystemID, NodeID, CommandID, Params, Start, Completed, StepIndex, State, UserID) 
+				VALUES (:systemid, :nodeid, :commandid, :params, :start, :completed, :stepindex, :state, :userid)");
+			$insert->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $nodeid,
+				':commandid' => $commandid,
+				':params' => $params,
+				':start' => $time,
+				':completed' => null,
+				':stepindex' => 0,
+				':state' => 0,
+				':userid' => $userid
+			));
+        	$rowID = $this->db->lastInsertId();
+        	$cmd = API_SHELL_PATH."RunCommand.sh $rowID \"".ADMIN_DATABASE_PATH.'" > /dev/null 2>&1 &';
+        	exec($cmd);
+        	$this->sendResponse(array('task' => $rowID));
+		}
 	}
 }
