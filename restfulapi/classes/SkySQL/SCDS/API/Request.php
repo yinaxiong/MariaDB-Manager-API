@@ -55,10 +55,14 @@ final class Request {
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
 		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => '/backupstate', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitor', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'storeSameMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
+		array('class' => 'Monitors', 'method' => 'storeNewMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/[0-9]+/node', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'PUT'),
+		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
+		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
 		array('class' => 'SystemUsers', 'method' => 'createUser', 'uri' => 'user/.*', 'http' => 'PUT'),
 		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/.*', 'http' => 'POST'),
@@ -74,7 +78,8 @@ final class Request {
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getTypes', 'uri' => 'monitortype', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
 		
 	);
 	

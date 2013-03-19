@@ -43,10 +43,35 @@ class SystemNodes extends ImplementAPI {
 			WHERE SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid');
 	}
 	
+	public function nodeStates ($uriparts) {
+		if (!empty($uriparts[1])) {
+			if (preg_match('/[0-9]+/', $uriparts[1])) {
+				$condition = ' WHERE State = :state';
+				$bind = array(':state' => $uriparts[1]);
+			}
+			else {
+				$condition = ' WHERE Description LIKE :description';
+				$bind = array(':description' => $uriparts[1].'%');
+			}
+		}
+		else {
+			$condition = '';
+			$bind = array();
+		}
+		$query = $this->db->prepare("SELECT State AS state, Description AS description, Icon AS icon
+			FROM NodeStates".$condition);
+		$query->execute($bind);
+		$states = $query->fetchAll(PDO::FETCH_ASSOC);
+		if (isset($_GET['show'])) $states = $this->filterResults($states, $_GET['show']);
+        $this->sendResponse(array('nodestates' => $states));
+	}
+	
 	public function getSystemAllNodes ($uriparts) {
 		$this->systemid = $uriparts[1];
-		$statement = $this->db->prepare('SELECT NodeID AS id, NodeName AS name, State AS status
-			FROM Node WHERE SystemID = :systemID');
+		$statement = $this->db->prepare('SELECT Node.NodeID AS id, NodeName AS name, State AS status,
+			Hostname AS hostname, PublicIP AS publicip, PrivateIP AS privateip, 
+			InstanceID AS instanceid, Username AS username, passwd
+			FROM Node LEFT JOIN NodeData ON Node.NodeID = NodeData.NodeID WHERE Node.SystemID = :systemID');
 		$statement->execute(array(':systemID' => $this->systemid));
 		$nodes = $statement->fetchAll(PDO::FETCH_ASSOC);
 		if (isset($_GET['show'])) $nodes = $this->filterResults($nodes, $_GET['show']);
@@ -58,16 +83,20 @@ class SystemNodes extends ImplementAPI {
 		$this->nodeid = $uriparts[3];
 		$statement = $this->db->prepare('SELECT NodeName AS name, State AS status, 
 			PrivateIP AS privateIP, PublicIP AS publicIP, InstanceID AS instanceID FROM Node 
-			INNER JOIN NodeData ON Node.NodeID = NodeData.NodeID AND Node.SystemID = NodeData.SystemID
+			LEFT JOIN NodeData ON Node.NodeID = NodeData.NodeID AND Node.SystemID = NodeData.SystemID
 			WHERE Node.SystemID = :systemID AND Node.NodeID = :nodeID');
 		$statement->execute(array(':systemID' => $this->systemid, ':nodeID' => $this->nodeid));
-		$node = $statement->fetch();
+		$node = $statement->fetch(PDO::FETCH_ASSOC);
 		if ($node) {
 			$node['commands'] = is_null($node['status']) ? null : $this->getCommands($node['status']);
 			$node['connections'] = $this->getConnections();
 			$node['packets'] = $this->getPackets();
 			$node['health'] = $this->getHealth();
 			list($node['task'], $node['command']) = $this->getCommand();
+			if (isset($_GET['show'])) {
+				$nodes = $this->filterResults(array($node), $_GET['show']);
+				$node = $nodes[0];
+			}
 			$this->sendResponse(array('node' => $node));
 		}
 		else $this->sendErrorResponse('', 404);
@@ -134,9 +163,9 @@ class SystemNodes extends ImplementAPI {
 	
 	protected function getCommand () {
 		$query = $this->db->prepare('SELECT rowid, CommandID FROM CommandExecution 
-			WHERE SystemID = :systemid AND MonitorID = 3 AND NodeID = :nodeid');
+			WHERE SystemID = :systemid AND NodeID = :nodeid');
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $this->nodeid));
 		$row = $query->fetch();
-		return array($row->rowid, $row->CommandID);
+		return $row ? array($row->rowid, $row->CommandID) : array(null, null);
 	}
 }

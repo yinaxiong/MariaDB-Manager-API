@@ -42,10 +42,14 @@ abstract class ImplementAPI {
 	}
 	
 	protected function filterResults ($results, $filter) {
-		foreach ($results as $key=>$value) {
-			$filtered[] = isset($value[$filter]) ? $value[$filter] : null;
-		}
+		$filterwords = explode(',', $filter);
+		foreach ($results as $key=>$value) $filtered[$key] = $this->filterWords($value, $filterwords);
 		return $filtered;
+	}
+	
+	protected function filterWords ($value, $words) {
+		foreach ($words as $word) if (isset($value[$word])) $hits[] = $value[$word];
+		return empty($hits) ? null : (1 < count($hits) ? $hits : $hits[0]);
 	}
 	
 	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
