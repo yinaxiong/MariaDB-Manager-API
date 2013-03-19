@@ -42,6 +42,10 @@ class Systems extends ImplementAPI {
 	}
 	
 	public function getAllData () {
+		if ('id' == @$_GET['show']) {
+			$systems = $this->db->query('SELECT SystemID FROM System');
+			$this->sendResponse(array("systems" => $systems->fetchAll(PDO::FETCH_COLUMN)));
+		}
 		$systems = $this->db->query('SELECT * FROM System');
 		$results = array();
 		foreach ($systems as $system) $results[] = $this->retrieveOneSystem($system);

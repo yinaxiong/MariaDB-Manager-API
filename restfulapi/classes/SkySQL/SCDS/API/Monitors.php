@@ -37,7 +37,8 @@ final class Monitors extends ImplementAPI {
 	
 	public function getTypes () {
 		$query = $this->db->query("SELECT MonitorID AS id, Name AS name, 
-			Description AS description, Icon AS icon, ChartType AS type FROM Monitors");
+			Description AS description, Icon AS icon, ChartType AS type FROM Monitors
+			WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
         $result = array(
             "monitortypes" => $query->fetchAll(PDO::FETCH_ASSOC)
         );
@@ -53,6 +54,23 @@ final class Monitors extends ImplementAPI {
 		if (!$interval) $interval = 30;
 		$count = empty($_GET['count']) ? 0 : (int) $_GET['count'];
 		if (!$count) $count = 15;
+		$monitorinfo = $this->db->prepare('SELECT Value AS value, Start AS start, Latest AS latest
+			FROM MonitorData WHERE MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid
+			AND Start < :time AND Latest >= :time');
+		$pairs = array();
+		while ($count-- > 0) {
+			$time = date('Y-m-d H:i:s', $unixtime);
+			$unixtime -= $interval;
+			$monitorinfo->execute(array(
+				':monitorid' => $this->monitorid,
+				':systemid' => $this->systemid,
+				':nodeid' => $this->nodeid,
+				':time' => $time
+			));
+			$pairs[] = $monitorinfo->fetchAll(PDO::FETCH_ASSOC);
+			$this->sendResponse(array('monitor_data' => array_reverse($pairs)));
+		}
+		
 	}
 	
 	protected function getLatestTime () {
@@ -63,5 +81,8 @@ final class Monitors extends ImplementAPI {
 			':systemid' => $this->systemid,
 			':nodeid' => $this->nodeid
 		));
+		$date = $latest->fetch(PDO::FETCH_COLUMN);
+		if ($date) return $date;
+		$this->sendResponse(array('monitor_data' => array()));
 	}
 }

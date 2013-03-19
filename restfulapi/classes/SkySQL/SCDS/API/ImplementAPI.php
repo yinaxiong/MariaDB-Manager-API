@@ -41,6 +41,13 @@ abstract class ImplementAPI {
 		return $this->requestor->getParam($arr, $name, $def, $mask);
 	}
 	
+	protected function filterResults ($results, $filter) {
+		foreach ($results as $key=>$value) {
+			$filtered[] = isset($value[$filter]) ? $value[$filter] : null;
+		}
+		return $filtered;
+	}
+	
 	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
 		return $this->requestor->sendResponse($body, $status, $content_type);
 	}

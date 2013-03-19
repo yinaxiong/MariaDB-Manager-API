@@ -4,5 +4,3 @@
 	$DBPath = "/usr/local/skysql/SQLite/AdminConsole/admin";
 	
 	$shellPath = "shell/";
-	
-?>

@@ -43,7 +43,17 @@ class SystemNodes extends ImplementAPI {
 			WHERE SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid');
 	}
 	
-	public function getSystemNodes ($uriparts) {
+	public function getSystemAllNodes ($uriparts) {
+		$this->systemid = $uriparts[1];
+		$statement = $this->db->prepare('SELECT NodeID AS id, NodeName AS name, State AS status
+			FROM Node WHERE SystemID = :systemID');
+		$statement->execute(array(':systemID' => $this->systemid));
+		$nodes = $statement->fetchAll(PDO::FETCH_ASSOC);
+		if (isset($_GET['show'])) $nodes = $this->filterResults($nodes, $_GET['show']);
+		$this->sendResponse(array('nodes' => $nodes));
+	}
+	
+	public function getSystemNode ($uriparts) {
 		$this->systemid = $uriparts[1];
 		$this->nodeid = $uriparts[3];
 		$statement = $this->db->prepare('SELECT NodeName AS name, State AS status, 
@@ -128,28 +138,5 @@ class SystemNodes extends ImplementAPI {
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $this->nodeid));
 		$row = $query->fetch();
 		return array($row->rowid, $row->CommandID);
-	}
-	
-	public function getSystemNodeMonitorInfo ($uriparts) {
-		$this->systemid = $uriparts[1];
-		$this->nodeid = $uriparts[3];
-		$this->monitorid = $uriparts[5];
-		$time = strtotime(@$_GET['time']);
-		$date = $time ? date('Y-m-d H:i:s', $time) : $this->selectDate();
-		$interval = ((int) @$_GET['interval']) ? (int) $_GET['interval'] : 30;
-		$count = ((int) @$_GET['count']) ? (int) $_GET['count'] : 15;
-	}
-	
-	protected function selectDate () {
-		$query = $this->db->prepare('SELECT MAX(Latest) FROM MonitorData WHERE
-			MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid');
-		$query->execute(array(
-			':monitorid' => $this->monitorid,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid
-		));
-		$date = $query->fetch(PDO::FETCH_COLUMN);
-		if ($date) return $date;
-		$this->sendResponse(array('monitor_data' => array()));
 	}
 }

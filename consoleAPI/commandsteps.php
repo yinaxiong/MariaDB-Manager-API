@@ -17,34 +17,18 @@ class SkyConsoleAPI {
      
     function commandSteps() {
 
-		$set = $this->db->query("SELECT Commands.CommandID, StepID  FROM Commands, CommandStep WHERE Commands.CommandID=CommandStep.CommandID ORDER BY 'StepOrder'");
-			
-		$lastCommand = null;
-		$steps = null;
+		$set = $this->db->query("SELECT CommandID, Steps  FROM Commands");
 		foreach ($set as $row) {
-			$command = $row['CommandID'];
-			$step = $row['StepID'];
-			if (strcasecmp($command,$lastCommand) != 0) {
-				if (!is_null($lastCommand)) {
-					$data[] = array("command" => $lastCommand, "steps" => $steps);
-					$steps = null;
-					$steps[] = $step;
-				} else {
-					$steps[] = $step;
-				}
-				$lastCommand = $command;
-			} else {
-				$steps[] = $step;
-			}	
+			$stepnums = array_map('intval', explode(',', $row['Steps']));
+			foreach ($stepnums as $num) $steps[] = (string) $num;
+			$data[] = array("command" => $row['CommandID'], "steps" => $steps);
+			unset($steps);
 		}
-		if (!is_null($lastCommand))
-			$data[] = array("command" => $lastCommand, "steps" => $steps);
 			
        	$result = array(
-            	"command_steps" => $data,
+            	"command_steps" => (isset($data) ? $data : array()),
         );
         sendResponse(200, json_encode($result));
-        return true;
     }
         
 }
@@ -52,5 +36,3 @@ class SkyConsoleAPI {
 // This is the first thing that gets called when this page is loaded
 $api = new SkyConsoleAPI;
 $api->commandSteps();
- 
-?>

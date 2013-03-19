@@ -60,6 +60,5 @@ function sendResponse($status = 200, $body = '', $content_type = 'text/html')
     header($status_header);
     header('Content-type: ' . $content_type);
     echo $body;
+	exit;
 }
-
-?>

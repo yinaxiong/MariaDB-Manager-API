@@ -27,7 +27,7 @@ class SkyConsoleAPI {
 			
 			$insert = $this->db->prepare("INSERT INTO Backup (SystemID,NodeID,BackupLevel,Started) VALUES($system,$node,$level,'$time')");        	
         	$insert->execute();
-        	$rowID = $this->db->lastInsertId();
+        	$BackupID = $this->db->lastInsertId();
 
 			// 1 = full, 2 = incremental
 			if ($level==2) {
@@ -36,13 +36,13 @@ class SkyConsoleAPI {
 					$binlog = $row['BinLog'];
 				}
 				$result = array(
-            		"id" => $rowID,
+            		"id" => $BackupID,
             		"binlog" => $binlog,
         		);
 
 			} else {
        			$result = array(
-            		"id" => $rowID,
+            		"id" => $BackupID,
         	);
 			
 			}

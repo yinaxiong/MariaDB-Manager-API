@@ -30,7 +30,6 @@ class SkyConsoleAPI {
             "commandStates" => $data,
         );
         sendResponse(200, json_encode($result));
-        return true;
     }
         
 }
@@ -38,5 +37,3 @@ class SkyConsoleAPI {
 // This is the first thing that gets called when this page is loaded
 $api = new SkyConsoleAPI;
 $api->commandstates();
- 
-?>

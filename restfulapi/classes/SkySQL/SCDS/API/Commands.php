@@ -35,7 +35,7 @@ class Commands extends ImplementAPI {
 
 	public function getCommands () {
 		if (isset($_GET['group'])) {
-			$statement = $this->db->prepare("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon FROM Commands WHERE UIOrder IS NOT NULL AND UIGroup= :group ORDER BY UIOrder");
+			$statement = $this->db->prepare("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon FROM Commands WHERE UIOrder IS NOT NULL AND UIGroup = :group ORDER BY UIOrder");
 			$commands = $statement->execute(array(':group' => $_GET['group']));
 		}
 		else $commands = $this->db->query("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon FROM Commands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
