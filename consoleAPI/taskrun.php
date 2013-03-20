@@ -21,7 +21,7 @@ class SkyConsoleAPI {
         if (isset($_GET["command"]) && isset($_GET["system"]) && isset($_GET["node"]) && isset($_GET["user"]) ) {
 			$command = $_GET["command"];
 			
-			if (isset($_GET["params"]) && !empty($_GET["params"]) && ($_GET["params"] != "null"))
+			if (isset($_GET["params"]) && ($_GET["params"] != "null"))
 				$params = $_GET["params"];
 			else 
 				$params = null;

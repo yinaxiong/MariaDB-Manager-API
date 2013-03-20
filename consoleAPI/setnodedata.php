@@ -18,7 +18,7 @@ class SkyConsoleAPI {
      
     function setnodedata() {
 
-		if (isset($_GET["node"]) && isset($_GET["public"])) {
+		if (isset($_GET["system"]) && isset($_GET["node"]) && isset($_GET["public"])) {
 			$systemID = $_GET["system"];
 			$nodeID = $_GET["node"];
 			$publicIP = $_GET["public"];

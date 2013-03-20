@@ -29,7 +29,7 @@ class SkyConsoleAPI {
 					$publicIP = null;
 				}
 			} else {
-				$node_query = $this->db->query('SELECT * FROM Node, NodeData WHERE Node.SystemID='.$systemID.' AND Node.NodeID='.$nodeID.' AND Node.NodeID=NodeData.NodeID AND Node.SystemId=NodeData.SystemId AND Node.SystemId=NodeData.SystemId');
+				$node_query = $this->db->query('SELECT * FROM Node, NodeData WHERE Node.SystemID='.$systemID.' AND Node.NodeID='.$nodeID.' AND Node.NodeID=NodeData.NodeID AND Node.SystemID=NodeData.SystemID');
 				foreach ($node_query as $row) {
 					$name = $row['NodeName'];
 					$status = $row['State'];

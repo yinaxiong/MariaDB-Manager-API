@@ -17,15 +17,16 @@ class SkyConsoleAPI {
     }
      
     function createbackup() {
-		if (isset($_GET["system"]) && isset($_GET["node"]) && isset($_GET["level"])) {
+		if (isset($_GET["system"]) && isset($_GET["node"]) && isset($_GET["level"]) && isset($_GET["parent"])) {
 			$system = $_GET["system"];
 			$node = $_GET["node"];
 			$level = $_GET["level"];
+			$parent = $_GET["parent"];
 
 			$now = new DateTime("now", new DateTimeZone('Europe/Rome'));
 			$time = $now->format('Y-m-d H:i:s');
 			
-			$insert = $this->db->prepare("INSERT INTO Backup (SystemID,NodeID,BackupLevel,Started) VALUES($system,$node,$level,'$time')");        	
+			$insert = $this->db->prepare("INSERT INTO Backup (SystemID,NodeID,BackupLevel,Started,ParentID) VALUES($system,$node,$level,'$time',$parent)");        	
         	$insert->execute();
         	$BackupID = $this->db->lastInsertId();
 

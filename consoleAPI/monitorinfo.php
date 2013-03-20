@@ -43,21 +43,23 @@ class SkyConsoleAPI {
 			if (isset($_GET["interval"]) && !empty($_GET["interval"]) && ($_GET["interval"] != "null"))
 				$interval = $_GET["interval"];
 			else
-				$interval = "30";  // default 30 seconds
+				$interval = "1800";  // default 30 minutes
 
 			if (isset($_GET["count"]) && !empty($_GET["count"]) && ($_GET["count"] != "null"))
 				$count = $_GET["count"];
 			else
 				$count = 15;
 			
+			$delta = $interval / $count;
 			
 			while ($count-- > 0) {
 						
-				$time = date('Y-m-d H:i:s', $unixtime);
+				$endTime = date('Y-m-d H:i:s', $unixtime);
+				$unixtime -= $delta;
 				
 				$src = "SELECT Value,Start,Latest FROM MonitorData WHERE "
 					."MonitorID=".$monitor." AND SystemID=".$system." AND NodeId=".$node
-					." AND Start < '".$time."' AND Latest >= '".$time."'";
+					." AND Start <= '".$endTime."' AND Latest >= '".$endTime."'";
 
 				$query = $this->db->query($src);
 			
@@ -67,8 +69,6 @@ class SkyConsoleAPI {
 					$latest = $row['Latest'];
 					$pairs[] = array("time" => $time, "value" => $value, "start" => $start, "latest" => $latest);
 				}
-
-				$unixtime -= $interval;
 
 		    } 
 			

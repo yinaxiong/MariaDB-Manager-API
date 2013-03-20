@@ -17,15 +17,21 @@ class SkyConsoleAPI {
      
     function monitors() {
 
-		$monitors = $this->db->query("SELECT * FROM Monitors WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
+		$monitors = $this->db->query("SELECT * FROM Monitors WHERE MonitorType = 'SQL' ORDER BY UIOrder");
 			
 		foreach ($monitors as $row) {
 			$id = $row['MonitorID'];
 			$name = $row['Name'];
 			$description = $row['Description'];
+			$unit = $row['Unit'];
 			$icon = $row['Icon'];
-			$type = $row['ChartType'];
-			$data[] = array("id" => $id, "name" => $name, "description" => $description, "icon" => $icon, "type" => $type);
+			$type = $row['MonitorType'];
+			$delta = $row['delta'] == 1 ? 'true' : 'false';
+			$average = $row['SystemAverage'] == 1 ? 'true' : 'false';
+			$chartType = $row['ChartType'];
+			$interval = $row['Interval'];
+			$sql = $row['SQL'];
+			$data[] = array("id" => $id, "name" => $name, "description" => $description, "unit" => $unit, "icon" => $icon, "type" => $type, "delta" => $delta, "average" => $average, "chartType" => $chartType, "interval" => $interval, "sql" => $sql);
 		}
 			
        	$result = array(
