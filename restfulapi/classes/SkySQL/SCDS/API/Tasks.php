@@ -46,17 +46,17 @@ class Tasks extends ImplementAPI {
 	public function getTasks ($uriparts) {
 		$sql = self::$base;
 		$bind = array();
-		$status = empty($_GET['status']) ? 0 : (int) $_GET['status'];
+		$status = $this->getParam('GET', 'status', 0);
 		if ($status) {
 			$where[] = 'CE.State = :state';
 			$bind[':state'] = $status;
 		}
-		$group = empty($_GET['group']) ? '' : urldecode($_GET['group']);
+		$group = $this->getParam('GET', 'group');
 		if ($group) {
 			$sql .= ' INNER JOIN Commands AS C ON CE.CommandID = C.CommandID';
 			$where[] = 'C.UIGroup = :group';
 			$bind[':group'] = $group;
-			$node = empty($_GET['node']) ? 0 : (int) $_GET['node'];
+			$node = $this->getParam('GET', 'node', 0);
 			if ($node) {
 				$where[] = 'CE.NodeID = :nodeid';
 				$bind[':nodeid'] = $node;
@@ -74,11 +74,11 @@ class Tasks extends ImplementAPI {
 	
 	public function runCommand ($uriparts) {
 		$command = urldecode($uriparts[1]);
-		$systemid = $this->getParam($_POST, 'system', 0);
-		$nodeid = $this->getParam($_POST, 'node', 0);
-		$userid = $this->getParam($_POST, 'user', 0);
+		$systemid = $this->getParam('POST', 'system', 0);
+		$nodeid = $this->getParam('POST', 'node', 0);
+		$userid = $this->getParam('POST', 'user', 0);
 		if ($systemid AND $nodeid AND $userid) {
-			$params = urldecode($this->getParam($_POST, 'params'));
+			$params = urldecode($this->getParam('POST', 'params'));
 			$now = new DateTime("now", new DateTimeZone(API_TIME_ZONE));
 			$time = $now->format('Y-m-d H:i:s');
 			$insert = $this->db->prepare("INSERT INTO CommandExecution 

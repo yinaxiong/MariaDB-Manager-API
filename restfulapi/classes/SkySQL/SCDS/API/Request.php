@@ -63,7 +63,7 @@ final class Request {
 		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
-		array('class' => 'SystemUsers', 'method' => 'createUser', 'uri' => 'user/.*', 'http' => 'PUT'),
+		array('class' => 'SystemUsers', 'method' => 'putUser', 'uri' => 'user/.*', 'http' => 'PUT'),
 		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/.*', 'http' => 'POST'),
 		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET'),
@@ -78,8 +78,11 @@ final class Request {
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'updateMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'DELETE'),
+		array('class' => 'Monitors', 'method' => 'createMonitorClass', 'uri' => 'monitorclass', 'http' => 'PUT'),
 		
 	);
 	
@@ -136,6 +139,9 @@ final class Request {
 	
 	protected $uri = '';
 	protected $headers = array();
+	protected $requestmethod = '';
+	protected $requestviapost = false;
+	protected $putdata = '';
 	
 	protected function __construct() {
 		if (!self::$uriTablePrepared) {
@@ -150,6 +156,16 @@ final class Request {
 		$sepapi = explode('/api/', trim(end($sepindex), '/'));
 		$this->uri = trim(end($sepapi), '/');
 		$this->headers = apache_request_headers();
+		if ('PUT' == $_SERVER['REQUEST_METHOD']) {
+			$rawput = file_get_contents("php://input");
+			$this->putdata = json_decode($rawput, true);
+			if (is_null($this->putdata)) $this->putdata = $rawput;
+		}
+		if ('POST' == $_SERVER['REQUEST_METHOD'] AND isset($_POST['_method'])) {
+			$this->requestviapost = true;
+			$this->requestmethod = $_POST['_method'];
+		}
+		else $this->requestmethod = $_SERVER['REQUEST_METHOD'];
 	}
 	
 	public static function getInstance() {
@@ -192,10 +208,9 @@ final class Request {
 	}
 	
 	protected function getLinkByURI ($uriparts) {
-		$http = $_SERVER['REQUEST_METHOD'];
 		$partcount = count($uriparts);
 		foreach (self::$uriTable as $link) {
-			if ($http != $link['http']) continue;
+			if ($this->requestmethod != $link['http']) continue;
 			if (count($link['uriparts']) != $partcount) continue;
 			$matched = true;
 			foreach ($link['uriparts'] as $i=>$part) {
@@ -213,7 +228,20 @@ final class Request {
 		return @preg_match("/^$pattern$/", $actual);
 	}
 
-	public function getParam ($arr, $name, $def=null, $mask=0) {
+	public function getParam ($arrname, $name, $def=null, $mask=0) {
+		if ($arrname != $this->requestmethod) return $def;
+		if ($this->requestviapost) $arr =& $_POST;
+		elseif ('GET' == $arrname) $arr =& $_GET;
+		elseif ('POST' == $arrname) $arr =& $_POST;
+		elseif ('PUT' == $arrname) {
+			if (!is_array($this->putdata)) return $this->putdata;
+			$arr =& $this->putdata;
+		}
+		if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
+			if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
+			else return $def;
+		}
+		
 		$result = $def;
 	    if (isset($arr[$name])) {
 	        if (is_array($arr[$name])) foreach ($arr[$name] as $key=>$element) {
@@ -223,6 +251,7 @@ final class Request {
 	            $result = $arr[$name];
 	            if (!($mask&_MOS_NOTRIM)) $result = trim($result);
 	            if (!is_numeric($result)) {
+					$result = urldecode($result);
 	            	if (get_magic_quotes_gpc() AND !($mask & _MOS_NOSTRIP)) $result = stripslashes($result);
 	                if (!($mask&_MOS_ALLOWRAW) AND is_numeric($def)) $result = $def;
 	            }

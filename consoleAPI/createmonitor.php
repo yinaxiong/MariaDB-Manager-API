@@ -29,12 +29,9 @@ class SkyConsoleAPI {
 			$insert = $this->db->prepare("INSERT INTO Monitors (MonitorID, Name, Description, SQL, delta, MonitorType, SystemAverage, ChartType, Interval) 
 														VALUES (null,'$name','$description','$sql','$delta','SQL','$average','LineChart','$interval')");        	
         	$insert->execute();
-        	$rowID = $this->db->lastInsertId();
-			$update = $this->db->prepare("UPDATE Monitors SET MonitorID=".$rowID." WHERE rowid=".$rowID);        	
-			$update->execute();	
 
         	$result = array(
-            	"id" => $rowID,
+            	"id" => $this->db->lastInsertId(),
         	);
 			
         	sendResponse(200, json_encode($result));
@@ -48,5 +45,3 @@ class SkyConsoleAPI {
 // This is the first thing that gets called when this page is loaded
 $api = new SkyConsoleAPI;
 $api->createMonitor();
- 
-?>

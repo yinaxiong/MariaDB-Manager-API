@@ -42,7 +42,7 @@ class Systems extends ImplementAPI {
 	}
 	
 	public function getAllData () {
-		if ('id' == @$_GET['show']) {
+		if ('id' == $this->getParam('GET', 'show')) {
 			$systems = $this->db->query('SELECT SystemID FROM System');
 			$this->sendResponse(array("systems" => $systems->fetchAll(PDO::FETCH_COLUMN)));
 		}
@@ -59,13 +59,12 @@ class Systems extends ImplementAPI {
 	}
 	
 	public function createSystem () {
-		$parms = json_decode(file_get_contents("php://input"), true);
-		$name = $parms['name'];
-		$start = strtotime($parms['startDate']);
+		$name = $this->getParam('PUT', 'name');
+		$start = strtotime($this->getParam('PUT', 'startDate'));
 		$initialstart = date('Y-m-d H:i:s', ($start ? $start : time()));
-		$access = strtotime($parms['lastAccess']);
+		$access = strtotime($this->getParam('PUT', 'lastAccess'));
 		$lastaccess = date('Y-m-d H:i:s', ($access ? $access : time()));
-		$state = $parms['state'];
+		$state = $this->getParam('PUT', 'state');
 		$insert = $this->db->prepare('INSERT INTO System (SystemName, InitialStart, LastAccess, State) 
 			VALUES (:systemname, :initialstart, :lastaccess, :state)');
 		$insert->execute(array(
@@ -95,7 +94,7 @@ class Systems extends ImplementAPI {
 	public function setSystemProperty ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$property = $uriparts[3];
-		$value = file_get_contents("php://input");
+		$value = $this->getParam('PUT', 'alldata');
 		$pstatement = $this->db->prepare('REPLACE INTO SystemProperties
 			(SystemID, Property, Value) VALUES(:systemid, :property, :value)');
 		$pstatement->execute(array(
@@ -103,7 +102,6 @@ class Systems extends ImplementAPI {
 			':property' => $property,
 			':value' => $value
 		));
-		//parse_str(file_get_contents("php://input"),$post_vars);
 		$this->sendResponse(array(
 			'id' => $systemid,
 			'property' => $property,

@@ -1,5 +1,8 @@
 <?php
 
+// During testing, better to see errors:
+ini_set('display_errors', 1);
+
 // Helper method to get a string description for an HTTP status code
 // From http://www.gen-x-design.com/archives/create-a-rest-api-with-php/ 
 function getStatusCodeMessage($status)

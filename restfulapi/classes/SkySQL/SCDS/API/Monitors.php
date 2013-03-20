@@ -35,7 +35,7 @@ final class Monitors extends ImplementAPI {
 	protected $nodeid = 0;
 	protected $monitorid = 0;
 	
-	public function getClasses ($uriparts) {
+	public function getMonitorClasses ($uriparts) {
 		$where[] = 'UIOrder IS NOT NULL';
 		if (!empty($uriparts[1])) {
 			if (preg_match('/[0-9]+/', $uriparts[1])) {
@@ -50,12 +50,56 @@ final class Monitors extends ImplementAPI {
 		else $bind = array();
 		$query = $this->db->prepare("SELECT MonitorID AS id, Name AS name, SQL AS sql,
 			Description AS description, Icon AS icon, ChartType AS type, UIOrder AS uiorder,
-			delta, MonitorType AS monitortype, SystemAverage AS systemaverage FROM Monitors
+			delta, MonitorType AS monitortype, SystemAverage AS systemaverage,
+			Interval AS interval, Unit AS unit FROM Monitors
 			WHERE ".implode(' AND ', $where)." ORDER BY UIOrder");
 		$query->execute($bind);
-		$types = $query->fetchAll(PDO::FETCH_ASSOC);
-		if (isset($_GET['show'])) $types = $this->filterResults($types, $_GET['show']);
+		$types = $this->filterResults($query->fetchAll(PDO::FETCH_ASSOC));
         $this->sendResponse(array('monitorclasses' => $types));
+	}
+	
+	public function createMonitorClass () {
+		$query = $this->db->prepare("INSERT INTO Monitors (Name, SQL, Description,
+			Icon, ChartType, UIOrder, delta, MonitorType, SystemAverage, Interval, Unit)
+			VALUES (:name, :sql, :description, :icon, :type, :uiorder,
+			:delta, :monitortype, :systemaverage, :interval, :unit)");
+		$query->execute($this->monitorBind());
+		$this->sendResponse();
+	}
+	
+	public function updateMonitorClass ($uriparts) {
+		$this->monitorid = $uriparts[0];
+		$query = $this->db->prepare("UPDATE Monitors SET Name = :name, SQL = :sql,
+			Description = :description, Icon = :icon, ChartType = :type, UIOrder = :uiorder,
+			delta = :delta, MonitorType = :monitortype, SystemAverage = :systemaverage,
+			Interval = :interval, Unit = :unit FROM Monitors
+			WHERE MonitorID = :monitorid");
+		$query->execute($this->monitorBind($this->monitorid));
+		$this->sendResponse();
+	}
+	
+	public function deleteMonitorClass ($uriparts) {
+		$this->monitorid = $uriparts[0];
+		$query = $this->db->prepare('DELETE FROM Monitors WHERE MonitorID = :monitorid');
+		$query->execute(array(':monitorid' => $this->monitorid));
+	}
+	
+	protected function monitorBind ($monitorid=0) {
+		$bind = array(
+			':name' => $this->getParam('PUT','name'), 
+			':sql' => $this->getParam('PUT','sql'), 
+			':description' => $this->getParam('PUT','description'), 
+			':icon' => $this->getParam('PUT','icon'), 
+			':type' => $this->getParam('PUT','type'), 
+			':uiorder' => $this->getParam('PUT','uiorder'),
+			':delta' => $this->getParam('PUT','delta'), 
+			':monitortype' => $this->getParam('PUT','monitortype'), 
+			':systemaverage' => $this->getParam('PUT','systemaverage'), 
+			':interval' => $this->getParam('PUT','interval'), 
+			':unit' => $this->getParam('PUT','unit')
+		);
+		if ($monitorid) $bind[':systemid'] = $monitorid;
+		return $bind;
 	}
 	
 	public function storeSameMonitorData ($uriparts) {
@@ -75,25 +119,23 @@ final class Monitors extends ImplementAPI {
 	
 	public function storeNewMonitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'storeNewMonitorData');
-		$params = json_decode(file_get_contents("php://input"), true);
-		if (!isset($params['value'])) $this->returnErrorResponse('Inserting monitor data but no value supplied', 400);
+		$value = $this->getParam('PUT', 'value');
 		$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Start, Latest)
 			VALUES (:systemid, :nodeid, :monitorid, :value, datetime('now'), datetime('now')");
 		$store->execute(array(
 				':monitorid' => $this->monitorid,
 				':systemid' => $this->systemid,
 				':nodeid' => $this->nodeid,
-				':value' => $params['value']
+				':value' => $value
 		));
 	}
 	
 	public function monitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
-		$unixtime = strtotime(empty($_GET['time']) ? $this->getLatestTime() : $_GET['time']);
-		$interval = empty($_GET['interval']) ? 0 : (int) $_GET['interval'];
-		if (!$interval) $interval = 30;
-		$count = empty($_GET['count']) ? 0 : (int) $_GET['count'];
-		if (!$count) $count = 15;
+		$timeparm = $this->getParam('GET', 'time');
+		$unixtime = strtotime(empty($timeparm) ? $this->getLatestTime() : $timeparm);
+		$interval = $this->getParam('GET', 'interval', 30);
+		$count = $this->getParam('GET', 'count', 15);
 		$monitorinfo = $this->db->prepare('SELECT Value AS value, Start AS start, Latest AS latest
 			FROM MonitorData WHERE MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid
 			AND Start < :time AND Latest >= :time');

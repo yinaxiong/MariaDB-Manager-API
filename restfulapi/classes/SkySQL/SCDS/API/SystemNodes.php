@@ -62,7 +62,7 @@ class SystemNodes extends ImplementAPI {
 			FROM NodeStates".$condition);
 		$query->execute($bind);
 		$states = $query->fetchAll(PDO::FETCH_ASSOC);
-		if (isset($_GET['show'])) $states = $this->filterResults($states, $_GET['show']);
+		$states = $this->filterResults($states);
         $this->sendResponse(array('nodestates' => $states));
 	}
 	
@@ -74,7 +74,7 @@ class SystemNodes extends ImplementAPI {
 			FROM Node LEFT JOIN NodeData ON Node.NodeID = NodeData.NodeID WHERE Node.SystemID = :systemID');
 		$statement->execute(array(':systemID' => $this->systemid));
 		$nodes = $statement->fetchAll(PDO::FETCH_ASSOC);
-		if (isset($_GET['show'])) $nodes = $this->filterResults($nodes, $_GET['show']);
+		$nodes = $this->filterResults($nodes);
 		$this->sendResponse(array('nodes' => $nodes));
 	}
 	
@@ -93,10 +93,8 @@ class SystemNodes extends ImplementAPI {
 			$node['packets'] = $this->getPackets();
 			$node['health'] = $this->getHealth();
 			list($node['task'], $node['command']) = $this->getCommand();
-			if (isset($_GET['show'])) {
-				$nodes = $this->filterResults(array($node), $_GET['show']);
-				$node = $nodes[0];
-			}
+			$nodes = $this->filterResults(array($node));
+			$node = $nodes[0];
 			$this->sendResponse(array('node' => $node));
 		}
 		else $this->sendErrorResponse('', 404);
@@ -105,13 +103,13 @@ class SystemNodes extends ImplementAPI {
 	public function createSystemNode ($uriparts) {
 		$this->systemid = $uriparts[1];
 		if (!$this->validateSystem()) $this->sendErrorResponse('Create node gave non-existent system ID '.$this->systemid, 400);
-		$parms = json_decode(file_get_contents("php://input"), true);
-		$name = $parms['name'];
+		$name = $this->getParam('PUT', 'name');
+		$state = $this->getParam('PUT', 'state', 0);
 		$insert = $this->db->prepare('INSERT INTO Node (SystemID, NodeName, State) VALUES (:systemid, :name, :state)');
 		$insert->execute(array(
 			':systemid' => $this->systemid,
 			':name' => $name,
-			':state' => (int) @$parms['state']
+			':state' => $state
 		));
 		$nodeid = $this->db->lastInsertId();
 		if (!$name) {

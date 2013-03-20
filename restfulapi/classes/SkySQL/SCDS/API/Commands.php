@@ -34,9 +34,10 @@ use \PDO as PDO;
 class Commands extends ImplementAPI {
 
 	public function getCommands () {
-		if (isset($_GET['group'])) {
+		$group = $this->getParam('GET', 'group');
+		if ($group) {
 			$statement = $this->db->prepare("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon FROM Commands WHERE UIOrder IS NOT NULL AND UIGroup = :group ORDER BY UIOrder");
-			$commands = $statement->execute(array(':group' => $_GET['group']));
+			$commands = $statement->execute(array(':group' => $group));
 		}
 		else $commands = $this->db->query("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon FROM Commands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
 		$results = $commands->fetchAll(PDO::FETCH_ASSOC);

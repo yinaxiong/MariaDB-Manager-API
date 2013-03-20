@@ -36,8 +36,8 @@ class RunSQL extends ImplementAPI {
 
     public function runQuery () {
         try {
-            if (isset($_GET["sql"])) $query = urldecode($_GET["sql"]);
-            else throw new PDOException('No query provided');
+			$query = $this->getParam('GET', 'sql');
+            if (!$query) throw new PDOException('No query provided');
             if (strcasecmp('SELECT ', substr($query,0,7)) AND strcasecmp('SHOW ', substr($query,0,5))) {
 				throw new PDOException('Query is not a SELECT or SHOW statement');
 			}
@@ -56,9 +56,10 @@ class RunSQL extends ImplementAPI {
     }
 
 	protected function getHostData () {
-		if (!empty($_GET['node'])) {
+		$node = $this->getParam('GET', 'node', 0);
+		if ($node) {
 			$statement = $this->db->prepare("SELECT Hostname, Username, passwd FROM NodeData WHERE NodeID = :node");
-			$statement->execute(array(':node' => (int) $_GET['node']));
+			$statement->execute(array(':node' => $node));
 			$noderecord = $statement->fetch(PDO::FETCH_OBJ);
 			if ($noderecord) return $noderecord;
 		}

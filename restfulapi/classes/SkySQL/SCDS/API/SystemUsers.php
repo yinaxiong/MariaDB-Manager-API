@@ -39,37 +39,59 @@ class SystemUsers extends ImplementAPI {
         $this->sendResponse($result);
 	}
 	
-	public function createUser ($uriparts) {
+	public function putUser ($uriparts) {
 		$username = @urldecode($uriparts[1]);
 		if (!preg_match('/^[A-Za-z0-9_]+$/', $username)) {
 			$errors[] = "User name must only contain alphameric and underscore, $username submitted";
 		}
-		$parms = json_decode(file_get_contents("php://input"));
-		if (!$parms) $errors[] = 'No valid parameters provided for create user '.$username;
-		$name = @$parms->name;
-		$password = @$parms->password;
-		if (!$password) $errors[] = 'No password provided for create user '.$username;
-		if (isset($errors)) {
-			$this->sendErrorResponse($errors, 400);
-			exit;
+		$name = $this->getParam('PUT', 'name');
+		$password = $this->getParam('PUT', 'password');
+		$salt = $this->getSalt($username);
+		if ($salt) {
+			$this->db->query('BEGIN IMMEDIATE TRANSACTION');
+			$result['username'] = $username;
+			if ($name) {
+				$sets[] = 'Name = :name';
+				$bind[':name'] = $name;
+				$result['name'] = $name;
+				
+			}
+			if ($password) {
+				$sets[] = 'Password = :password';
+				$bind[':password'] = sha1($salt.$password);
+			}
+			if (isset($sets)) {
+				$bind[':username'] = $username;
+				$query = $this->db->prepare('UPDATE Users SET '.implode(', ', $sets).' WHERE UserName = :username');
+				$query->execute($bind);
+			}
+			$this->db->query('COMMIT TRANSACTION');
+			$this->sendResponse($result);
 		}
-		$salt = $this->makeSalt();
-		$passwordhash = sha1($salt.$password);
-		try {
-			$query = $this->db->prepare("INSERT INTO Users (UserName, Name, Password, Salt) VALUES (:username, :name, :password, :salt)");
-			$query->execute(array(
-				':username' => $username,
-				':name' => $name,
-				':password' => $passwordhash,
-				':salt' => $salt
-			));
-			$this->sendResponse(array('username' => $username, 'name' => $name));
-		}
-		catch (PDOException $pe) {
-			$this->sendErrorResponse('User insertion failed - perhaps username is a duplicate', 409, $pe);
+		else {
+			if (!$password) $errors[] = 'No password provided for create user '.$username;
+			if (isset($errors)) {
+				$this->sendErrorResponse($errors, 400);
+				exit;
+			}
+			$salt = $this->makeSalt();
+			$passwordhash = sha1($salt.$password);
+			try {
+				$query = $this->db->prepare("INSERT INTO Users (UserName, Name, Password, Salt) VALUES (:username, :name, :password, :salt)");
+				$query->execute(array(
+					':username' => $username,
+					':name' => $name,
+					':password' => $passwordhash,
+					':salt' => $salt
+				));
+				$this->sendResponse(array('username' => $username, 'name' => $name));
+			}
+			catch (PDOException $pe) {
+				$this->sendErrorResponse('User insertion failed unexpectedly', 500, $pe);
+			}
 		}
 	}
-
+		
 	protected function makeSalt () {
 		return $this->makeRandomString(24);
 	}
@@ -91,9 +113,7 @@ class SystemUsers extends ImplementAPI {
 	public function loginUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
 		$password = isset($_POST['password']) ? $_POST['password'] : '';
-		$saltquery = $this->db->prepare('SELECT Salt FROM Users WHERE UserName = :username');
-		$saltquery->execute(array(':username' => $username));
-		$salt = $saltquery->fetch(PDO::FETCH_COLUMN);
+		$salt = $this->getSalt($username);
 		$passwordhash = sha1($salt.$password);
 		$query = $this->db->prepare('SELECT COUNT(*) FROM Users WHERE UserName = :username AND Password = :password');
 		$query->execute(array(
@@ -102,5 +122,11 @@ class SystemUsers extends ImplementAPI {
 		));
 		if ($query->fetch(PDO::FETCH_COLUMN)) $this->sendResponse('ok');
 		else $this->sendErrorResponse('Login failed', 409);
+	}
+	
+	protected function getSalt ($username) {
+		$saltquery = $this->db->prepare('SELECT Salt FROM Users WHERE UserName = :username');
+		$saltquery->execute(array(':username' => $username));
+		return $saltquery->fetch(PDO::FETCH_COLUMN);
 	}
 }

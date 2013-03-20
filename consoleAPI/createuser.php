@@ -20,26 +20,36 @@ class SkyConsoleAPI {
 
 		if (isset($_GET["system"]) && isset($_GET["name"]) && isset($_GET["password"])) {
 			$system = $_GET["system"];
-			$name = $_GET["name"];
+			$username = $_GET["name"];
 			$password = $_GET["password"];
 
-			$insert = $this->db->prepare("INSERT INTO Users (UserID, UserName,Password) VALUES(null,'$name','$password')");        	
-        	$insert->execute();
-        	$rowID = $this->db->lastInsertId();
-		
-			$update = $this->db->prepare("UPDATE Users SET UserID=".$rowID." WHERE rowid=".$rowID);        	
-			$update->execute();	
-
-        	$result = array(
-            	"id" => $rowID,
-        	);
-			
-        	sendResponse(200, json_encode($result));
-        	return true;
+			$salt = $this->makeSalt();
+			$passwordhash = sha1($salt.$password);
+			try {
+				$query = $this->db->prepare("INSERT INTO Users (UserName, Password, Salt) VALUES (:username, :password, :salt)");
+				$query->execute(array(
+					':username' => $username,
+					':password' => $passwordhash,
+					':salt' => $salt
+				));
+				sendResponse(200, json_encode(array('id' => $this->db->lastInsertId())));
+			}
+			catch (PDOException $pe) {
+				sendResponse(409, json_encode(array('error' => 'User insertion failed - perhaps username is a duplicate')));
+			}
         }
         
     }
         
+	protected function makeSalt () {
+		return $this->makeRandomString(24);
+	}
+	
+	protected function makeRandomString ($length=8) {
+		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!%,-:;@_{}~";
+		for ($i = 0, $makepass = '', $len = strlen($chars); $i < $length; $i++) $makepass .= $chars[mt_rand(0, $len-1)];
+		return $makepass;
+	}
 }
 
 // This is the first thing that gets called when this page is loaded

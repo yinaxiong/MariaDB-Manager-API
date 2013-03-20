@@ -37,14 +37,18 @@ abstract class ImplementAPI {
 		$this->requestor = $requestor;
 	}
 	
-	protected function getParam ($arr, $name, $def=null, $mask=0) {
-		return $this->requestor->getParam($arr, $name, $def, $mask);
+	protected function getParam ($arrname, $name, $def=null, $mask=0) {
+		return $this->requestor->getParam($arrname, $name, $def, $mask);
 	}
 	
-	protected function filterResults ($results, $filter) {
-		$filterwords = explode(',', $filter);
-		foreach ($results as $key=>$value) $filtered[$key] = $this->filterWords($value, $filterwords);
-		return $filtered;
+	protected function filterResults ($results) {
+		$filter = $this->getParam('GET', 'show');
+		if ($filter) {
+			$filterwords = explode(',', $filter);
+			foreach ($results as $key=>$value) $filtered[$key] = $this->filterWords($value, $filterwords);
+			return $filtered;
+		}
+		else return $results;
 	}
 	
 	protected function filterWords ($value, $words) {

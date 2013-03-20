@@ -59,8 +59,8 @@ class SystemBackups extends ImplementAPI {
 	}
 	
 	protected function getDate ($datename) {
-		if (isset($_GET[$datename])) {
-			$date = urldecode($_GET[$datename]);
+		$date = $this->getParam('GET', $datename);
+		if ($date) {
 			$time = strtotime($date);
 			if ($time) return date('d M Y H:i:s');
 			else $this->errors[] = "Invalid $datename date: $date";
