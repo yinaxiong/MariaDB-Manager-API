@@ -31,10 +31,13 @@ use SkySQL\COMMON\AdminDatabase;
 abstract class ImplementAPI {
 	protected $db = null;
 	protected $requestor = null;
+	protected $transact = false;
+        protected $config = array();
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
 		$this->requestor = $requestor;
+                $this->config = $requestor->getConfig();
 	}
 	
 	protected function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -42,7 +45,7 @@ abstract class ImplementAPI {
 	}
 	
 	protected function filterResults ($results) {
-		$filter = $this->getParam('GET', 'show');
+		$filter = $this->getParam('GET', 'fields');
 		if ($filter) {
 			$filterwords = explode(',', $filter);
 			foreach ($results as $key=>$value) $filtered[$key] = $this->filterWords($value, $filterwords);
@@ -56,11 +59,18 @@ abstract class ImplementAPI {
 		return empty($hits) ? null : (1 < count($hits) ? $hits : $hits[0]);
 	}
 	
+	protected function startImmediateTransaction () {
+		$this->db->query('BEGIN IMMEDIATE TRANSACTION');
+		$this->transact = true;
+	}
+	
 	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
+		if ($this->transact) $this->db->query('COMMIT TRANSACTION');
 		return $this->requestor->sendResponse($body, $status, $content_type);
 	}
 
 	protected function sendErrorResponse ($errors, $status=200, $content_type='application/json') {
+		if ($this->transact) $this->db->query('COMMIT TRANSACTION');
 		return $this->requestor->sendErrorResponse($errors, $status, $content_type);
 	}
 	

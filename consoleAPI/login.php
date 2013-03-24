@@ -68,5 +68,3 @@ class SkyConsoleAPI {
 // This is the first thing that gets called when this page is loaded
 $api = new SkyConsoleAPI;
 $api->commands();
- 
-?>

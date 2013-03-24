@@ -29,7 +29,6 @@
 namespace SkySQL\SCDS\API;
 
 use \PDO;
-use \PDOException;
 
 class Tasks extends ImplementAPI {
 	protected static $base = 'SELECT CE.TaskID AS id, CE.NodeID AS node, CE.CommandID AS command, 
@@ -43,7 +42,7 @@ class Tasks extends ImplementAPI {
 		$this->queryResults($statement);
 	}
 	
-	public function getTasks ($uriparts) {
+	public function getTasks () {
 		$sql = self::$base;
 		$bind = array();
 		$status = $this->getParam('GET', 'status', 0);
@@ -79,24 +78,21 @@ class Tasks extends ImplementAPI {
 		$userid = $this->getParam('POST', 'user', 0);
 		if ($systemid AND $nodeid AND $userid) {
 			$params = urldecode($this->getParam('POST', 'params'));
-			$now = new DateTime("now", new DateTimeZone(API_TIME_ZONE));
-			$time = $now->format('Y-m-d H:i:s');
 			$insert = $this->db->prepare("INSERT INTO CommandExecution 
 				(SystemID, NodeID, CommandID, Params, Start, Completed, StepIndex, State, UserID) 
-				VALUES (:systemid, :nodeid, :commandid, :params, :start, :completed, :stepindex, :state, :userid)");
+				VALUES (:systemid, :nodeid, :commandid, :params, datetime('now'), :completed, :stepindex, :state, :userid)");
 			$insert->execute(array(
 				':systemid' => $systemid,
 				':nodeid' => $nodeid,
-				':commandid' => $commandid,
+				':commandid' => $command,
 				':params' => $params,
-				':start' => $time,
 				':completed' => null,
 				':stepindex' => 0,
 				':state' => 0,
 				':userid' => $userid
 			));
         	$rowID = $this->db->lastInsertId();
-        	$cmd = API_SHELL_PATH."RunCommand.sh $rowID \"".ADMIN_DATABASE_PATH.'" > /dev/null 2>&1 &';
+        	$cmd = $this->config['shell']['path']."RunCommand.sh $rowID \"".$this->config['database']['path'].'" > /dev/null 2>&1 &';
         	exec($cmd);
         	$this->sendResponse(array('task' => $rowID));
 		}

@@ -42,7 +42,7 @@ class Systems extends ImplementAPI {
 	}
 	
 	public function getAllData () {
-		if ('id' == $this->getParam('GET', 'show')) {
+		if ('id' == $this->getParam('GET', 'fields')) {
 			$systems = $this->db->query('SELECT SystemID FROM System');
 			$this->sendResponse(array("systems" => $systems->fetchAll(PDO::FETCH_COLUMN)));
 		}
@@ -58,28 +58,34 @@ class Systems extends ImplementAPI {
 		else $this->sendErrorResponse('', 404);
 	}
 	
-	public function createSystem () {
+	public function putSystem ($uriparts) {
+		$systemid = $uriparts[0];
+		if (!$systemid) $this->sendErrorResponse('Creating a system with ID of zero is not permitted', 400);
 		$name = $this->getParam('PUT', 'name');
+		if (!$name) $name = 'System '.sprintf('%06d', $systemid);
 		$start = strtotime($this->getParam('PUT', 'startDate'));
 		$initialstart = date('Y-m-d H:i:s', ($start ? $start : time()));
 		$access = strtotime($this->getParam('PUT', 'lastAccess'));
 		$lastaccess = date('Y-m-d H:i:s', ($access ? $access : time()));
 		$state = $this->getParam('PUT', 'state');
-		$insert = $this->db->prepare('INSERT INTO System (SystemName, InitialStart, LastAccess, State) 
-			VALUES (:systemname, :initialstart, :lastaccess, :state)');
-		$insert->execute(array(
+		$update = $this->db->prepare('UPDATE System SET SystemName = :systemname, InitialStart = :initialstart,
+			LastAccess = :lastaccess, State = :state WHERE SystemID = :systemid');
+		$update->execute(array(
 			':systemname' => ($name ? $name : 'System nnnnnn'),
 			':initialstart' => $initialstart,
 			':lastaccess' => $lastaccess,
-			':state' => $state
+			':state' => $state,
+			':systemid' => $systemid
 		));
-		$systemid = $this->db->lastInsertId();
-		if (!$name) {
-			$name = 'System '.sprintf('%06d', $systemid);
-			$update = $this->db->prepare('UPDATE System SET SystemName = :systemname WHERE SystemID = :systemid');
-			$update->execute(array(
-				':systemname' => $name,
-				':systemid' => $systemid
+		if (0 == $update->rowCount()) {
+			$insert = $this->db->prepare('INSERT INTO System (SystemID, SystemName, InitialStart, LastAccess, State) 
+				VALUES (:systemid, :systemname, :initialstart, :lastaccess, :state)');
+			$insert->execute(array(
+				':systemid' => $systemid,
+				':systemname' => ($name ? $name : 'System nnnnnn'),
+				':initialstart' => $initialstart,
+				':lastaccess' => $lastaccess,
+				':state' => $state,
 			));
 		}
 		$this->sendResponse(array('system' => array(
@@ -89,6 +95,12 @@ class Systems extends ImplementAPI {
 			'lastAccess' => $lastaccess,
 			'state' => $state
 		)));
+	}
+	
+	public function deleteSystem ($uriparts) {
+		$systemid = $uriparts[0];
+		$delete = $this->db->prepare('DELETE FROM System WHERE SystemID = :systemid');
+		$delete->execute(array(':systemid' => $systemid));
 	}
 	
 	public function setSystemProperty ($uriparts) {

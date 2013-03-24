@@ -40,22 +40,39 @@ class SystemBackups extends ImplementAPI {
 
 	public function getSystemBackups ($uriparts) {
 		$systemid = (int) $uriparts[1];
+		$limit = $this->getParam('GET', 'limit', 10);
+		$offset = $this->getParam('GET', 'offset', 0);
 		$fromdate = $this->getDate('from');
 		$todate = $this->getDate('to');
-		$query = "SELECT rowid AS id, NodeID as node, BackupLevel AS level, State AS status,
+		$mainquery = "SELECT rowid AS id, NodeID as node, BackupLevel AS level, State AS status,
 			Size AS size, Started AS started, Updated AS updated, Restored AS restored,
 			Storage AS storage, Log AS log, ParentID AS parent FROM Backup WHERE ";
-		$where[] = "SystemID=$systemid";
-		if ($fromdate) $where[] = "started >= :fromdate";
-		if ($todate) $where[] = "started <= :todate";
+		$where[] = "SystemID = :systemid";
+		$bind[':systemid'] = $systemid;
+		if ($fromdate) {
+			$where[] = "started >= :fromdate";
+			$bind[':fromdate'] = $fromdate;
+		}
+		if ($todate) {
+			$where[] = "started <= :todate";
+			$bind[':todate'] = $todate;
+		}
 		if (count($this->errors)) {
 			$this->sendErrorResponse($this->errors, 400);
 			exit;
 		}
-		$statement = $this->db->prepare($query.implode(' AND ', $where));
-		if ($fromdate) $statement->bindValue(':fromdate', $fromdate);
-		if ($todate) $statement->bindValue(':todate', $todate);
-        $this->sendResponse(array("backups" => $statement->fetchALL(PDO::FETCH_ASSOC)));
+		$conditions = implode(' AND ', $where);
+		$mainquery .= $conditions;
+		if ($limit) {
+			$totaller = $this->db->prepare('SELECT COUNT(*) FROM Backup WHERE '.$conditions);
+			$totaller->execute($bind);
+			$results['total'] = $totaller->fetch(PDO::FETCH_COLUMN);
+			$mainquery .= " LIMIT $limit OFFSET $offset";
+		}
+		$statement = $this->db->prepare($mainquery);
+		$statement->execute($bind);
+		$results['backups'] = $statement->fetchALL(PDO::FETCH_ASSOC);
+        $this->sendResponse($results);
 	}
 	
 	protected function getDate ($datename) {
@@ -69,26 +86,35 @@ class SystemBackups extends ImplementAPI {
 	
 	public function makeSystemBackup ($uriparts) {
 		$systemid = (int) $uriparts[1];
-		if (isset($_POST['node'])) $node = (int) $_POST['node'];
-		else $errors[] = 'No value provided for node when requesting system backup';
-		if (isset($_POST['level'])) $level = (int) $_POST['level'];
-		else $errors[] = 'No value provided for level when requesting system backup';
-		if (isset($_POST['parent'])) $parent = (int) $_POST['parent'];
-		else $errors[] = 'No value provided for parent when requesting system backup';
+		$node = $this->getParam('POST', 'node', 0);
+		if (!$node) $errors[] = 'No value provided for node when requesting system backup';
+		$level = $this->getParam('POST', 'level', 0);
+		if (!$level) $errors[] = 'No value provided for level when requesting system backup';
+		$parent = $this->getParam('POST', 'parent');
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)
-			VALUES(:systemid, :nodeid, :level, :started, :parent");
+			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent");
 		try {
 			$query->execute(array(
 				':systemid' => $systemid,
 				':nodeid' => $node,
 				':level' => $level,
-				':started' => $time,
 				':parent' => $parent
 			));
-			$rowid = $this->db->lastInsertId();
+			$result[id] = $this->db->lastInsertId();
+			// Extra work for incremental backup
+			if (2 == $level) {
+				$getlog = $this->db->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
+					WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupLevel = 1');
+				$getlog->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $node
+				));
+				$result['binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
+			}
+			$this->sendResponse($result);
 		}
-		catch (PDOException $p) {
+		catch (PDOException $pe) {
 			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $node, level $level, parent $parent", 500, $pe);
 		}
 	}

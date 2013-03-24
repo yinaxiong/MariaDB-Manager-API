@@ -100,31 +100,37 @@ class SystemNodes extends ImplementAPI {
 		else $this->sendErrorResponse('', 404);
 	}
 	
-	public function createSystemNode ($uriparts) {
+	public function putSystemNode ($uriparts) {
 		$this->systemid = $uriparts[1];
 		if (!$this->validateSystem()) $this->sendErrorResponse('Create node gave non-existent system ID '.$this->systemid, 400);
+		$this->nodeid = $uriparts[3];
+		if (!$this->nodeid) $this->sendErrorResponse('Cannot create or update node with ID of zero', 400);
 		$name = $this->getParam('PUT', 'name');
+		if (!$name) $name = 'Node '.sprintf('%06d', $this->nodeid);
 		$state = $this->getParam('PUT', 'state', 0);
-		$insert = $this->db->prepare('INSERT INTO Node (SystemID, NodeName, State) VALUES (:systemid, :name, :state)');
-		$insert->execute(array(
-			':systemid' => $this->systemid,
+		$update = $this->db->prepare('UPDATE Node SET NodeName = :name, State = :state
+			WHERE SystemID = :systemid AND NodeID = :nodeid');
+		$update->execute(array(
 			':name' => $name,
-			':state' => $state
+			':state' => $state,
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid
 		));
-		$nodeid = $this->db->lastInsertId();
-		if (!$name) {
-			$name = 'Node '.sprintf('%06d', $nodeid);
-			$update = $this->db->prepare('UPDATE Node SET NodeName = :nodename WHERE NodeID = :nodeid');
-			$update->execute(array(
-				':nodename' => $name,
-				':nodeid' => $nodeid
+		if (0 == $update->rowCount()) {
+			$insert = $this->db->prepare('INSERT INTO Node (SystemID, NodeID, NodeName, State) 
+				VALUES (:systemid, :nodeid, :name, :state)');
+			$insert->execute(array(
+				':systemid' => $this->systemid,
+				':nodeid' => $this->nodeid,
+				':name' => $name,
+				':state' => $state
 			));
 		}
 		$this->sendResponse(array('node' => array(
-			'node' => $nodeid,
+			'node' => $this->nodeid,
 			'system' => $this->systemid,
 			'name' => $name,
-			'status' => (int) $parms['state']
+			'status' => $state
 		)));
 	}
 	

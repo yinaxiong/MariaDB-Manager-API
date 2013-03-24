@@ -32,6 +32,7 @@
 
 namespace SkySQL\COMMON;
 use SkySQL\SCDS\API\api;
+use SkySQL\SCDS\API\Request;
 
 use SkySQL\COMMON\AdminDatabase;
 use \PDOException;
@@ -127,9 +128,10 @@ final class ErrorRecorder  {
 			':dbtrace' => $dbtrace,
 			':errorkey' => $errorkey
 		));
-		if (ADMIN_ERROR_NOTIFY_EMAIL) {
+		$config = Request::getInstance()->getConfig();
+		if ($config['logging']['erroremail']) {
 			$headers = 'From: SkySQL Cloud Data Suite <no-reply@skysql.com>' . "\r\n";
-			mail(ADMIN_ERROR_NOTIFY_EMAIL, 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
+			mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
 		}
 		$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");
 	}

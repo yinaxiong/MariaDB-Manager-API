@@ -29,16 +29,19 @@
 namespace SkySQL\COMMON;
 
 use \PDO;
+use SkySQL\SCDS\API\Request;
 
 class AdminDatabase {
-	protected static $instance = null;
-	protected $pdo = null;
-	protected $sql = '';
-	protected $trace = '';
-	protected $lastcall = '';
+    protected static $instance = null;
+    protected $pdo = null;
+    protected $sql = '';
+    protected $trace = '';
+    protected $lastcall = '';
 	
-	protected function __construct () {
-		$this->pdo = new PDO(ADMIN_DATABASE_CONNECTION, ADMIN_DATABASE_USER, ADMIN_DATABASE_PASSWORD);
+    protected function __construct () {
+        $config = Request::getInstance()->getConfig();
+		$dbconfig = $config['database'];
+		$this->pdo = new PDO($dbconfig['pdoconnect'], $dbconfig['user'], $dbconfig['password']);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 	}

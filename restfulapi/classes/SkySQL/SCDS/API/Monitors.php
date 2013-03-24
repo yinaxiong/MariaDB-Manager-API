@@ -102,32 +102,36 @@ final class Monitors extends ImplementAPI {
 		return $bind;
 	}
 	
-	public function storeSameMonitorData ($uriparts) {
-		$this->analyseMonitorURI($uriparts, 'storeSameMonitorData');
-		if (!isset($_POST['value'])) $this->returnErrorResponse('Updating monitor data but no value supplied', 400);
-		$store = $this->db->prepare("UPDATE MonitorData SET Latest = datetime('now') WHERE
-			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid AND Value = :value
-			AND Start = (SELECT MAX(Start) FROM MonitorData WHERE
-			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid AND Value = :value)");
-		$store->execute(array(
-				':monitorid' => $this->monitorid,
-				':systemid' => $this->systemid,
-				':nodeid' => $this->nodeid,
-				':value' => $_POST['value']
-		));
-	}
-	
-	public function storeNewMonitorData ($uriparts) {
-		$this->analyseMonitorURI($uriparts, 'storeNewMonitorData');
+	public function storeMonitorData ($uriparts) {
+		$this->analyseMonitorURI($uriparts);
 		$value = $this->getParam('PUT', 'value');
-		$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Start, Latest)
-			VALUES (:systemid, :nodeid, :monitorid, :value, datetime('now'), datetime('now')");
-		$store->execute(array(
+		if (!$value) $this->returnErrorResponse('Updating monitor data but no value supplied', 400);
+		
+		$this->db->query('BEGIN EXCLUSIVE TRANSACTION');
+		$update = $this->db->prepare('SELECT Value, rowid FROM MonitorData WHERE
+			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
+			ORDER BY Latest DESC');
+		$update->execute(array(
+			':monitorid' => $this->monitorid,
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid
+		));
+		$lastrecord = $update->fetch();
+		if ($lastrecord->Value == $value) {
+			$store = $this->db->prepare("UPDATE MonitorData SET Latest = datetime('now') WHERE rowid = :rowid");
+			$store->execute(array(':rowid', $lastrecord->rowid));
+		}
+		else {
+			$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Start, Latest)
+				VALUES (:systemid, :nodeid, :monitorid, :value, datetime('now'), datetime('now')");
+			$store->execute(array(
 				':monitorid' => $this->monitorid,
 				':systemid' => $this->systemid,
 				':nodeid' => $this->nodeid,
 				':value' => $value
-		));
+			));
+		}
+		$this->db->query('COMMIT TRANSACTION');
 	}
 	
 	public function monitorData ($uriparts) {
@@ -155,7 +159,7 @@ final class Monitors extends ImplementAPI {
 		
 	}
 	
-	protected function analyseMonitorURI ($uriparts, $method) {
+	protected function analyseMonitorURI ($uriparts) {
 		$this->systemid = $uriparts[1];
 		if ('node' == $uriparts[2]) {
 			$this->nodeid = $uriparts[3];
@@ -165,7 +169,7 @@ final class Monitors extends ImplementAPI {
 			$this->nodeid = 0;
 			$this->monitorid = $uriparts[3];
 		}
-		else $this->sendErrorResponse("Internal contradiction in Monitors->$method", 500);
+		else $this->sendErrorResponse("Internal contradiction in Monitors->storeMonitorData", 500);
 	}
 	
 	protected function getLatestTime () {

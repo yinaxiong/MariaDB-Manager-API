@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Create a User</title>
+  </head>
+  <body>
+	  <h2>Create a User</h2>
+<script>
+var d = new Date();
+alert(GetRFC822Date(d));
+</script>
+	  <form action="http://api.skysql.black-sheep-research.com/user/testuser" method="POST">
+			<p>
+			<label for="name">Personal Name</label>
+			<input type="text" name="name" id="name" /><br />
+			<label for="password">Password</label>
+			<input type="password" name="password" id="name" /><br />
+			<input type="submit" value="Create" />
+			<input type="hidden" name="_method" value="PUT" />
+			</p>
+		</form>
+    <script type="text/javascript" src="http://api.skysql.black-sheep-research.com/apitest.js"></script>
+    </body>
+</html>

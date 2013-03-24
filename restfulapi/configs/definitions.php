@@ -27,16 +27,7 @@
 
 namespace SkySQL\SCDS;
 
-define ('ADMIN_DATABASE_PATH', '/usr/local/skysql/SQLite/AdminConsole/admin'); // The path to the admin DB file
-define ('ADMIN_DATABASE_CONNECTION', 'sqlite:'.ADMIN_DATABASE_PATH); // The admin DB connection string
-define ('ADMIN_DATABASE_USER', ''); // Admin DB user - not required for SQLite
-define ('ADMIN_DATABASE_PASSWORD', ''); // Admin DB password - not required for SQLite
-define ('API_LOG_DIRECTORY', '/usr/local/skysql/log'); // Directory for log file
-define ('ADMIN_ERROR_NOTIFY_EMAIL', 'martin.brampton@skysql.com');
-define ('API_TIME_ZONE', 'Europe/Rome');
-define ('API_SHELL_PATH', 'shell/');
-
-// Used with the getParam method of Request class
+// Can be used with the getParam method of Request class
 define( '_MOS_NOTRIM', 0x0001 );  		// prevent getParam trimming input
 define( '_MOS_ALLOWHTML', 0x0002 );		// cause getParam to allow HTML - purified on user side
 define( '_MOS_ALLOWRAW', 0x0004 );		// suppresses forcing of integer if default is numeric

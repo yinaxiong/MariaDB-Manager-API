@@ -19,55 +19,34 @@ class SkyConsoleAPI {
     function properties() {
 
 		if (isset($_GET["user"])) {
-			$userID = $_GET["user"];
-
-			if (is_null($userID) || empty($userID) || ($userID == "null")) {
-				$user_condition = "UserID IS NULL";
-			} else {
-				$user_condition = "UserID='".$userID."'";
-			}
-								
-			if (isset($_GET["property"]) && isset($_GET["value"])) {
-				$property = $_GET["property"];
-				$value = urldecode($_GET["value"]);
-				
-				$data = $this->db->query("SELECT Value FROM UserProperties WHERE ".$user_condition." AND Property='".$property."'")->fetch();				
-				if (empty($data)) {
-					$insert = $this->db->prepare("INSERT INTO UserProperties (UserID, Property, Value) VALUES($userID, '$property', '$value')");        	
-        			$insert->execute();
-				} else {
-					$update = $this->db->prepare("UPDATE UserProperties SET Value='".$value."' WHERE ".$user_condition." AND Property='".$property."'");        	
-					$update->execute();	
+			$userID = (int) $_GET["user"];
+			$bind[':userid'] = $userID;
+			if (isset($_GET["property"]) AND isset($_GET["value"])) {
+				$bind['property'] = urldecode($_GET["property"]);
+				$bind['value'] = urldecode($_GET["value"]);
+				$update = $this->db->prepare('UPDATE UserProperties SET Value = :value WHERE Property = :property AND UserID = :userid');
+				$update->execute($bind);
+				if (0 == $update->rowCount()) {
+					$insert = $this->db->prepare('INSERT INTO UserProperties (UserID, Property, Value)
+						VALUES (:userid, :property, :value)');
+					$insert->execute($bind);
 				}
-								
        			$result = array(
             		"result" => "ok",
         		);
 			} else {
-				
-				$select = "SELECT * FROM UserProperties WHERE ".$user_condition;
-				$data = $this->db->query($select);
-			
-				foreach ($data as $row) {
-					$property = $row['Property'];
-					$value = $row['Value'];
-					$properties[] = array("property" => $property, "value" => $value);
-				}
-			
+				$select = $this->db->prepare('SELECT Property AS property, Value AS value FROM UserProperties WHERE UserID = :userid');
+				$select->execute($bind);
+				$properties = $select->fetchAll(PDO::FETCH_ASSOC);
        			$result = array(
             		"properties" => $properties,
         		);
         	}
-        	
         	sendResponse(200, json_encode($result));
-        	return true;
         }
     }
-        
 }
 
 // This is the first thing that gets called when this page is loaded
 $api = new SkyConsoleAPI;
 $api->properties();
- 
-?>
