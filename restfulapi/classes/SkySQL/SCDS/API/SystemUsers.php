@@ -40,7 +40,7 @@ class SystemUsers extends ImplementAPI {
 	}
 	
 	public function getUserInfo ($uriparts) {
-		$username = @urldecode($uriparts);
+		$username = @urldecode($uriparts[1]);
 		$getuser = $this->db->prepare('SELECT COUNT(*) AS number, Name FROM Users WHERE UserName = :username');
 		$getuser->execute(array(':username' => $username));
 		$user = $getuser->fetch();
@@ -48,7 +48,7 @@ class SystemUsers extends ImplementAPI {
 			$properties = $this->db->prepare('SELECT up.Property AS property, up.Value AS value
 				FROM UserProperties AS up INNER JOIN Users As u ON up.UserID = u.UserID WHERE u.UserName = :username');
 			$properties->execute(array(':username' => $username));
-			$this->sendResponse(array ('username' => $username, 'name' => $user->name, 'properties' => $properties->fetchAll(PDO::FETCH_ASSOC)));
+			$this->sendResponse(array ('username' => $username, 'name' => $user->Name, 'properties' => $properties->fetchAll(PDO::FETCH_ASSOC)));
 		}
 		else $this->sendErrorResponse('No user found with username '.$username, 404);
 	}

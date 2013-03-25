@@ -108,6 +108,7 @@ class SystemNodes extends ImplementAPI {
 		$name = $this->getParam('PUT', 'name');
 		if (!$name) $name = 'Node '.sprintf('%06d', $this->nodeid);
 		$state = $this->getParam('PUT', 'state', 0);
+		$this->startImmediateTransaction();
 		$update = $this->db->prepare('UPDATE Node SET NodeName = :name, State = :state
 			WHERE SystemID = :systemid AND NodeID = :nodeid');
 		$update->execute(array(

@@ -52,10 +52,12 @@ final class Request {
 		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[SkySQL\COMMON0-9]+/property/[A-Za-z0-9]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'PUT'),
 		array('class' => 'Systems', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'DELETE'),
+		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
 		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => '/backupstate', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
@@ -139,7 +141,6 @@ final class Request {
 	protected $requestmethod = '';
 	protected $requestviapost = false;
 	protected $putdata = '';
-	protected $rawdate = null;
 	protected $rfcdate = '';
 	protected $authorization = '';
 	protected $accept = '';
@@ -168,9 +169,7 @@ final class Request {
 			$this->requestmethod = $_POST['_method'];
 		}
 		else $this->requestmethod = $_SERVER['REQUEST_METHOD'];
-		$this->rawdate = $this->getParam($this->requestmethod, '_unixtime', 0);
-		if ($this->rawdate) $this->rfcdate = date('r', $this->rawdate);
-		else $this->rawdate = $this->rfcdate = @$this->headers['Date'];
+		$this->rfcdate = $this->getParam($this->requestmethod, '_rfcdate', @$this->headers['Date']);
 		$this->authorization = $this->getParam($this->requestmethod, '_authorization', @$this->headers['Authorization']);
 		$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
 		$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
@@ -209,12 +208,12 @@ final class Request {
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', $this->authorization, $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
 				if (isset($this->config['apikeys'][$matches[1]])) {
-					$checkstring = \md5($this->uri.$this->config['apikeys'][@$matches[1]].$this->rawdate);
+					$checkstring = \md5($this->uri.$this->config['apikeys'][@$matches[1]].$this->rfcdate);
 					if ($matches[2] == $checkstring) return;
 				}
 			}
 		}
-		$this->log('Header authorization: '.$this->authorization.' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->rawdate."\n");
+		$this->log('Header authorization: '.$this->authorization.' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->rfcdate."\n");
 		$this->sendErrorResponse('Invalid Authorization header', 401);
 	}
 	

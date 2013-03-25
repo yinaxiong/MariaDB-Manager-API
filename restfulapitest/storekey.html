@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Store the API key</title>
+  </head>
+  <body>
+	  <script type="text/javascript">
+		  alert(localStorage.getItem("myKey"));
+	  </script>
+	  <h2>Store the API key</h2>
+	  <form action="storekey.html" method="POST" onsubmit="keystore()">
+			<p>
+			<label for="key">API Key</label>
+			<input type="text" name="apikey" id="apikey" /><br />
+			<input type="submit" value="Store" />
+			</p>
+		</form>
+	  <script type="text/javascript">
+		  function keystore () {
+			  var key = document.getElementById('apikey').value;
+			  localStorage.setItem("myKey", key);
+			  return false;
+		  }
+	  </script>
+    </body>
+</html>

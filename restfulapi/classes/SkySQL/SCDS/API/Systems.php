@@ -68,6 +68,7 @@ class Systems extends ImplementAPI {
 		$access = strtotime($this->getParam('PUT', 'lastAccess'));
 		$lastaccess = date('Y-m-d H:i:s', ($access ? $access : time()));
 		$state = $this->getParam('PUT', 'state');
+		$this->startImmediateTransaction();
 		$update = $this->db->prepare('UPDATE System SET SystemName = :systemname, InitialStart = :initialstart,
 			LastAccess = :lastaccess, State = :state WHERE SystemID = :systemid');
 		$update->execute(array(

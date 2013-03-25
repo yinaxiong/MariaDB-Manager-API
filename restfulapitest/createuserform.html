@@ -4,24 +4,87 @@
     "DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Create a User</title>
+    <title>Manipulate Users via SCDS API</title>
+	<script type="text/javascript">
+		// NOTE: The URI must have a trailing slash
+		function locateAPI () {
+			return 'http://api.skysql.black-sheep-research.com/';
+		}
+	</script>
   </head>
   <body>
-	  <h2>Create a User</h2>
-<script>
-var d = new Date();
-alert(GetRFC822Date(d));
-</script>
-	  <form action="http://api.skysql.black-sheep-research.com/user/testuser" method="POST">
+	  <h2>User Management via SCDS API</h2>
+	  <p>Using API Key ID: <span id="showapikeyid"></span> with Key: <span id="showapikey"></span></p>
+	  <h3>Get all Users</h3>
+	  <form action="" method="post" id="getuser">
+		<p>
+			<input type="submit" onclick="setUser('getuser');" value="List" />
+			<input type="hidden" name="_method" value="GET" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  <h3>Create or Update a User</h3>
+	  <form action="" method="post" id="putuser">
 			<p>
+			<label for="username">Username</label>
+			<input type="text" name="username" id="username" /><br />
 			<label for="name">Personal Name</label>
 			<input type="text" name="name" id="name" /><br />
 			<label for="password">Password</label>
-			<input type="password" name="password" id="name" /><br />
-			<input type="submit" value="Create" />
+			<input type="text" name="password" id="password" /><br />
+			<input type="submit" onclick="setUserName('putuser');" value="Create or Update" />
 			<input type="hidden" name="_method" value="PUT" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-    <script type="text/javascript" src="http://api.skysql.black-sheep-research.com/apitest.js"></script>
+	  <h3>Delete a User</h3>
+	  <form action="" method="post" id="deluser">
+			<p>
+			<label for="usernamed">Username</label>
+			<input type="text" name="username" id="usernamed" /><br />
+			<input type="submit" onclick="setUserName('deluser');" value="Delete" />
+			<input type="hidden" name="_method" value="DELETE" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  <h3>Get User Information</h3>
+	  <form action="" method="post" id="userinfo" onsubmit="setUserName('userinfo');">
+			<p>
+			<label for="usernamex">Username</label>
+			<input type="text" name="username" id="usernamex" /><br />
+			<input type="submit" onclick="setUserName('userinfo');" value="Information" />
+			<input type="hidden" name="_method" value="GET" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  <h3>Authenticate User</h3>
+	  <form action="" method="post" id="userlog" onsubmit="setUserName('userlog');">
+			<p>
+			<label for="usernamel">Username</label>
+			<input type="text" name="username" id="usernamel" /><br />
+			<label for="passwordl">Password</label>
+			<input type="text" name="password" id="passwordl" /><br />
+			<input type="submit" onclick="setUserName('userinfo');" value="Authenticate" />
+			<input type="hidden" name="_method" value="POST" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		<script type="text/javascript" src="md5.js"></script>
+		<script type="text/javascript" src="testapi.js"></script>
     </body>
 </html>

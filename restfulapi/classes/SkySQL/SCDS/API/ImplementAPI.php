@@ -32,12 +32,12 @@ abstract class ImplementAPI {
 	protected $db = null;
 	protected $requestor = null;
 	protected $transact = false;
-        protected $config = array();
+	protected $config = array();
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
 		$this->requestor = $requestor;
-                $this->config = $requestor->getConfig();
+		$this->config = $requestor->getConfig();
 	}
 	
 	protected function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -70,7 +70,7 @@ abstract class ImplementAPI {
 	}
 
 	protected function sendErrorResponse ($errors, $status=200, $content_type='application/json') {
-		if ($this->transact) $this->db->query('COMMIT TRANSACTION');
+		if ($this->transact) $this->db->query('ROLLBACK TRANSACTION');
 		return $this->requestor->sendErrorResponse($errors, $status, $content_type);
 	}
 	

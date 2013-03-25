@@ -119,6 +119,51 @@ class SystemBackups extends ImplementAPI {
 		}
 	}
 	
+	public function updateSystemBackup ($uriparts) {
+		$systemid = (int) $uriparts[1];
+		$nodeid = (int) $uriparts[3];
+		$backupid = (int) $uriparts[5];
+		$state = $this->getParam('PUT', 'state', 0);
+		$size = $this->getParam('PUT', 'size', 0);
+		$storage = $this->getParam('PUT', 'storage');
+		$binlog = $this->getParam('PUT', 'binlog');
+		$log = $this->getParam('PUT', 'log');
+		$restored = strtolower($this->getParam('PUT', 'restored'));
+		if ($state) {
+			$sets[] = 'State = :state';
+			$bind[':state'] = $state;
+		}
+		if ($size) {
+			$sets[] = 'Size = :size';
+			$bind[':size'] = $size;
+		}
+		if ($storage) {
+			$sets[] = 'Storage = :storage';
+			$bind[':storage'] = $storage;
+		}
+		if ($binlog) {
+			$sets[] = 'BinLog = :binlog';
+			$bind[':binlog'] = $binlog;
+		}
+		if ($log) {
+			$sets[] = 'Log = :log';
+			$bind[':log'] = $log;
+		}
+		if ('yes' == $restored) {
+			$sets[] = "Restored = datetime('now')";
+		}
+		if (isset($sets)) {
+			$bind[':systemid'] = $systemid;
+			$bind[':nodeid'] = $nodeid;
+			$bind[':backupid'] = $backupid;
+			$update = $this->db->prepare('UPDATE Backup SET '.implode(', ', $sets).' 
+				WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupID = :backupid');
+			$update->execute($bind);
+			if ($update->rowCount()) $this->sendResponse(array('result' => 'ok'));
+		}
+		$this->sendResponse(array('result' => 'noaction'));
+	}
+	
 	public function getBackupStates () {
 		$query = $this->db->query('SELECT State AS state, Description AS description FROM BackupStates');
         $this->sendResponse(array("backupStates" => $query->fetchAll(PDO::FETCH_ASSOC)));
