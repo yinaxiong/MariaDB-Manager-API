@@ -3,7 +3,7 @@
 %define release		1
 %define version 	0.1
 %define buildroot %{_topdir}/%{name}-%{version}-root
-%define install_path	/var/www/html
+%define install_path	/var/www/html/
 
 BuildRoot:	%{buildroot}
 Summary: 		Admin cnsole backend
