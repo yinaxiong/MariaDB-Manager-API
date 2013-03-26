@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Manipulate Users via SCDS API</title>
+	<link href="default.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+	  <div id="header">
+		  <div id="logo">
+			<h1><a href="#">SCDS API</a></h1>
+			<p><span>SkySQL Cloud Data Suite API</span></p>
+		  </div>
+		  <div id="menu">
+			<ul>
+			  <li><a href="#">System</a></li>
+			  <li><a href="#">Node</a></li>
+			 <li class="active"><a href="#">User</a></li>
+			  <li><a href="#">Property</a></li>
+			  <li><a href="#">Command</a></li>
+			</ul>
+		  </div>
+	  </div>	
+<div id="wrapper">
+	<div id="page">
+		<!-- start content -->
+		<div id="content">
+	  <div id="preamble">
+	    <h2>User Management via SCDS API</h2>
+	    <p>Using API Key ID: <span id="showapikeyid"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
+		  with Key: <span id="showapikey"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
+	    </p>
+	    <p>Sending requests to: <span id="showlink"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
+	    </p>
+	  </div>
+			<div class="post">
+	  <h3>Get all Users</h3>
+	  <form action="" method="post" id="getuser" onsubmit="return(setFields(this.id,'user'));">
+		<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /user <br />
+			No parameters <br />
+			<input type="submit" value="List" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+			</div>
+			<div class="post">
+	  <h3>Add or Update a User</h3>
+	  <form action="" method="post" id="putuser" onsubmit="return(setFields(this.id,'user','username'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /user/{username} <br />
+			When PUTting, parameters are passed as JSON (name and password) <br />
+			<label for="username">Username</label>
+			<input type="text" name="username" id="username" /><br />
+			<label for="name">Personal Name</label>
+			<input type="text" name="name" id="name" /><br />
+			<label for="password">Password</label>
+			<input type="text" name="password" id="password" /><br />
+			<input type="submit" value="Create or Update" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+			</div>
+			<div class="post">
+	  <h3>Delete a User</h3>
+	  <form action="" method="post" id="deluser" onsubmit="return(setFields(this.id,'user','username'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /user/{username} <br />
+			No parameters <br />
+			<label for="usernamed">Username</label>
+			<input type="text" name="username" id="usernamed" /><br />
+			<input type="submit" value="Delete" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+			</div>
+			<div class="post">
+	  <h3>Get User Information</h3>
+	  <form action="" method="post" id="userinfo" onsubmit="return(setFields(this.id,'user','username'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /user/{username} <br />
+			No parameters <br />
+			<label for="usernamex">Username</label>
+			<input type="text" name="username" id="usernamex" /><br />
+			<input type="submit" value="Information" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+			</div>
+			<div class="post">
+	  <h3>Authenticate User</h3>
+	  <form action="" method="post" id="userlog" onsubmit="return(setFields(this.id,'user','username'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /user/{username} <br />
+			Parameter is a POST data item, called password <br />
+			<label for="usernamel">Username</label>
+			<input type="text" name="username" id="usernamel" /><br />
+			<label for="passwordl">Password</label>
+			<input type="text" name="password" id="passwordl" /><br />
+			<input type="submit" value="Authenticate" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+			</div>
+			<div class="post">
+	  <h3>Add or Update a User Property</h3>
+	  <form action="" method="post" id="putuserprop" onsubmit="return(setFields(this.id,'user','username','property','propname'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/property/{propertyname} <br />
+			When PUTting, parameter is passed as JSON (value) <br />
+			<label for="usernamepp">Username</label>
+			<input type="text" name="username" id="usernamepp" /><br />
+			<label for="propname">Property Name</label>
+			<input type="text" name="propname" id="propname" /><br />
+			<label for="value">Value</label>
+			<input type="text" name="value" id="value" /><br />
+			<input type="submit" value="Add or Update Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+			</div>
+			<div class="post">
+	  <h3>Delete a User Property</h3>
+	  <form action="" method="post" id="deluserprop" onsubmit="return(setFields(this.id,'user','username','property','propname'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/property/{propertyname} <br />
+			No parameters <br />
+			<label for="usernamepd">Username</label>
+			<input type="text" name="username" id="usernamepd" /><br />
+			<label for="propnamde">Property Name</label>
+			<input type="text" name="propname" id="propnamed" /><br />
+			<input type="submit" value="Delete Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+			</div>
+		</div>
+	</div>
+</div>
+		<script type="text/javascript" src="md5.js"></script>
+		<script type="text/javascript" src="testapi.js"></script>
+    </body>
+</html>

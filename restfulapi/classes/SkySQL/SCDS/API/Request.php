@@ -49,7 +49,7 @@ final class Request {
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
-		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[SkySQL\COMMON0-9]+/property/[A-Za-z0-9]+', 'http' => 'GET'),
+		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'PUT'),
 		array('class' => 'Systems', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'PUT'),
@@ -61,9 +61,12 @@ final class Request {
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/[0-9]+/node', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
+		array('class' => 'SystemUsers', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT'),
+		array('class' => 'SystemUsers', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/.*', 'http' => 'GET'),
 		array('class' => 'SystemUsers', 'method' => 'putUser', 'uri' => 'user/.*', 'http' => 'PUT'),
 		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
@@ -71,6 +74,7 @@ final class Request {
 		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'putSystem', 'uri' => 'system/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'Systems', 'method' => 'deleteSystem', 'uri' => 'system/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET'),
 		array('class' => 'Buckets', 'method' => 'getData', 'uri' => 'bucket', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
@@ -144,6 +148,7 @@ final class Request {
 	protected $rfcdate = '';
 	protected $authorization = '';
 	protected $accept = '';
+	protected $suffix = '';
 	
 	protected function __construct() {
 		if (!self::$uriTablePrepared) {
@@ -158,6 +163,14 @@ final class Request {
 		$sepindex = explode('index.php', $sepquery[0]);
 		$sepapi = explode('/api/', trim(end($sepindex), '/'));
 		$this->uri = trim(end($sepapi), '/');
+		$periodpos = strrpos($this->uri, '.');
+		if (false !== $periodpos) {
+			$suffixpos = strlen($this->uri) - $periodpos;
+			if (0 < $suffixpos AND 6 > $suffixpos) {
+				if (1 < $suffixpos) $this->suffix = substr($this->uri,-($suffixpos-1));
+				$this->uri = substr($this->uri,0,-$suffixpos);
+			}
+		}
 		$this->headers = apache_request_headers();
 		if ('PUT' == $_SERVER['REQUEST_METHOD']) {
 			$rawput = file_get_contents("php://input");
@@ -171,8 +184,11 @@ final class Request {
 		else $this->requestmethod = $_SERVER['REQUEST_METHOD'];
 		$this->rfcdate = $this->getParam($this->requestmethod, '_rfcdate', @$this->headers['Date']);
 		$this->authorization = $this->getParam($this->requestmethod, '_authorization', @$this->headers['Authorization']);
-		$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
-		$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
+		if ('json' == $this->suffix) $this->accept = 'application/json';
+		else {
+			$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
+			$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
+		}
 	}
 	
 	public static function getInstance() {
@@ -185,8 +201,14 @@ final class Request {
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			$class = __NAMESPACE__.'\\'.$link['class'];
+			if (!class_exists($class)) {
+				$this->sendErrorResponse("Request {$_SERVER['REQUEST_URI']} no such class as $class", 404);
+			}
 			$object = new $class($this);
 			$method = $link['method'];
+			if (!method_exists($object, $method)) {
+				$this->sendErrorResponse("Request {$_SERVER['REQUEST_URI']} no such method as $method in class $class", 404);
+			}
 			try {
 				$object->$method($uriparts);
 				$this->sendErrorResponse('Selected method $method of class $class returned to controller', 500);
@@ -195,7 +217,7 @@ final class Request {
 				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500, $pe);
 			}
 		}
-		else $this->sendErrorResponse ("Request {$_SERVER['REQUEST_URI']} does not match the API", 404);
+		else $this->sendErrorResponse ("Request {$_SERVER['REQUEST_URI']} with HTTP request $this->requestmethod does not match the API", 404);
 	}
 	
 	protected function checkSecurity () {
@@ -229,7 +251,7 @@ final class Request {
 					break;
 				}
 			}
-			if ($matched AND method_exists(__NAMESPACE__.'\\'.$link['class'], $link['method'])) return $link;
+			if ($matched) return $link;
 		}
 		return false;
 	}
@@ -276,34 +298,43 @@ final class Request {
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
-	    $status_header = HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
-	    header($status_header);
-		$content_type = $this->accept;
-	    header('Content-type: '.$content_type);
-		header('Cache-Control: no-store');
-		if (substr($status,0,1) != 2 AND $status != 304) {
-			if (empty($body)) $body = $status_header;
-			if ('application/json' == $content_type) {
-				$body = array('result' => $body, 'httpcode' => $status);
-				echo json_encode($body);
-				exit;
-			}
+		$status_header = $this->sendHeaders($status);
+		if (empty($body)) $body = $status_header;
+		if ('application/json' == $this->accept) {
+			if (!is_array($body) OR 0 != count($body)) $body = array('result' => $body, 'httpcode' => $status);
+			echo json_encode($body);
+			exit;
 		}
-		echo 'application/json' == $content_type ? json_encode($body) : print_r($body, true);
+		echo print_r($body, true);
 		exit;
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
+		$status_header = $this->sendHeaders($status);
+		if (empty($errors)) $errors = $status_header;
 		if ($errors AND 'text/html' == $this->accept) {
 			$statusname = @self::$codes[$status];
 			$text = "<p>Error(s) accompanying return code $status $statusname:";
 			foreach ((array) $errors as $error) $text .= '</br>'.$error;
-			$data = $text.'</p>';
+			$text .= '</p>';
 		}
-		else $data = empty($errors) ? '' : array('errors' => (array) $errors);
+		//$data = empty($errors) ? '' : array('errors' => (array) $errors);
 		$recorder = ErrorRecorder::getInstance();
 		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
-		$this->sendResponse($data, $status);
+		if ('application/json' == $this->accept) {
+			echo json_encode(array('errors' => (array) $errors, 'httpcode' => $status));
+			exit;
+		}
+		echo print_r($text, true);
+		exit;
+	}
+	
+	protected function sendHeaders ($status) {
+		$status_header = HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
+		header($status_header);
+		header('Content-type: '.$this->accept);
+		header('Cache-Control: no-store');
+		return $status_header;
 	}
 	
 	public function log ($data) {

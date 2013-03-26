@@ -135,6 +135,19 @@ class SystemNodes extends ImplementAPI {
 		)));
 	}
 	
+	public function deleteSystemNode ($uriparts) {
+		$this->systemid = $uriparts[1];
+		if (!$this->validateSystem()) $this->sendErrorResponse('Create node gave non-existent system ID '.$this->systemid, 400);
+		$this->nodeid = $uriparts[3];
+		$delete = $this->db->prepare('DELETE FROM Node WHERE SystemID = :systemid AND NodeID = :nodeid');
+		$delete->execute(array(
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid
+			));
+		if ($delete->rowCount()) $this->sendResponse();
+		else $this->sendErrorResponse('Delete node did not match any node', 404);
+	}
+	
 	protected function validateSystem () {
 		$query = $this->db->prepare('SELECT COUNT(*) FROM System WHERE SystemID = :systemid');
 		$query->execute(array(':systemid' => $this->systemid));

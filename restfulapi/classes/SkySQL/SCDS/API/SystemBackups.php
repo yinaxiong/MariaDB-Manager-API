@@ -72,7 +72,7 @@ class SystemBackups extends ImplementAPI {
 		$statement = $this->db->prepare($mainquery);
 		$statement->execute($bind);
 		$results['backups'] = $statement->fetchALL(PDO::FETCH_ASSOC);
-        $this->sendResponse($results);
+        $this->sendResponse(array('result' => $results));
 	}
 	
 	protected function getDate ($datename) {
@@ -101,7 +101,7 @@ class SystemBackups extends ImplementAPI {
 				':level' => $level,
 				':parent' => $parent
 			));
-			$result[id] = $this->db->lastInsertId();
+			$result['id'] = $this->db->lastInsertId();
 			// Extra work for incremental backup
 			if (2 == $level) {
 				$getlog = $this->db->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
@@ -112,7 +112,7 @@ class SystemBackups extends ImplementAPI {
 				));
 				$result['binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
 			}
-			$this->sendResponse($result);
+			$this->sendResponse(array('result' => $result));
 		}
 		catch (PDOException $pe) {
 			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $node, level $level, parent $parent", 500, $pe);
@@ -159,7 +159,7 @@ class SystemBackups extends ImplementAPI {
 			$update = $this->db->prepare('UPDATE Backup SET '.implode(', ', $sets).' 
 				WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupID = :backupid');
 			$update->execute($bind);
-			if ($update->rowCount()) $this->sendResponse(array('result' => 'ok'));
+			if ($update->rowCount()) $this->sendResponse(array('result' => 'updated'));
 		}
 		$this->sendResponse(array('result' => 'noaction'));
 	}

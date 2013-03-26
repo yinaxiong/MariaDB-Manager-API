@@ -33,10 +33,7 @@ class SystemUsers extends ImplementAPI {
 	
 	public function getUsers () {
 		$query = $this->db->query("SELECT UserID AS id, UserName AS username, Name AS name FROM Users");
-        $result = array(
-            "users" => $query->fetchAll(PDO::FETCH_ASSOC)
-        );
-        $this->sendResponse($result);
+        $this->sendResponse(array('users' => $query->fetchAll(PDO::FETCH_ASSOC)));
 	}
 	
 	public function getUserInfo ($uriparts) {
@@ -97,8 +94,40 @@ class SystemUsers extends ImplementAPI {
 				$query = $this->db->prepare('UPDATE Users SET '.implode(', ', $sets).' WHERE UserName = :username');
 				$query->execute($bind);
 			}
-			$this->sendResponse($result);
+			$this->sendResponse(array('result' => $result));
 		}
+	}
+	
+	public function putUserProperty ($uriparts) {
+		$username = $uriparts[1];
+		$this->startImmediateTransaction();
+		$userid = $this->getUserID($username);
+		if (!$userid) $this->sendErrorResponse('Attempt to add or update a property for a user who does not exist', 404);
+		$propertyname = $uriparts[3];
+		$bind[':value'] = $this->getParam('PUT', 'value');
+		$bind[':userid'] = $userid;
+		$bind[':propertyname'] = $propertyname;
+		$update = $this->db->prepare('UPDATE UserProperties SET Value = :value WHERE UserID = :userid AND Property = :propertyname');
+		$update->execute($bind);
+		if (0 == $update->rowCount()) {
+			$insert = $this->db->prepare('INSERT INTO UserProperties (UserID, Property, Value) VALUES (:userid, :propertyname, :value)');
+			$insert->execute($bind);
+		}
+		$this->sendResponse();
+	}
+	
+	public function deleteUserProperty ($uriparts) {
+		$username = $uriparts[1];
+		$this->startImmediateTransaction();
+		$userid = $this->getUserID($username);
+		if (!$userid) $this->sendErrorResponse('Attempt to add or update a property for a user who does not exist', 404);
+		$propertyname = $uriparts[3];
+		$delete = $this->db->prepare('DELETE FROM UserProperties WHERE UserID = :userid AND Property = :propertyname');
+		$delete->execute(array(
+			':userid' => $userid,
+			':propertyname' => $propertyname
+		));
+		$this->sendResponse();
 	}
 		
 	protected function makeSalt () {
@@ -115,7 +144,7 @@ class SystemUsers extends ImplementAPI {
 		$username = urldecode($uriparts[1]);
 		$query = $this->db->prepare('DELETE FROM Users WHERE UserName = :username');
 		$query->execute(array(':username' => $username));
-		if ($query->rowCount()) $this->sendResponse('ok');
+		if ($query->rowCount()) $this->sendResponse();
 		else $this->sendErrorResponse('Delete user did not match any user', 404);
 	}
 	
@@ -151,5 +180,11 @@ class SystemUsers extends ImplementAPI {
 		$saltquery = $this->db->prepare('SELECT Salt FROM Users WHERE UserName = :username');
 		$saltquery->execute(array(':username' => $username));
 		return $saltquery->fetch(PDO::FETCH_COLUMN);
+	}
+	
+	protected function getUserID ($username) {
+		$idquery = $this->db->prepare('SELECT UserID FROM Users WHERE UserName = :username');
+		$idquery->execute(array(':username' => $username));
+		return $idquery->fetch(PDO::FETCH_COLUMN);
 	}
 }

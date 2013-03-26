@@ -47,7 +47,7 @@ class RunSQL extends ImplementAPI {
             $this->subjectdb->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
             $statement = $this->subjectdb->prepare($query);
             $statement->execute();
-            $this->sendResponse(array("results" => $statement->fetchAll(PDO::FETCH_ASSOC)));
+            $this->sendResponse(array("result" => $statement->fetchAll(PDO::FETCH_ASSOC)));
         }
         catch (PDOException $pe) {
             $this->sendErrorResponse($pe->getMessage(), 400);

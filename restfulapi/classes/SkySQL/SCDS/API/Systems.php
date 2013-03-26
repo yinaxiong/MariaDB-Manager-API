@@ -59,7 +59,7 @@ class Systems extends ImplementAPI {
 	}
 	
 	public function putSystem ($uriparts) {
-		$systemid = $uriparts[0];
+		$systemid = $uriparts[1];
 		if (!$systemid) $this->sendErrorResponse('Creating a system with ID of zero is not permitted', 400);
 		$name = $this->getParam('PUT', 'name');
 		if (!$name) $name = 'System '.sprintf('%06d', $systemid);
@@ -99,22 +99,30 @@ class Systems extends ImplementAPI {
 	}
 	
 	public function deleteSystem ($uriparts) {
-		$systemid = $uriparts[0];
+		$systemid = $uriparts[1];
 		$delete = $this->db->prepare('DELETE FROM System WHERE SystemID = :systemid');
 		$delete->execute(array(':systemid' => $systemid));
+		if ($delete->rowCount()) $this->sendResponse();
+		else $this->sendErrorResponse('Delete system did not match any system', 404);
 	}
 	
 	public function setSystemProperty ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$property = $uriparts[3];
-		$value = $this->getParam('PUT', 'alldata');
-		$pstatement = $this->db->prepare('REPLACE INTO SystemProperties
-			(SystemID, Property, Value) VALUES(:systemid, :property, :value)');
-		$pstatement->execute(array(
+		$value = $this->getParam('PUT', 'value');
+		$bind = array(
 			':systemid' => $systemid,
 			':property' => $property,
 			':value' => $value
-		));
+		);
+		$this->startImmediateTransaction();
+		$update = $this->db->prepare('UPDATE SystemProperties SET Value = :value WHERE SystemID = :systemid AND Property = :property');
+		$update->execute($bind);
+		if (0 == $update->rowCount()) {
+			$insert = $this->db->prepare('INSERT INTO SystemProperties (SystemID, Property, Value)
+				VALUES (:systemid, :property, :value');
+			$insert->execute($bind);
+		}
 		$this->sendResponse(array(
 			'id' => $systemid,
 			'property' => $property,

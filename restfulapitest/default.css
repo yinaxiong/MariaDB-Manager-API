@@ -1,0 +1,158 @@
+
+/*
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+*/
+
+body {
+	margin: 0px;
+	padding: 0px;
+	background: #FFFFFF url(images/img01.gif) repeat-x;
+	font: 13px "Trebuchet MS", Arial, Helvetica, sans-serif;
+	color: #333333;
+}
+
+h2 {
+	font: 1.82em;
+	font-weight: normal;
+	color: #84E003;
+}
+
+h3 {
+	font: 1.42em;
+	font-weight: normal;
+	color: #84E003;
+}
+
+p, ol, ul {
+	line-height: 1.67em;
+}
+
+a {
+	color: #18BDF5;
+}
+
+a:hover {
+	text-decoration: none;
+}
+
+hr {
+	display: none;
+}
+
+label {
+	display: block;
+	float: left;
+	width: 120px;
+}
+
+/* Header */
+
+#header {
+	width: 778px;
+	height: 180px;
+	margin: 0px auto;
+}
+
+/* Logo */
+
+#logo {
+	float: left;
+	padding: 60px 0 0 0;
+	background: url(http://www.skysql.com/sites/all/themes/skysql/images/logo.png) no-repeat left top;
+}
+
+#logo h1 {
+	margin: 0;
+	text-transform: lowercase;
+	letter-spacing: -2px;
+	font-size: 3.6em;
+	font-weight: normal;
+	color: #FFFFFF;
+}
+
+#logo h1 a {
+	padding-right: 20px;
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+#logo p {
+	margin: -5px 0 0 0;
+	text-transform: uppercase;
+	font-size: 1.22em;
+	letter-spacing: -1px;
+}
+
+#logo a {
+	text-decoration: none;
+	color: #FFFFFF;
+}
+
+/* Menu */
+
+#menu {
+	float: right;
+}
+
+#menu ul {
+	margin: 0px;
+	padding: 93px 0px 0px 0px;
+	list-style: none;
+}
+
+#menu li {
+	display: inline;
+}
+
+#menu a {
+	display: block;
+	float: left;
+	margin-left: 20px;
+	text-decoration: none;
+	text-transform: lowercase;
+	font-size: 1.36em;
+	color: #FFFFFF;
+}
+
+#menu a:hover, .active a {
+	border-bottom: 3px solid #8AD9F3;
+}
+
+/* Page */
+
+#wrapper {
+}
+
+#page {
+	width: 778px;
+	margin: 0px auto;
+}
+
+/* Content */
+
+#content {
+	float: left;
+	width: 510px;
+}
+
+/* Post */
+
+.post {
+}
+
+.post .meta {
+	margin: 0 0 30px 0;
+	padding: 0;
+	color: #C6C6C6;
+	line-height:normal;
+}
+
+.post .meta a {
+	color: #C6C6C6;
+}
+
+.post .entry {
+	padding-bottom: 30px;
+}

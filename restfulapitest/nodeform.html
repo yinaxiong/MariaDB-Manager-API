@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Manipulate Users via SCDS API</title>
+	<script type="text/javascript">
+		// NOTE: The URI must not have a trailing slash
+		function locateAPI () {
+			return 'http://api.skysql.black-sheep-research.com';
+		}
+	</script>
+  </head>
+  <body>
+	  <h2>Node Management via SCDS API</h2>
+	  <p>Using API Key ID: <span id="showapikeyid"></span> with Key: <span id="showapikey"></span></p>
+	  <h3>Get all Nodes</h3>
+	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'))">
+		<p>
+			<label for="systemidl">System ID</label>
+			<input type="text" name="systemid" id="systemidl" /><br />
+			<input type="submit" value="List" />
+			<input type="hidden" name="_method" value="GET" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  <h3>Create or Update a Node</h3>
+	  <form action="" method="post" id="putsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'))">
+			<p>
+			<label for="systemid">System ID</label>
+			<input type="text" name="systemid" id="systemid" /><br />
+			<label for="nodeid">Node ID</label>
+			<input type="text" name="nodeid" id="nodeid" /><br />
+			<label for="name">Node Name</label>
+			<input type="text" name="name" id="name" /><br />
+			<label for="state">State ID</label>
+			<input type="text" name="state" id="state" /><br />
+			<input type="submit" value="Create or Update" />
+			<input type="hidden" name="_method" value="PUT" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  <h3>Delete a Node</h3>
+	  <form action="" method="post" id="delsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'))">
+			<p>
+			<label for="systemidd">System ID</label>
+			<input type="text" name="systemid" id="systemidd" /><br />
+			<label for="nodeidd">Node ID</label>
+			<input type="text" name="nodeid" id="nodeidd" /><br />
+			<input type="submit" value="Delete" />
+			<input type="hidden" name="_method" value="DELETE" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  <h3>Get Node Information</h3>
+	  <form action="" method="post" id="systeminfo" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'))">
+			<p>
+			<label for="systemidx">System ID</label>
+			<input type="text" name="systemid" id="systemidx" /><br />
+			<label for="nodeidx">Node ID</label>
+			<input type="text" name="nodeid" id="nodeidx" /><br />
+			<input type="submit" value="Information" />
+			<input type="hidden" name="_method" value="GET" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		<script type="text/javascript" src="md5.js"></script>
+		<script type="text/javascript" src="testapi.js"></script>
+    </body>
+</html>
