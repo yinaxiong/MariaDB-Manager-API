@@ -120,7 +120,7 @@ class Systems extends ImplementAPI {
 		$update->execute($bind);
 		if (0 == $update->rowCount()) {
 			$insert = $this->db->prepare('INSERT INTO SystemProperties (SystemID, Property, Value)
-				VALUES (:systemid, :property, :value');
+				VALUES (:systemid, :property, :value)');
 			$insert->execute($bind);
 		}
 		$this->sendResponse(array(
@@ -133,7 +133,7 @@ class Systems extends ImplementAPI {
 	public function deleteSystemProperty ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$property = $uriparts[3];
-		$pstatement = $this->dgetb->prepare('DELETE FROM SystemProperties WHERE SystemID = :systemid AND Property = :property');
+		$pstatement = $this->db->prepare('DELETE FROM SystemProperties WHERE SystemID = :systemid AND Property = :property');
 		$pstatement->execute(array(
 			':systemid' => $systemid,
 			':property' => $property

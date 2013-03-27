@@ -111,6 +111,68 @@
 			</p>
 		</form>
 	  </div>
+	  <div class="section">
+	  <h3>Get System Property</h3>
+	  <form action="" method="post" id="getsystemprop" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/property/{propertyname} <br />
+			No parameters <br />
+			<label for="systemidpg">System ID</label>
+			<input type="text" name="systemid" id="systemidpg" /><br />
+			<label for="propertynameg">Property Name</label>
+			<input type="text" name="propertyname" id="propertynameg" /><br />
+			<input type="submit" value="Get Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Create or Update a System Property</h3>
+	  <form action="" method="post" id="putsystemprop" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/property/{propertyname} <br />
+			Parameter is value <br />
+			<label for="systemidp">System ID</label>
+			<input type="text" name="systemid" id="systemidp" /><br />
+			<label for="propertyname">Property Name</label>
+			<input type="text" name="propertyname" id="propertyname" /><br />
+			<label for="value">Value</label>
+			<input type="text" name="value" id="value" /><br />
+			<input type="submit" value="Create or Update" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete a System Property</h3>
+	  <form action="" method="post" id="delsystemprop" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));">
+			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/property/{propertyname} <br />
+			No parameters <br />
+			<label for="systemiddp">System ID</label>
+			<input type="text" name="systemid" id="systemiddp" /><br />
+			<label for="propertynamed">Property Name</label>
+			<input type="text" name="propertyname" id="propertynamed" /><br />
+			<input type="submit" value="Delete" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
 	</div>
 		<script type="text/javascript" src="md5.js"></script>
 		<script type="text/javascript" src="testapi.js"></script>

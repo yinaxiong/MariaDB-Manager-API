@@ -301,7 +301,7 @@ final class Request {
 		$status_header = $this->sendHeaders($status);
 		if (empty($body)) $body = $status_header;
 		if ('application/json' == $this->accept) {
-			if (!is_array($body) OR 0 != count($body)) $body = array('result' => $body, 'httpcode' => $status);
+			if (!is_array($body) OR 1 != count($body)) $body = array('result' => $body, 'httpcode' => $status);
 			echo json_encode($body);
 			exit;
 		}
