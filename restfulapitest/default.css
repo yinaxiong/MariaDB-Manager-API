@@ -122,37 +122,27 @@ label {
 
 /* Page */
 
-#wrapper {
-}
-
 #page {
 	width: 778px;
 	margin: 0px auto;
 }
 
-/* Content */
-
-#content {
-	float: left;
-	width: 510px;
-}
-
 /* Post */
 
-.post {
+.section {
 }
 
-.post .meta {
+.section .meta {
 	margin: 0 0 30px 0;
 	padding: 0;
 	color: #C6C6C6;
 	line-height:normal;
 }
 
-.post .meta a {
+.section .meta a {
 	color: #C6C6C6;
 }
 
-.post .entry {
+.section .entry {
 	padding-bottom: 30px;
 }

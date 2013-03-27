@@ -5,32 +5,64 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
-	<script type="text/javascript">
-		// NOTE: The URI must not have a trailing slash
-		function locateAPI () {
-			return 'http://api.skysql.black-sheep-research.com';
-		}
-	</script>
+	<link href="default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
-	  <h2>Node Management via SCDS API</h2>
-	  <p>Using API Key ID: <span id="showapikeyid"></span> with Key: <span id="showapikey"></span></p>
+	  <div id="header">
+		  <div id="logo">
+			<h1><a href="#">SCDS API</a></h1>
+			<p><span>SkySQL Cloud Data Suite API</span></p>
+		  </div>
+		  <div id="menu">
+			<ul>
+			  <li><a href="index.html">About</a></li>
+			  <li><a href="systemform.html">System</a></li>
+			  <li class="active"><a href="nodeform.html">Node</a></li>
+			  <li><a href="userform.html">User</a></li>
+			  <li><a href="backupform.html">Backup</a></li>
+			  <li><a href="monitorform.html">Monitor</a></li>
+			  <li><a href="jobform.html">Job</a></li>
+			</ul>
+		  </div>
+	  </div>	
+	<div id="page">
+	  <div id="preamble">
+	    <h2>Node Management via SCDS API</h2>
+	    <p>Using API Key ID: <span id="showapikeyid"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
+		  with Key: <span id="showapikey"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
+	    </p>
+	    <p>Sending requests to: <span id="showlink"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
+	    </p>
+	  </div>
+	  <div class="section">
 	  <h3>Get all Nodes</h3>
-	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'))">
+	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'));">
 		<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node <br />
+			No parameters <br />
 			<label for="systemidl">System ID</label>
 			<input type="text" name="systemid" id="systemidl" /><br />
 			<input type="submit" value="List" />
-			<input type="hidden" name="_method" value="GET" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 		</p>
 	  </form>
+	  </div>
+	  <div class="section">
 	  <h3>Create or Update a Node</h3>
-	  <form action="" method="post" id="putsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'))">
+	  <form action="" method="post" id="putsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));">
 			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node/{nodeid} <br />
+			Parameters name, state <br />
 			<label for="systemid">System ID</label>
 			<input type="text" name="systemid" id="systemid" /><br />
 			<label for="nodeid">Node ID</label>
@@ -47,36 +79,48 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
+	  </div>
+	  <div class="section">
 	  <h3>Delete a Node</h3>
-	  <form action="" method="post" id="delsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'))">
+	  <form action="" method="post" id="delsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));">
 			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node/{nodeid} <br />
+			No parameters <br />
 			<label for="systemidd">System ID</label>
 			<input type="text" name="systemid" id="systemidd" /><br />
 			<label for="nodeidd">Node ID</label>
 			<input type="text" name="nodeid" id="nodeidd" /><br />
 			<input type="submit" value="Delete" />
-			<input type="hidden" name="_method" value="DELETE" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
+	  </div>
+	  <div class="section">
 	  <h3>Get Node Information</h3>
-	  <form action="" method="post" id="systeminfo" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'))">
+	  <form action="" method="post" id="systeminfo" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));">
 			<p>
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node/{nodeid} <br />
+			No parameters <br />
 			<label for="systemidx">System ID</label>
 			<input type="text" name="systemid" id="systemidx" /><br />
 			<label for="nodeidx">Node ID</label>
 			<input type="text" name="nodeid" id="nodeidx" /><br />
 			<input type="submit" value="Information" />
-			<input type="hidden" name="_method" value="GET" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
+	  </div>
+	  </div>
 		<script type="text/javascript" src="md5.js"></script>
 		<script type="text/javascript" src="testapi.js"></script>
     </body>

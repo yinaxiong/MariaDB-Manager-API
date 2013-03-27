@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Manipulate Users via SCDS API</title>
+	<link href="default.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+	  <div id="header">
+		  <div id="logo">
+			<h1><a href="#">SCDS API</a></h1>
+			<p><span>SkySQL Cloud Data Suite API</span></p>
+		  </div>
+		  <div id="menu">
+			<ul>
+			  <li class="active"><a href="index.html">About</a></li>
+			  <li><a href="systemform.html">System</a></li>
+			  <li><a href="nodeform.html">Node</a></li>
+			  <li><a href="userform.html">User</a></li>
+			  <li><a href="backupform.html">Backup</a></li>
+			  <li><a href="monitorform.html">Monitor</a></li>
+			  <li><a href="jobform.html">Job</a></li>
+			</ul>
+		  </div>
+	  </div>	
+	<div id="page">
+	  <div class="section">
+	  <h2>About the API for the SkySQL Cloud Data Suite</h2>
+	  <p>
+		  The API is a RESTful web service, allowing control of one or more SkySQL
+		  Cloud Systems.  Calls are made to different URIs depending on which resource
+		  is being accessed.  Different HTTP methods are used, in accordance with 
+		  REST principles:
+	  </p>
+	  <ul>
+		  <li>Retrieve a representation of a resource: HTTP GET</li>
+		  <li>Create a new resource: HTTP PUT to a new URI, or HTTP POST to an existing URI</li>
+		  <li>Modify an existing resource: HTTP PUT to an existing URI</li>
+		  <li>Delete an existing resource: HTTP DELETE</li>
+	  </ul>
+	  <p>
+		  The main resources handled by the SCDS API are Systems, Nodes, Users, Backups,
+		  Commands and Jobs.  Each has a page where you can run the various API requests.
+	  </p>
+	  <h3>Installation</h3>
+	  <p>
+		  The code can be extracted from the SkySQL repository.  Currently it is found at
+		  bzr+ssh://repository.skysql.com/bzr/admin_php/restfulapi.  The files should be 
+		  placed in a directory within the web server's document root.  The directory 
+		  structure must be preserved.
+	  </p>
+	  <p>
+		  There is a configuration file called api.ini.  This is in the root of the
+		  structure in the repository.  It should be checked and modified to suit local
+		  requirements.  In particular, the API keys should be changed in order to secure
+		  the API.  The file must be moved to /etc/scdsapi/api.ini so that it cannot be
+		  served to the web and so that it can be found by the API.
+	  </p>
+	  <p>
+		  One element of api.ini is the directory given in the logging section.  Provided
+		  this points to a directory that can be written by the web server, the API will
+		  log some of its actions to a file called api.log.
+	  </p>
+	  <p>
+		  Another critical aspect to installing the API code is setting up Apache 
+		  mod_rewrite (or its equivalent).  Any URI that does not correspond to an actual
+		  file or directory should be rewritten to point to the index.php file in the root
+		  of the API directory structure.  Typical rewriting rules for Apache are:
+	  </p>
+	  <pre>
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-d
+RewriteRule ^(.*) /index.php [L]
+	  </pre>
+	  <p>
+		  Depending on the web server configuration, it may also be necessary to use URI
+		  rewriting to ensure the HTTP headers are available to the API. For PHP running as
+		  CGI, this requires something like:
+	  </p>
+	  <pre>
+RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteRule .* - [E=HTTP_IF_MODIFIED_SINCE:%{HTTP:If-Modified-Since}]
+RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
+	  </pre>
+	  <p>
+	  </p>
+	  </div>
+	</div>
+    </body>
+</html>

@@ -15,18 +15,17 @@
 		  </div>
 		  <div id="menu">
 			<ul>
-			  <li><a href="#">System</a></li>
-			  <li><a href="#">Node</a></li>
-			 <li class="active"><a href="#">User</a></li>
-			  <li><a href="#">Property</a></li>
-			  <li><a href="#">Command</a></li>
+			  <li><a href="index.html">About</a></li>
+			  <li><a href="systemform.html">System</a></li>
+			  <li><a href="nodeform.html">Node</a></li>
+			  <li class="active"><a href="userform.html">User</a></li>
+			  <li><a href="backupform.html">Backup</a></li>
+			  <li><a href="monitorform.html">Monitor</a></li>
+			  <li><a href="jobform.html">Job</a></li>
 			</ul>
 		  </div>
 	  </div>	
-<div id="wrapper">
 	<div id="page">
-		<!-- start content -->
-		<div id="content">
 	  <div id="preamble">
 	    <h2>User Management via SCDS API</h2>
 	    <p>Using API Key ID: <span id="showapikeyid"></span>
@@ -38,7 +37,7 @@
 		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
 	    </p>
 	  </div>
-			<div class="post">
+	  <div class="section">
 	  <h3>Get all Users</h3>
 	  <form action="" method="post" id="getuser" onsubmit="return(setFields(this.id,'user'));">
 		<p>
@@ -53,8 +52,8 @@
 			<input type="hidden" name="_authorization" />
 		</p>
 	  </form>
-			</div>
-			<div class="post">
+	  </div>
+	  <div class="section">
 	  <h3>Add or Update a User</h3>
 	  <form action="" method="post" id="putuser" onsubmit="return(setFields(this.id,'user','username'));">
 			<p>
@@ -75,8 +74,8 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-			</div>
-			<div class="post">
+	  </div>
+	  <div class="section">
 	  <h3>Delete a User</h3>
 	  <form action="" method="post" id="deluser" onsubmit="return(setFields(this.id,'user','username'));">
 			<p>
@@ -93,8 +92,8 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-			</div>
-			<div class="post">
+	  </div>
+	  <div class="section">
 	  <h3>Get User Information</h3>
 	  <form action="" method="post" id="userinfo" onsubmit="return(setFields(this.id,'user','username'));">
 			<p>
@@ -111,8 +110,8 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-			</div>
-			<div class="post">
+	  </div>
+	  <div class="section">
 	  <h3>Authenticate User</h3>
 	  <form action="" method="post" id="userlog" onsubmit="return(setFields(this.id,'user','username'));">
 			<p>
@@ -131,8 +130,8 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-			</div>
-			<div class="post">
+	  </div>
+	  <div class="section">
 	  <h3>Add or Update a User Property</h3>
 	  <form action="" method="post" id="putuserprop" onsubmit="return(setFields(this.id,'user','username','property','propname'));">
 			<p>
@@ -153,8 +152,8 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-			</div>
-			<div class="post">
+	  </div>
+	  <div class="section">
 	  <h3>Delete a User Property</h3>
 	  <form action="" method="post" id="deluserprop" onsubmit="return(setFields(this.id,'user','username','property','propname'));">
 			<p>
@@ -173,10 +172,8 @@
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
-			</div>
 		</div>
-	</div>
-</div>
+		</div>
 		<script type="text/javascript" src="md5.js"></script>
 		<script type="text/javascript" src="testapi.js"></script>
     </body>

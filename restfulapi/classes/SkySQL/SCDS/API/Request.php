@@ -338,7 +338,9 @@ final class Request {
 	}
 	
 	public function log ($data) {
-		if (!is_string($data)) $data = serialize($data);
-		file_put_contents($this->config['logging']['directory'].'/api.log', $data, FILE_APPEND);
+		if (is_writeable($this->config['logging']['directory'])) {
+			if (!is_string($data)) $data = serialize($data);
+			file_put_contents($this->config['logging']['directory'].'/api.log', $data, FILE_APPEND);
+		}
 	}
 }

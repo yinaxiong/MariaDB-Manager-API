@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html 
+     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+  <head>
+    <title>Manipulate Users via SCDS API</title>
+	<link href="default.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+	  <div id="header">
+		  <div id="logo">
+			<h1><a href="#">SCDS API</a></h1>
+			<p><span>SkySQL Cloud Data Suite API</span></p>
+		  </div>
+		  <div id="menu">
+			<ul>
+			  <li><a href="index.html">About</a></li>
+			  <li><a href="systemform.html">System</a></li>
+			  <li><a href="nodeform.html">Node</a></li>
+			  <li><a href="userform.html">User</a></li>
+			  <li><a href="backupform.html">Backup</a></li>
+			  <li class="active"><a href="monitorform.html">Monitor</a></li>
+			  <li><a href="jobform.html">Job</a></li>
+			</ul>
+		  </div>
+	  </div>	
+	<div id="page">
+	  <div id="preamble">
+	    <h2>Monitor Management via SCDS API</h2>
+	    <p>Using API Key ID: <span id="showapikeyid"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
+		  with Key: <span id="showapikey"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
+	    </p>
+	    <p>Sending requests to: <span id="showlink"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
+	    </p>
+	  </div>
+	  <div class="section">
+	  <h3>Get all Monitors</h3>
+	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'));">
+		<p>
+			<label for="systemidl">System ID</label>
+			<input type="text" name="systemid" id="systemidl" /><br />
+			<input type="submit" value="List" />
+			<input type="hidden" name="_method" value="GET" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  </div>
+		<script type="text/javascript" src="md5.js"></script>
+		<script type="text/javascript" src="testapi.js"></script>
+    </body>
+</html>
