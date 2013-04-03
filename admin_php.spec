@@ -34,7 +34,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/scdsapi/
 cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest $RPM_BUILD_ROOT%{install_path}
-cp restfulapi/api.ini $RPM_BUILD_ROOT%/etc/scdsapi/
+cp restfulapi/api.ini $RPM_BUILD_ROOT/etc/scdsapi/
 rm restfulapi/api.ini
 
 %clean
