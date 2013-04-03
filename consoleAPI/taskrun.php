@@ -33,7 +33,7 @@ class SkyConsoleAPI {
 			$now = new DateTime("now", new DateTimeZone('Europe/Rome'));
 			$time = $now->format('Y-m-d H:i:s');
 			
-			$insert = $this->db->prepare("INSERT INTO CommandExecution (SystemID,NodeID,CommandID,Params,Start,Completed,StepIndex,State,UserID) VALUES($system,$node,$command,". (is_null($params) ? "NULL" : "'$params'") . ",'$time',NULL,0,0,$user)");        	
+			$insert = $this->db->prepare("INSERT INTO CommandExecution (SystemID,NodeID,CommandID,Params,Start,Completed,StepIndex,State,UserID) VALUES($system,$node,$command,". (is_null($params) ? "NULL" : "'$params'") . ",'$time',NULL,0,0,'$user')");        	
         	$insert->execute();
         	$rowID = $this->db->lastInsertId();
         	global $DBPath, $shellPath;
