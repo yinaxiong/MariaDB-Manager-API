@@ -29,7 +29,7 @@ PHP sripts that implements admin console backend
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
-mkdir -p $RPM_BUILD_ROOT%/etc/scdsapi/
+mkdir -p $RPM_BUILD_ROOT/etc/scdsapi/
 
 cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
