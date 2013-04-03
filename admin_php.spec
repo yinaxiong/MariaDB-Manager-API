@@ -1,6 +1,6 @@
 %define _topdir	 	%(echo $PWD)/
 %define name		admin_php
-%define release		1
+%define release		2
 %define version 	0.1
 %define buildroot %{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
@@ -50,3 +50,8 @@ rm restfulapi/api.ini
 %{install_path}restfulapitest/
 %{install_path}restfulapitest/*
 /etc/scdsapi/api.ini
+
+%changelog
+* Wed Apr 03 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-2
+- first packaged version
+
