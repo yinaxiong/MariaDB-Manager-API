@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
@@ -26,31 +23,141 @@
 		  </div>
 	  </div>	
 	<div id="page">
-	  <div id="preamble">
-	    <h2>Monitor Management via SCDS API</h2>
-	    <p>Using API Key ID: <span id="showapikeyid"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
-		  with Key: <span id="showapikey"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
-	    </p>
-	    <p>Sending requests to: <span id="showlink"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
-	    </p>
-	  </div>
+	<div id="content">
+      <h2>Monitor Management via SCDS API</h2>
 	  <div class="section">
-	  <h3>Get all Monitors</h3>
-	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'));">
-		<p>
-			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" /><br />
-			<input type="submit" value="List" />
-			<input type="hidden" name="_method" value="GET" />
+	  <h3>Get Monitor Classes</h3>
+	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitorid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass <br />
+			or /monitorclass/{idorname}<br />
+			If a Monitor Class ID or Name (partial) is specified, only that class will be returned; otherwise all will be returned.<br />
+			Parameters: limit, offset, fields <br />
+			Defaults: 10, 0, All fields<br />
+	</p>
+		<p class="formfields">
+			<label for="monitorid">Monitor ID or Name</label>
+			<input type="text" name="monitorid" id="monitorid" /><br />
+			<label for="limit">Max items to return</label>
+			<input type="text" name="limit" id="limit" /><br />
+			<label for="offset">Offset into items</label>
+			<input type="text" name="offset" id="offset" /><br />
+			<label for="fields">Fields to return</label>
+			<input type="text" name="fields" id="fields" /><br />
+			<label for="fieldnames">Return field names</label>
+			<input type="text" name="fieldnames" id="fieldnames" /><br />
+			<input type="submit" class="submit" value="Fetch Classes" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 		</p>
 	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Create a Monitor Class</h3>
+	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass <br />
+			Parameters: name, sql, description, icon, type, uiorder, delta, monitortype, systemaverage, interval, unit <br />
+	</p>
+		<p class="formfields">
+			<label for="name">Name</label>
+			<input type="text" name="name" id="name" /><br />
+			<label for="sql">SQL</label>
+			<input type="text" name="sql" id="sql" /><br />
+			<label for="description">Description</label>
+			<input type="text" name="description" id="description" /><br />
+			<label for="icon">Icon</label>
+			<input type="text" name="icon" id="icon" /><br />
+			<label for="type">Type</label>
+			<input type="text" name="type" id="type" /><br />
+			<label for="uiorder">UIOrder</label>
+			<input type="text" name="uiorder" id="uiorder" /><br />
+			<label for="delta">Delta</label>
+			<input type="text" name="delta" id="delta" /><br />
+			<label for="monitortype">Monitor Type</label>
+			<input type="text" name="monitortype" id="monitortype" /><br />
+			<label for="systemaverage">System Average</label>
+			<input type="text" name="systemaverage" id="systemaverage" /><br />
+			<label for="interval">Interval</label>
+			<input type="text" name="interval" id="interval" /><br />
+			<label for="unit">Unit</label>
+			<input type="text" name="unit" id="unit" /><br />
+			<input type="submit" class="submit" value="Create Class" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Update a Monitor Class</h3>
+	  <form action="" method="post" id="updatemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitorid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass/{monitorclassid} <br />
+			Parameters: name, sql, description, icon, type, uiorder, delta, monitortype, systemaverage, interval, unit <br />
+	</p>
+		<p class="formfields">
+			<label for="monitoridu">Monitor ID or Name</label>
+			<input type="text" name="monitorid" id="monitoridu" /><br />
+			<label for="nameu">Name</label>
+			<input type="text" name="name" id="nameu" /><br />
+			<label for="sqlu">SQL</label>
+			<input type="text" name="sql" id="sqlu" /><br />
+			<label for="descriptionu">Description</label>
+			<input type="text" name="description" id="descriptionu" /><br />
+			<label for="iconu">Icon</label>
+			<input type="text" name="icon" id="iconu" /><br />
+			<label for="typeu">Type</label>
+			<input type="text" name="type" id="typeu" /><br />
+			<label for="uiorderu">UIOrder</label>
+			<input type="text" name="uiorder" id="uiorderu" /><br />
+			<label for="deltau">Delta</label>
+			<input type="text" name="delta" id="deltau" /><br />
+			<label for="monitortypeu">Monitor Type</label>
+			<input type="text" name="monitortype" id="monitortypeu" /><br />
+			<label for="systemaverageu">System Average</label>
+			<input type="text" name="systemaverage" id="systemaveragu" /><br />
+			<label for="intervalu">Interval</label>
+			<input type="text" name="interval" id="intervalu" /><br />
+			<label for="unitu">Unit</label>
+			<input type="text" name="unit" id="unitu" /><br />
+			<input type="submit" class="submit" value="Update Class" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete a Monitor Class</h3>
+	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitorid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass/{monitorclassid}<br />
+			No parameters<br />
+	</p>
+		<p class="formfields">
+			<label for="monitoridd">Monitor ID or Name</label>
+			<input type="text" name="monitorid" id="monitoridd" /><br />
+			<input type="submit" class="submit" value="Delete Class" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
 	  </div>
 	  </div>
 		<script type="text/javascript" src="md5.js"></script>

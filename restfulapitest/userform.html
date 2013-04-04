@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
@@ -26,26 +23,19 @@
 		  </div>
 	  </div>	
 	<div id="page">
-	  <div id="preamble">
-	    <h2>User Management via SCDS API</h2>
-	    <p>Using API Key ID: <span id="showapikeyid"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
-		  with Key: <span id="showapikey"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
-	    </p>
-	    <p>Sending requests to: <span id="showlink"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
-	    </p>
-	  </div>
+	<div id="content">
+	  <h2>User Management via SCDS API</h2>
 	  <div class="section">
 	  <h3>Get all Users</h3>
-	  <form action="" method="post" id="getuser" onsubmit="return(setFields(this.id,'user'));">
-		<p>
+	  <form action="" method="post" id="getuser" target="apiresults" onsubmit="return(setFields(this.id,'user'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /user <br />
 			No parameters <br />
-			<input type="submit" value="List" />
+		</p>
+		<p class="formfields">
+			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -55,19 +45,21 @@
 	  </div>
 	  <div class="section">
 	  <h3>Add or Update a User</h3>
-	  <form action="" method="post" id="putuser" onsubmit="return(setFields(this.id,'user','username'));">
-			<p>
+	  <form action="" method="post" id="putuser" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
 			When PUTting, parameters are passed as JSON (name and password) <br />
+		</p>
+		<p class="formfields">
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="name">Personal Name</label>
 			<input type="text" name="name" id="name" /><br />
 			<label for="password">Password</label>
 			<input type="text" name="password" id="password" /><br />
-			<input type="submit" value="Create or Update" />
+			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -77,15 +69,17 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a User</h3>
-	  <form action="" method="post" id="deluser" onsubmit="return(setFields(this.id,'user','username'));">
-			<p>
+	  <form action="" method="post" id="deluser" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="usernamed">Username</label>
 			<input type="text" name="username" id="usernamed" /><br />
-			<input type="submit" value="Delete" />
+			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -95,15 +89,17 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get User Information</h3>
-	  <form action="" method="post" id="userinfo" onsubmit="return(setFields(this.id,'user','username'));">
-			<p>
+	  <form action="" method="post" id="userinfo" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="usernamex">Username</label>
 			<input type="text" name="username" id="usernamex" /><br />
-			<input type="submit" value="Information" />
+			<input type="submit" class="submit" value="Information" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -113,17 +109,19 @@
 	  </div>
 	  <div class="section">
 	  <h3>Authenticate User</h3>
-	  <form action="" method="post" id="userlog" onsubmit="return(setFields(this.id,'user','username'));">
-			<p>
+	  <form action="" method="post" id="userlog" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
 			Parameter is a POST data item, called password <br />
+		</p>
+		<p class="formfields">
 			<label for="usernamel">Username</label>
 			<input type="text" name="username" id="usernamel" /><br />
 			<label for="passwordl">Password</label>
 			<input type="text" name="password" id="passwordl" /><br />
-			<input type="submit" value="Authenticate" />
+			<input type="submit" class="submit" value="Authenticate" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -133,19 +131,21 @@
 	  </div>
 	  <div class="section">
 	  <h3>Add or Update a User Property</h3>
-	  <form action="" method="post" id="putuserprop" onsubmit="return(setFields(this.id,'user','username','property','propname'));">
-			<p>
+	  <form action="" method="post" id="putuserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','propname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /user/{username}/property/{propertyname} <br />
 			When PUTting, parameter is passed as JSON (value) <br />
+		</p>
+		<p class="formfields">
 			<label for="usernamepp">Username</label>
 			<input type="text" name="username" id="usernamepp" /><br />
 			<label for="propname">Property Name</label>
 			<input type="text" name="propname" id="propname" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
-			<input type="submit" value="Add or Update Property" />
+			<input type="submit" class="submit" value="Add or Update Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -155,23 +155,26 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a User Property</h3>
-	  <form action="" method="post" id="deluserprop" onsubmit="return(setFields(this.id,'user','username','property','propname'));">
-			<p>
+	  <form action="" method="post" id="deluserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','propname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
 			URI will be /user/{username}/property/{propertyname} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="usernamepd">Username</label>
 			<input type="text" name="username" id="usernamepd" /><br />
 			<label for="propnamde">Property Name</label>
 			<input type="text" name="propname" id="propnamed" /><br />
-			<input type="submit" value="Delete Property" />
+			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
+		</div>
 		</div>
 		</div>
 		<script type="text/javascript" src="md5.js"></script>

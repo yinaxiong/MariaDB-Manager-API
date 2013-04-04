@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
@@ -26,28 +23,67 @@
 		  </div>
 	  </div>	
 	<div id="page">
-	  <div id="preamble">
-	    <h2>Node Management via SCDS API</h2>
-	    <p>Using API Key ID: <span id="showapikeyid"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
-		  with Key: <span id="showapikey"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
-	    </p>
-	    <p>Sending requests to: <span id="showlink"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
-	    </p>
+	<div id="content">
+	  <h2>Node Management via SCDS API</h2>
+	  <div class="section">
+	  <h3>Get all Node States</h3>
+	  <form action="" method="post" id="getnodestates" target="apiresults" onsubmit="return(setFields(this.id,'nodestate'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /nodestate <br />
+			Parameters: fields <br />
+			Default: All fields <br />
+		</p>
+		<p class="formfields">
+			<label for="fieldsa">Fields to return</label>
+			<input type="text" name="fields" id="fieldsa" /><br />
+			<input type="submit" class="submit" value="List States" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Selected Node State(s)</h3>
+	  <form action="" method="post" id="getnodestate" target="apiresults" onsubmit="return(setFields(this.id,'nodestate','stateid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /nodestate/{idordescription} <br />
+			Parameters: fields <br />
+			Default: All fields <br />
+		</p>
+		<p class="formfields">
+			<label for="stateid">State ID or Desc</label>
+			<input type="text" name="stateid" id="stateid" /><br />
+			<label for="fields">Fields to return</label>
+			<input type="text" name="fields" id="fields" /><br />
+			<input type="submit" class="submit" value="List State" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
 	  </div>
 	  <div class="section">
 	  <h3>Get all Nodes</h3>
-	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'));">
-		<p>
+	  <form action="" method="post" id="getsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node <br />
-			No parameters <br />
+			Parameters: fields <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidl">System ID</label>
 			<input type="text" name="systemid" id="systemidl" /><br />
-			<input type="submit" value="List" />
+			<label for="fieldsan">Fields to return</label>
+			<input type="text" name="fields" id="fieldsan" /><br />
+			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -57,22 +93,35 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a Node</h3>
-	  <form action="" method="post" id="putsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));">
-			<p>
+	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node/{nodeid} <br />
-			Parameters name, state <br />
+			Parameters name, status, hostname, publicip, privateip, instanceid, username, passwd <br />
+		</p>
+		<p class="formfields">
 			<label for="systemid">System ID</label>
 			<input type="text" name="systemid" id="systemid" /><br />
 			<label for="nodeid">Node ID</label>
 			<input type="text" name="nodeid" id="nodeid" /><br />
 			<label for="name">Node Name</label>
 			<input type="text" name="name" id="name" /><br />
-			<label for="state">State ID</label>
-			<input type="text" name="state" id="state" /><br />
-			<input type="submit" value="Create or Update" />
-			<input type="hidden" name="_method" value="PUT" />
+			<label for="status">State ID</label>
+			<input type="text" name="status" id="status" /><br />
+			<label for="hostname">Hostname</label>
+			<input type="text" name="hostname" id="hostname" /><br />
+			<label for="publicip">Public IP</label>
+			<input type="text" name="publicip" id="publicip" /><br />
+			<label for="privateip">Private IP</label>
+			<input type="text" name="privateip" id="privateip" /><br />
+			<label for="instanceid">Instance ID</label>
+			<input type="text" name="instanceid" id="instanceid" /><br />
+			<label for="username">User Name</label>
+			<input type="text" name="username" id="username" /><br />
+			<label for="passwd">Password</label>
+			<input type="text" name="passwd" id="passwd" /><br />
+			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -82,17 +131,19 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a Node</h3>
-	  <form action="" method="post" id="delsystem" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));">
-			<p>
+	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node/{nodeid} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidd">System ID</label>
 			<input type="text" name="systemid" id="systemidd" /><br />
 			<label for="nodeidd">Node ID</label>
 			<input type="text" name="nodeid" id="nodeidd" /><br />
-			<input type="submit" value="Delete" />
+			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -102,23 +153,28 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Node Information</h3>
-	  <form action="" method="post" id="systeminfo" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));">
-			<p>
+	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node/{nodeid} <br />
-			No parameters <br />
+			Parameters: fields <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidx">System ID</label>
 			<input type="text" name="systemid" id="systemidx" /><br />
 			<label for="nodeidx">Node ID</label>
 			<input type="text" name="nodeid" id="nodeidx" /><br />
-			<input type="submit" value="Information" />
+			<label for="fieldsi">Fields to return</label>
+			<input type="text" name="fields" id="fieldsi" /><br />
+			<input type="submit" class="submit" value="Information" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 			</p>
 		</form>
+	  </div>
 	  </div>
 	  </div>
 		<script type="text/javascript" src="md5.js"></script>

@@ -44,6 +44,59 @@
 		  The main resources handled by the SCDS API are Systems, Nodes, Users, Backups,
 		  Commands and Jobs.  Each has a page where you can run the various API requests.
 	  </p>
+	  <h3>Securing the API</h3>
+	  <p>
+		  The API is running on a server that is open to the world.  It is therefore
+		  undesirable for just anyone to be able to use the API.  To constrain use of
+		  the API, some additional headers need to be sent with each request.  The 
+		  headers used are the standard HTTP headers Date and Authorization.
+	  </p>
+	  <p>
+		  The Date header should be set with an RFC-2822 date, or something like it.
+		  Standard date format in JavaScript is close enough, or PHP will provide it
+		  with a call to date(&#039;r&#039;).  
+	  </p>
+	  <p>
+		  The Authorization header is just a little more complicated.  One element is
+		  the use of an API key.  The API has a configuration file, /etc/scdsapi/api.ini.
+		  Within the configuration file is an apikeys section which contains one or more
+		  integers to which are assigned long random strings.  Typically, these are
+		  32 character strings created by applying MD5 to some random text string.  But
+		  any long string of characters will do.  The integer will be part of the 
+		  authorization header and it will be stored in the log with brief information
+		  about each request to the API.  So it is possible to use a number of different
+		  API keys to track use of the API by different mechanisms.
+	  </p>
+	  <p>
+		  To create the Authorization header, first obtain the RFC-2822 date mentioned above
+		  and the request URI, trimmed of any leading and trailing slashes.  The request
+		  URI is the part of an absolute URI that comes after the domain.  For example,
+		  the request URI for http://eng01.skysql.com/system/123 is the string &quot;/system/123&quot;.
+		  Trimmed of leading and trailing slashes, it is &quot;system/123&quot;.
+	  </p>
+	  <p>
+		  The code string needed for authorization is then calculated by first concatenating these
+		  three items:
+	  </p>
+	  <ul>
+		  <li>The trimmed request URI</li>
+		  <li>The selected API key string</li>
+		  <li>RFC-2822 Date</li>
+	  </ul>
+	  <p>
+		  Once the code string has been formed, the whole Authorization header is obtained
+		  by concatenating these strings (the first is the literal text required):
+	  </p>
+	  <ul>
+		  <li>api-auth-</li>
+		  <li>the integer corresponding to the chosen API key, as a string, e.g. 1</li>
+		  <li>a hyphen</li>
+		  <li>the code string computed as above</li>
+	  </ul>
+	  <p>
+		  The full header will then be something like:<br />
+		  Authorization: api-auth-1-38ef94d18a0680c227a1f48d4072e9f9
+	  </p>
 	  <h3>Installation</h3>
 	  <p>
 		  The code can be extracted from the SkySQL repository.  Currently it is found at
@@ -85,6 +138,44 @@ RewriteRule .* - [E=HTTP_IF_MODIFIED_SINCE:%{HTTP:If-Modified-Since}]
 RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
 	  </pre>
 	  <p>
+	  </p>
+	  <h3>Configuring the API</h3>
+	  <p>
+		  The API has a configuration file called api.ini.  As mentioned above when discussing
+		  installation, the configuration file is located at /etc/scdsapi/api.ini and should be
+		  readable but not writeable by the web server when it is running the API.
+	  </p>
+	  <p>
+		  The configuration file installed by default will be something like:
+	  </p>
+	  <pre>
+; This is the INI file for the SkySQL Cloud Data Suite API
+[database]
+; path should become obsolete when all DB access is via the API
+path = "/usr/local/skysql/SQLite/AdminConsole/admin"
+pdoconnect = "sqlite:/usr/local/skysql/SQLite/AdminConsole/admin"
+user = ""
+password = ""
+[logging]
+directory = "/usr/local/skysql/log"
+errorlog = yes
+erroremail = "someone@example.com"
+[shell]
+path = "shell/"
+[monitor-defaults]
+interval = 1800
+count = 15
+[apikeys]
+1 = "1f8d9e040e65d7b105538b1ed0231770"
+	  </pre>
+	  <p>
+		  The path to the SQLite database could be different, but will be set by the SCDS
+		  provisioning system.  User and password are not required so long as SQLite is
+		  used for the administration database.  If the logging directory is writeable by
+		  the web server when running the API, and the errorlog option is set to yes, 
+		  information about requests to the API will be recorded there.  If an email
+		  address is provided in erroremail, the errors will be mailed to that address.
+		  The shell path defines how system calls will be handled by the API.
 	  </p>
 	  </div>
 	</div>

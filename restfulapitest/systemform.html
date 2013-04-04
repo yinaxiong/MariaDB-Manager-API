@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
@@ -26,26 +23,19 @@
 		  </div>
 	  </div>	
 	<div id="page">
-	  <div id="preamble">
-	    <h2>System Management via SCDS API</h2>
-	    <p>Using API Key ID: <span id="showapikeyid"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
-		  with Key: <span id="showapikey"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
-	    </p>
-	    <p>Sending requests to: <span id="showlink"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
-	    </p>
-	  </div>
-	  <div class="section">
+	<div id="content">
+	<h2>System Management via SCDS API</h2>
+	<div class="section">
 	  <h3>Get all Systems</h3>
-	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system'));">
-		<p>
+	  <form action="" method="post" id="getsystem" target="apiresults" onsubmit="return(setFields(this.id,'system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system <br />
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system <br />
 			No parameters <br />
-			<input type="submit" value="List" />
+		</p>
+		<p class="formfields">
+			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -55,19 +45,21 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System</h3>
-	  <form action="" method="post" id="putsystem" onsubmit="return(setFields(this.id,'system','systemid'));">
-			<p>
+	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid} <br />
+			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid} <br />
 			Parameters are name, state <br />
+		</p>
+		<p class="formfields">
 			<label for="systemid">System ID</label>
 			<input type="text" name="systemid" id="systemid" /><br />
 			<label for="name">System Name</label>
 			<input type="text" name="name" id="name" /><br />
 			<label for="state">State ID</label>
 			<input type="text" name="state" id="state" /><br />
-			<input type="submit" value="Create or Update" />
+			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -77,15 +69,17 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System</h3>
-	  <form action="" method="post" id="delsystem" onsubmit="return(setFields(this.id,'system','systemid'));">
-			<p>
+	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid} <br />
+			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidd">System ID</label>
 			<input type="text" name="systemid" id="systemidd" /><br />
-			<input type="submit" value="Delete" />
+			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -95,15 +89,17 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Information</h3>
-	  <form action="" method="post" id="systeminfo" onsubmit="return(setFields(this.id,'system','systemid'));">
-			<p>
+	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid} <br />
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidx">System ID</label>
 			<input type="text" name="systemid" id="systemidx" /><br />
-			<input type="submit" value="Information" />
+			<input type="submit" class="submit" value="Information" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -113,17 +109,19 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Property</h3>
-	  <form action="" method="post" id="getsystemprop" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));">
-			<p>
+	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/property/{propertyname} <br />
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/property/{propertyname} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidpg">System ID</label>
 			<input type="text" name="systemid" id="systemidpg" /><br />
 			<label for="propertynameg">Property Name</label>
 			<input type="text" name="propertyname" id="propertynameg" /><br />
-			<input type="submit" value="Get Property" />
+			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -133,19 +131,21 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System Property</h3>
-	  <form action="" method="post" id="putsystemprop" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));">
-			<p>
+	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/property/{propertyname} <br />
+			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/property/{propertyname} <br />
 			Parameter is value <br />
+		</p>
+		<p class="formfields">
 			<label for="systemidp">System ID</label>
 			<input type="text" name="systemid" id="systemidp" /><br />
 			<label for="propertyname">Property Name</label>
 			<input type="text" name="propertyname" id="propertyname" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
-			<input type="submit" value="Create or Update" />
+			<input type="submit" class="submit" value="Create or Update Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -155,17 +155,19 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System Property</h3>
-	  <form action="" method="post" id="delsystemprop" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));">
-			<p>
+	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/property/{propertyname} <br />
+			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/property/{propertyname} <br />
 			No parameters <br />
+		</p>
+		<p class="formfields">
 			<label for="systemiddp">System ID</label>
 			<input type="text" name="systemid" id="systemiddp" /><br />
 			<label for="propertynamed">Property Name</label>
 			<input type="text" name="propertyname" id="propertynamed" /><br />
-			<input type="submit" value="Delete" />
+			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -173,6 +175,71 @@
 			</p>
 		</form>
 	  </div>
+	</div>
+	<div id="sidebar">
+	  <div id="preamble">
+		<h3>The API explorer tool</h3>
+	    <p>
+			See <a href="index.html">About</a> for general information.
+		</p>
+		<p>
+			You can configure the 
+			API key ID, the key itself and the location of the API below:
+		</p>
+		<p class="configuration">
+			<strong>API ID:</strong> <span id="showapikeyid"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
+		  <br />
+		  <strong>API Key:</strong><br /> <span id="showapikey"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
+		  <br />
+		  <strong>Endpoint:</strong><br /> <span id="showlink"></span>
+		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
+	    </p>
+		<p>
+			For this group of API requests, the various possibilities are listed on the left.
+			Each one is a form which you can complete and then click on the blue submit button.
+			When you click on a button for the first time, results will be in a new tab or window.  Once 
+			the second tab/window has been created, every time you click on a button the results will be
+			in that tab/window.  This page should remain until you choose to close it.
+		</p>
+		<p>
+			The API is capable of replying with HTML responses, but this page is configured to ask the
+			API to answer with JSON.  Different browsers will treat this in different ways (including 
+			possibly not showing it at all).  There are several addons for Firefox that will display JSON
+			prettily, and there may well be similar addons for other browsers.  You can control how the
+			API replies by including or excluding &quot;application/json&quot; in the HTTP Accept
+			header - the API will only reply with JSON if it is included.
+		</p>
+		<p>
+			The form fields that are needed to make the Request URI are always mandatory.  If
+			they are omitted, the request will still be sent to the API but results will vary
+			according to the exact Request URI sent and may well be erroneous.
+		</p>
+		<p>
+			By and large, parameters are optional.  If they are not, you will see an error return when 
+			they are omitted.  The Request URI is the information that will be added to the location
+			to which requests are being sent (shown above).  It is literal text except for items that
+			are enclosed in curly brackets.  Items in curly brackets are taken from the form field
+			with the approximately similar name.
+		</p>
+		<p>
+			Where parameters are submitted with an HTTP PUT request, there is a single string passed
+			with the request.  The string must be JSON.  It is formed by creating an associative
+			array with keys that are the names of the parameters.  As you might expect, the corresponding
+			values are the values to be submitted.  The array is then JSON encoded.
+		</p>
+		<p>
+			Where parameters are submitted with an HTTP POST request, the usual conventions for POST
+			apply, so that each parameter is a POST data item.
+		</p>	
+		<p>
+			This page does not check information submitted in the form fields, but sends it directly
+			to the API.  If the information submitted is invalid, the API will send back an error 
+			message.
+		</p>
+	  </div>
+	</div>
 	</div>
 		<script type="text/javascript" src="md5.js"></script>
 		<script type="text/javascript" src="testapi.js"></script>

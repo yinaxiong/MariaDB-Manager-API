@@ -121,8 +121,7 @@ class SystemBackups extends ImplementAPI {
 	
 	public function updateSystemBackup ($uriparts) {
 		$systemid = (int) $uriparts[1];
-		$nodeid = (int) $uriparts[3];
-		$backupid = (int) $uriparts[5];
+		$backupid = (int) $uriparts[3];
 		$state = $this->getParam('PUT', 'state', 0);
 		$size = $this->getParam('PUT', 'size', 0);
 		$storage = $this->getParam('PUT', 'storage');
@@ -154,10 +153,9 @@ class SystemBackups extends ImplementAPI {
 		}
 		if (isset($sets)) {
 			$bind[':systemid'] = $systemid;
-			$bind[':nodeid'] = $nodeid;
 			$bind[':backupid'] = $backupid;
 			$update = $this->db->prepare('UPDATE Backup SET '.implode(', ', $sets).' 
-				WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupID = :backupid');
+				WHERE SystemID = :systemid AND BackupID = :backupid');
 			$update->execute($bind);
 			if ($update->rowCount()) $this->sendResponse(array('result' => 'updated'));
 		}

@@ -44,19 +44,46 @@ abstract class ImplementAPI {
 		return $this->requestor->getParam($arrname, $name, $def, $mask);
 	}
 	
+	protected function settersAndBinds ($source, $fields) {
+		$bind = $setter = $insname = $insvalue = array();
+		foreach ($fields as $name=>$about) {
+			if ($source) {
+				$input = $this->getParam($source, $name, $about['default']);
+				if ($input) {
+					$insname[] = $name;
+					$insvalue[] = ':'.$name;
+					$bind[':'.$name] = $input;
+					$setter[] = $about['sqlname'].' = :'.$name;
+				}
+			}
+		}
+		return array($insname, $insvalue, $setter, $bind);
+	}
+	
+	protected function getSelects ($fields, $selects=array()) {
+		foreach ($fields as $name=>$about) {
+			$selects[] = $about['sqlname'].' AS '.$name;
+		}
+		return $selects;
+	}
+	
 	protected function filterResults ($results) {
 		$filter = $this->getParam('GET', 'fields');
 		if ($filter) {
 			$filterwords = explode(',', $filter);
-			foreach ($results as $key=>$value) $filtered[$key] = $this->filterWords($value, $filterwords);
+			foreach ($results as $key=>$value) {
+				$filtered[$key] = $this->filterWords($value, $filterwords);
+			}
 			return $filtered;
 		}
 		else return $results;
 	}
 	
 	protected function filterWords ($value, $words) {
-		foreach ($words as $word) if (isset($value[$word])) $hits[] = $value[$word];
-		return empty($hits) ? null : (1 < count($hits) ? $hits : $hits[0]);
+		foreach ($words as $word) if (isset($value[$word])) {
+			$hits[$word] = $value[$word];
+		}
+		return empty($hits) ? null : (1 == count($hits)) ? $hits[$word] : $hits;
 	}
 	
 	protected function startImmediateTransaction () {

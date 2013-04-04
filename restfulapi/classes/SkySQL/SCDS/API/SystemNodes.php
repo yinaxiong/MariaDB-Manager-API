@@ -37,6 +37,16 @@ class SystemNodes extends ImplementAPI {
 	protected $monitorid = 0;
 	protected $monitorquery = null;
 	
+	protected static $fields = array(
+		'status' => array('sqlname' => 'State', 'default' => 0),
+		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
+		'publicip' => array('sqlname' => 'PublicIP', 'default' => ''),
+		'privateip' => array('sqlname' => 'PrivateIP', 'default' => ''),
+		'instanceid' => array('sqlname' => 'InstanceID', 'default' => ''),
+		'username' => array('sqlname' => 'Username', 'default' => ''),
+		'passwd' => array('sqlname' => 'passwd', 'default' => '')
+	);
+	
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		$this->monitorquery = $this->db->prepare('SELECT Value, MAX(Latest) FROM MonitorData 
@@ -45,13 +55,14 @@ class SystemNodes extends ImplementAPI {
 	
 	public function nodeStates ($uriparts) {
 		if (!empty($uriparts[1])) {
-			if (preg_match('/[0-9]+/', $uriparts[1])) {
+			$state = urldecode($uriparts[1]);
+			if (preg_match('/[0-9]+/', $state)) {
 				$condition = ' WHERE State = :state';
-				$bind = array(':state' => $uriparts[1]);
+				$bind = array(':state' => $state);
 			}
 			else {
 				$condition = ' WHERE Description LIKE :description';
-				$bind = array(':description' => $uriparts[1].'%');
+				$bind = array(':description' => $state.'%');
 			}
 		}
 		else {
@@ -61,43 +72,46 @@ class SystemNodes extends ImplementAPI {
 		$query = $this->db->prepare("SELECT State AS state, Description AS description, Icon AS icon
 			FROM NodeStates".$condition);
 		$query->execute($bind);
-		$states = $query->fetchAll(PDO::FETCH_ASSOC);
-		$states = $this->filterResults($states);
+		$states = $this->filterResults($query->fetchAll(PDO::FETCH_ASSOC));
         $this->sendResponse(array('nodestates' => $states));
 	}
 	
 	public function getSystemAllNodes ($uriparts) {
 		$this->systemid = $uriparts[1];
-		$statement = $this->db->prepare('SELECT Node.NodeID AS id, NodeName AS name, State AS status,
-			Hostname AS hostname, PublicIP AS publicip, PrivateIP AS privateip, 
-			InstanceID AS instanceid, Username AS username, passwd
-			FROM Node LEFT JOIN NodeData ON Node.NodeID = NodeData.NodeID WHERE Node.SystemID = :systemID');
+		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'NodeID AS id', 'NodeName AS name'));
+		$statement = $this->db->prepare('SELECT '.implode(', ',$selects).' FROM Node WHERE Node.SystemID = :systemID');
 		$statement->execute(array(':systemID' => $this->systemid));
-		$nodes = $statement->fetchAll(PDO::FETCH_ASSOC);
-		$nodes = $this->filterResults($nodes);
-		$this->sendResponse(array('nodes' => $nodes));
+		$this->returnNodes($statement);
 	}
 	
 	public function getSystemNode ($uriparts) {
 		$this->systemid = $uriparts[1];
 		$this->nodeid = $uriparts[3];
-		$statement = $this->db->prepare('SELECT NodeName AS name, State AS status, 
-			PrivateIP AS privateIP, PublicIP AS publicIP, InstanceID AS instanceID FROM Node 
-			LEFT JOIN NodeData ON Node.NodeID = NodeData.NodeID AND Node.SystemID = NodeData.SystemID
+		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'NodeID AS id', 'NodeName AS name'));
+		$statement = $this->db->prepare('SELECT '.implode(', ',$selects).' FROM Node 
 			WHERE Node.SystemID = :systemID AND Node.NodeID = :nodeID');
 		$statement->execute(array(':systemID' => $this->systemid, ':nodeID' => $this->nodeid));
-		$node = $statement->fetch(PDO::FETCH_ASSOC);
-		if ($node) {
-			$node['commands'] = is_null($node['status']) ? null : $this->getCommands($node['status']);
-			$node['connections'] = $this->getConnections();
-			$node['packets'] = $this->getPackets();
-			$node['health'] = $this->getHealth();
-			list($node['task'], $node['command']) = $this->getCommand();
-			$nodes = $this->filterResults(array($node));
-			$node = $nodes[0];
-			$this->sendResponse(array('node' => $node));
+		$this->returnNodes($statement);
+	}
+	
+	protected function returnNodes ($statement) {
+		$nodes = $statement->fetchAll(PDO::FETCH_ASSOC);
+		if ($nodes) {
+			$this->extraNodeData($nodes);
+			$nodes = $this->filterResults($nodes);
+			$this->sendResponse(array('node' => $nodes));
 		}
 		else $this->sendErrorResponse('', 404);
+	}
+	
+	protected function extraNodeData (&$nodes) {
+		foreach ($nodes as &$node) {
+			$node['commands'] = is_null($node['status']) ? null : $this->getCommands($node['status']);
+			$node['connections'] = $this->getConnections($node['id']);
+			$node['packets'] = $this->getPackets($node['id']);
+			$node['health'] = $this->getHealth($node['id']);
+			list($node['task'], $node['command']) = $this->getCommand($node['id']);
+		}
 	}
 	
 	public function putSystemNode ($uriparts) {
@@ -105,34 +119,43 @@ class SystemNodes extends ImplementAPI {
 		if (!$this->validateSystem()) $this->sendErrorResponse('Create node gave non-existent system ID '.$this->systemid, 400);
 		$this->nodeid = $uriparts[3];
 		if (!$this->nodeid) $this->sendErrorResponse('Cannot create or update node with ID of zero', 400);
+		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
+		$bind[':systemid'] = $this->systemid;
+		$bind[':nodeid'] = $this->nodeid;
 		$name = $this->getParam('PUT', 'name');
-		if (!$name) $name = 'Node '.sprintf('%06d', $this->nodeid);
-		$state = $this->getParam('PUT', 'state', 0);
-		$this->startImmediateTransaction();
-		$update = $this->db->prepare('UPDATE Node SET NodeName = :name, State = :state
-			WHERE SystemID = :systemid AND NodeID = :nodeid');
-		$update->execute(array(
-			':name' => $name,
-			':state' => $state,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid
-		));
-		if (0 == $update->rowCount()) {
-			$insert = $this->db->prepare('INSERT INTO Node (SystemID, NodeID, NodeName, State) 
-				VALUES (:systemid, :nodeid, :name, :state)');
-			$insert->execute(array(
-				':systemid' => $this->systemid,
-				':nodeid' => $this->nodeid,
-				':name' => $name,
-				':state' => $state
-			));
+		if ($name) {
+			$insertname = $name;
+			$setter[] = 'NodeName = :name';
+			$bind[':name'] = $name;
 		}
-		$this->sendResponse(array('node' => array(
-			'node' => $this->nodeid,
-			'system' => $this->systemid,
-			'name' => $name,
-			'status' => $state
-		)));
+		else $insertname = 'Node '.sprintf('%06d', $this->nodeid);
+		$this->startImmediateTransaction();
+		if (!empty($setter)) {
+			$update = $this->db->prepare('UPDATE Node SET '.implode(', ',$setter).
+				' WHERE SystemID = :systemid AND NodeID = :nodeid');
+			$update->execute($bind);
+			$counter = $update->rowCount();
+		}
+		else {
+			$update = $this->db->prepare('SELECT COUNT(*) FROM Node
+				WHERE SystemID = :systemid AND NodeID = :nodeid');
+			$update->execute($bind);
+			$counter = $update->fetch(PDO::FETCH_COLUMN);
+		}
+		if (0 == $counter) {
+			$insname[] = 'SystemID';
+			$insvalue[] = ':systemid';
+			$insname[] = 'NodeID';
+			$insvalue[] = ':nodeid';
+			$insname[] = 'NodeName';
+			$insvalue[] = ':name';
+			$fields = implode(',',$insname);
+			$values = implode(',',$insvalue);
+			$insert = $this->db->prepare("INSERT INTO Node ($fields) VALUES ($values)");
+			$insert->execute($bind);
+			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $this->db->lastInsertId()));
+		}
+		$this->sendResponse(array('updatecount' => (isset($setter) ? $counter : 0), 'insertkey' => 0));
 	}
 	
 	public function deleteSystemNode ($uriparts) {
@@ -144,7 +167,8 @@ class SystemNodes extends ImplementAPI {
 			':systemid' => $this->systemid,
 			':nodeid' => $this->nodeid
 			));
-		if ($delete->rowCount()) $this->sendResponse();
+		$counter = $delete->rowCount();
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
 		else $this->sendErrorResponse('Delete node did not match any node', 404);
 	}
 	
@@ -160,29 +184,29 @@ class SystemNodes extends ImplementAPI {
 		return $query->fetchAll(PDO::FETCH_COLUMN);
 	}
 	
-	protected function getConnections () {
-		return $this->getMonitorData(1);
+	protected function getConnections ($nodeid) {
+		return $this->getMonitorData($nodeid, 1);
 	}
 	
-	protected function getPackets () {
-		return $this->getMonitorData(2);
+	protected function getPackets ($nodeid) {
+		return $this->getMonitorData($nodeid, 2);
 	}
 	
-	protected function getHealth () {
-		return $this->getMonitorData(3);
+	protected function getHealth ($nodeid) {
+		return $this->getMonitorData($nodeid, 3);
 	}
 	
-	protected function getMonitorData ($monitorid) {
+	protected function getMonitorData ($nodeid, $monitorid) {
 		$this->monitorquery->execute(
-			array(':systemid' => $this->systemid, ':monitorid' => $monitorid, ':nodeid' => $this->nodeid)
+			array(':systemid' => $this->systemid, ':monitorid' => $monitorid, ':nodeid' => $nodeid)
 		);
 		return $this->monitorquery->fetchAll(PDO::FETCH_COLUMN);
 	}
 	
-	protected function getCommand () {
+	protected function getCommand ($nodeid) {
 		$query = $this->db->prepare('SELECT rowid, CommandID FROM CommandExecution 
 			WHERE SystemID = :systemid AND NodeID = :nodeid');
-		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $this->nodeid));
+		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $nodeid));
 		$row = $query->fetch();
 		return $row ? array($row->rowid, $row->CommandID) : array(null, null);
 	}

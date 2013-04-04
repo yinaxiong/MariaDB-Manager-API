@@ -138,15 +138,18 @@ final class Monitors extends ImplementAPI {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$timeparm = $this->getParam('GET', 'time');
 		$unixtime = strtotime(empty($timeparm) ? $this->getLatestTime() : $timeparm);
-		$interval = $this->getParam('GET', 'interval', 30);
-		$count = $this->getParam('GET', 'count', 15);
-		$monitorinfo = $this->db->prepare('SELECT Value AS value, Start AS start, Latest AS latest
-			FROM MonitorData WHERE MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid
-			AND Start < :time AND Latest >= :time');
+		$results['endtime'] = $unixtime;
+		$results['interval'] = $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
+		$count = $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
+		$results['count'] = $count;
+		$results['datamethod'] = $this->getParam('GET', 'datamethod', 'mean');
+		$monitorinfo = $this->db->prepare("SELECT $selector FROM MonitorData
+			WHERE MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid
+			AND Start < :time AND Latest >= :time");
 		$pairs = array();
 		while ($count-- > 0) {
 			$time = date('Y-m-d H:i:s', $unixtime);
-			$unixtime -= $interval;
+			$unixtime -= $results['interval'];
 			$monitorinfo->execute(array(
 				':monitorid' => $this->monitorid,
 				':systemid' => $this->systemid,
@@ -154,9 +157,8 @@ final class Monitors extends ImplementAPI {
 				':time' => $time
 			));
 			$pairs[] = $monitorinfo->fetchAll(PDO::FETCH_ASSOC);
-			$this->sendResponse(array('monitor_data' => array_reverse($pairs)));
 		}
-		
+		$this->sendResponse(array('monitor_data' => array_reverse($pairs)));
 	}
 	
 	protected function analyseMonitorURI ($uriparts) {

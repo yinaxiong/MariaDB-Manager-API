@@ -298,10 +298,11 @@ final class Request {
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
-		$status_header = $this->sendHeaders($status);
+		$suppress = 'true' == $this->getParam($this->requestmethod, 'suppress_response_codes') ? true : false;
+		if ($suppress) $body['httpcode'] = $status;
+		$status_header = $this->sendHeaders($status, $suppress);
 		if (empty($body)) $body = $status_header;
 		if ('application/json' == $this->accept) {
-			if (!is_array($body) OR 1 != count($body)) $body = array('result' => $body, 'httpcode' => $status);
 			echo json_encode($body);
 			exit;
 		}
@@ -310,7 +311,8 @@ final class Request {
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
-		$status_header = $this->sendHeaders($status);
+		$suppress = 'true' == $this->getParam($this->requestmethod, 'suppress_response_codes') ? true : false;
+		$status_header = $this->sendHeaders($status, $suppress);
 		if (empty($errors)) $errors = $status_header;
 		if ($errors AND 'text/html' == $this->accept) {
 			$statusname = @self::$codes[$status];
@@ -322,7 +324,9 @@ final class Request {
 		$recorder = ErrorRecorder::getInstance();
 		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
 		if ('application/json' == $this->accept) {
-			echo json_encode(array('errors' => (array) $errors, 'httpcode' => $status));
+			$body['errors'] = (array) $errors;
+			if ($suppress) $body['httpcode'] = $status;
+			echo json_encode($body);
 			exit;
 		}
 		echo print_r($text, true);

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
@@ -26,31 +23,67 @@
 		  </div>
 	  </div>	
 	<div id="page">
-	  <div id="preamble">
-	    <h2>Job Management via SCDS API</h2>
-	    <p>Using API Key ID: <span id="showapikeyid"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
-		  with Key: <span id="showapikey"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
-	    </p>
-	    <p>Sending requests to: <span id="showlink"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
-	    </p>
-	  </div>
+	<div id="content">
+      <h2>Job Management via SCDS API</h2>
 	  <div class="section">
 	  <h3>Get all Commands</h3>
-	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'));">
-		<p>
-			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" /><br />
-			<input type="submit" value="List" />
-			<input type="hidden" name="_method" value="GET" />
+	  <form action="" method="post" id="getcommands" target="apiresults" onsubmit="return(setFields(this.id,'command'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /command <br />
+			Parameter: group <br />
+			Default: All groups <br />
+		</p>
+		<p class="formfields">
+			<label for="group">Group</label>
+			<input type="text" name="group" id="group" /><br />
+			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 		</p>
 	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get all Command States</h3>
+	  <form action="" method="post" id="getcommandstates" target="apiresults" onsubmit="return(setFields(this.id,'command','state'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /command/state <br />
+			Parameters: none <br />
+		</p>
+		<p class="formfields">
+			<input type="hidden" name="state" value="state" /><br />
+			<input type="submit" class="submit" value="List" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get all Command Steps</h3>
+	  <form action="" method="post" id="getcommandsteps" target="apiresults" onsubmit="return(setFields(this.id,'command','step'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /command/step <br />
+			Parameters: none <br />
+		</p>
+		<p class="formfields">
+			<input type="hidden" name="step" value="step" /><br />
+			<input type="submit" class="submit" value="List" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
 	  </div>
 	  </div>
 		<script type="text/javascript" src="md5.js"></script>

@@ -1,8 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html 
-     PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-    "DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SCDS API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
@@ -26,31 +23,87 @@
 		  </div>
 	  </div>	
 	<div id="page">
-	  <div id="preamble">
-	    <h2>Backup Management via SCDS API</h2>
-	    <p>Using API Key ID: <span id="showapikeyid"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKeyID','showapikeyid');">reset</a>)
-		  with Key: <span id="showapikey"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myKey','showapikey');">reset</a>)
-	    </p>
-	    <p>Sending requests to: <span id="showlink"></span>
-		  (<a href="javascript:void(0)" onclick="resetPersistent('myLink','showlink');">reset</a>)
-	    </p>
-	  </div>
+	<div id="content">
+      <h2>Backup Management via SCDS API</h2>
 	  <div class="section">
-	  <h3>Get all Backups</h3>
-	  <form action="" method="post" id="getsystem" onsubmit="return(setFields(this.id,'system','systemid','node'));">
-		<p>
-			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" /><br />
-			<input type="submit" value="List" />
-			<input type="hidden" name="_method" value="GET" />
+	  <h3>Get all Backup States</h3>
+	  <form action="" method="post" id="getbackupstates" target="apiresults" onsubmit="return(setFields(this.id,'backupstate'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /backupstates <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<input type="submit" class="submit" value="List States" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
 			<input type="hidden" name="_authorization" />
 		</p>
 	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get System Backups</h3>
+	  <form action="" method="post" id="getbackups" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/backup <br />
+			Parameters: from, to, limit, offset <br />
+			Defaults are forever, forever, 10, 0 respectively<br />
+		</p>
+		<p class="formfields">
+			<label for="systemidl">System ID</label>
+			<input type="text" name="systemid" id="systemidl" /><br />
+			<label for="from">From - Date+Time</label>
+			<input type="text" name="from" id="from" /><br />
+			<label for="to">To - Date+Time</label>
+			<input type="text" name="to" id="to" /><br />
+			<label for="limit">Max items to return</label>
+			<input type="text" name="limit" id="limit" /><br />
+			<label for="offset">Offset into items</label>
+			<input type="text" name="offset" id="offset" /><br />
+			<input type="submit" class="submit" value="List Backups" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Update a System Backup</h3>
+	  <form action="" method="post" id="updateback" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup','backupid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/backup/{backupid} <br />
+			Parameters: state, size, storage, binlog, log <br />
+		</p>
+		<p class="formfields">
+			<label for="systemidu">System ID</label>
+			<input type="text" name="systemid" id="systemidu" /><br />
+			<label for="backupid">Backup ID</label>
+			<input type="text" name="backupid" id="backupid" /><br />
+			<label for="state">State ID</label>
+			<input type="text" name="state" id="state" /><br />
+			<label for="size">Size</label>
+			<input type="text" name="size" id="size" /><br />
+			<label for="storage">Storage</label>
+			<input type="text" name="storage" id="storage" /><br />
+			<label for="binlog">BinLog</label>
+			<input type="text" name="binlog" id="binlog" /><br />
+			<label for="log">Log</label>
+			<input type="text" name="log" id="log" /><br />
+			<input type="submit" class="submit" value="Update Backup" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
 	  </div>
 	  </div>
 		<script type="text/javascript" src="md5.js"></script>
