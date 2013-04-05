@@ -35,6 +35,12 @@ class Systems extends ImplementAPI {
 	protected $nodes_query = null;
 	protected $backups_query = null;
 	
+	protected static $fields = array(
+		'startDate' => array('sqlname' => 'InitialStart', 'default' => ''),
+		'lastAccess' => array('sqlname' => 'LastAccess', 'default' => ''),
+		'state' => array('sqlname' => 'State', 'default' => 0)
+	);
+
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		$this->nodes_query = $this->db->prepare('SELECT NodeID FROM Node WHERE SystemID = :systemid ORDER BY NodeID');
@@ -43,67 +49,83 @@ class Systems extends ImplementAPI {
 	
 	public function getAllData () {
 		if ('id' == $this->getParam('GET', 'fields')) {
-			$systems = $this->db->query('SELECT SystemID FROM System');
-			$this->sendResponse(array("systems" => $systems->fetchAll(PDO::FETCH_COLUMN)));
+			$systems = $this->db->query('SELECT SystemID AS id FROM System');
+			$this->sendResponse(array("system" => $systems->fetchAll(PDO::FETCH_ASSOC)));
 		}
-		$systems = $this->db->query('SELECT * FROM System');
+		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'SystemName AS name'));
+		$query = $this->db->query("SELECT $selects FROM System");
 		$results = array();
-		foreach ($systems as $system) $results[] = $this->retrieveOneSystem($system);
-        $this->sendResponse(array("systems" => $results));
+		foreach ($query->fetchAll(PDO::FETCH_ASSOC) as $system) {
+			$results[] = $this->retrieveOneSystem($system);
+		}
+        $this->sendResponse(array("system" => $this->filterResults($results)));
 	}
 
 	public function getSystemData ($uriparts) {
 		$data = $this->readSystemData($uriparts[1]);
-		if ($data) $this->sendResponse(array('system' => $this->retrieveOneSystem($data, true)));
+		if ($data) $this->sendResponse(array('system' => $this->filterResults(array($this->retrieveOneSystem($data)))));
 		else $this->sendErrorResponse('', 404);
 	}
 	
 	public function putSystem ($uriparts) {
 		$systemid = $uriparts[1];
 		if (!$systemid) $this->sendErrorResponse('Creating a system with ID of zero is not permitted', 400);
+		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
+		$bind[':systemid'] = $systemid;
 		$name = $this->getParam('PUT', 'name');
-		if (!$name) $name = 'System '.sprintf('%06d', $systemid);
-		$start = strtotime($this->getParam('PUT', 'startDate'));
-		$initialstart = date('Y-m-d H:i:s', ($start ? $start : time()));
-		$access = strtotime($this->getParam('PUT', 'lastAccess'));
-		$lastaccess = date('Y-m-d H:i:s', ($access ? $access : time()));
-		$state = $this->getParam('PUT', 'state');
-		$this->startImmediateTransaction();
-		$update = $this->db->prepare('UPDATE System SET SystemName = :systemname, InitialStart = :initialstart,
-			LastAccess = :lastaccess, State = :state WHERE SystemID = :systemid');
-		$update->execute(array(
-			':systemname' => ($name ? $name : 'System nnnnnn'),
-			':initialstart' => $initialstart,
-			':lastaccess' => $lastaccess,
-			':state' => $state,
-			':systemid' => $systemid
-		));
-		if (0 == $update->rowCount()) {
-			$insert = $this->db->prepare('INSERT INTO System (SystemID, SystemName, InitialStart, LastAccess, State) 
-				VALUES (:systemid, :systemname, :initialstart, :lastaccess, :state)');
-			$insert->execute(array(
-				':systemid' => $systemid,
-				':systemname' => ($name ? $name : 'System nnnnnn'),
-				':initialstart' => $initialstart,
-				':lastaccess' => $lastaccess,
-				':state' => $state,
-			));
+		if ($name) {
+			$insertname = $name;
+			$setter[] = 'SystemName = :name';
+			$bind[':name'] = $name;
 		}
-		$this->sendResponse(array('system' => array(
-			'system' => $systemid,
-			'name' => $name,
-			'startDate' => $initialstart,
-			'lastAccess' => $lastaccess,
-			'state' => $state
-		)));
+		else $insertname = 'System '.sprintf('%06d', $systemid);
+		if (isset($bind[':startDate'])) $bind[':startDate'] = date('Y-m-d H:i:s', strtotime($bind[':startDate']));
+		if (isset($bind[':lastAccess'])) $bind[':lastAccess'] = date('Y-m-d H:i:s', strtotime($bind[':lastAccess']));
+		$this->startImmediateTransaction();
+		if (!empty($setter)) {
+			$update = $this->db->prepare('UPDATE System SET '.implode(', ',$setter).
+				' WHERE SystemID = :systemid');
+			$update->execute($bind);
+			$counter = $update->rowCount();
+		}
+		else {
+			$update = $this->db->prepare('SELECT COUNT(*) FROM System
+				WHERE SystemID = :systemid');
+			$update->execute($bind);
+			$counter = $update->fetch(PDO::FETCH_COLUMN);
+		}
+		if (0 == $counter) {
+			if (empty($bind[':startDate'])) {
+				$bind[':startDate'] = date('Y-m-d H:i:s');
+				$insname[] = 'InitialStart';
+				$insvalue[] = ':startDate';
+			}
+			if (empty($bind[':lastAccess'])) {
+				$bind[':lastAccess'] = date('Y-m-d H:i:s');
+				$insname[] = 'LastAccess';
+				$insvalue[] = ':lastAccess';
+			}
+			$insname[] = 'SystemID';
+			$insvalue[] = ':systemid';
+			$insname[] = 'SystemName';
+			$insvalue[] = ':name';
+			$bind[':name'] = $insertname;
+			$fields = implode(',',$insname);
+			$values = implode(',',$insvalue);
+			$insert = $this->db->prepare("INSERT INTO System ($fields) VALUES ($values)");
+			$insert->execute($bind);
+			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $this->db->lastInsertId()));
+		}
+		$this->sendResponse(array('updatecount' => (empty($setter) ? 0: $counter), 'insertkey' => 0));
 	}
 	
 	public function deleteSystem ($uriparts) {
 		$systemid = $uriparts[1];
 		$delete = $this->db->prepare('DELETE FROM System WHERE SystemID = :systemid');
 		$delete->execute(array(':systemid' => $systemid));
-		if ($delete->rowCount()) $this->sendResponse();
-		else $this->sendErrorResponse('Delete system did not match any system', 404);
+		$counter = $delete->rowCount();
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
+		else $this->sendErrorResponse('Delete system did not match any existing system', 404);
 	}
 	
 	public function setSystemProperty ($uriparts) {
@@ -118,32 +140,27 @@ class Systems extends ImplementAPI {
 		$this->startImmediateTransaction();
 		$update = $this->db->prepare('UPDATE SystemProperties SET Value = :value WHERE SystemID = :systemid AND Property = :property');
 		$update->execute($bind);
-		if (0 == $update->rowCount()) {
+		$counter = $update->rowCount();
+		if (0 == $counter) {
 			$insert = $this->db->prepare('INSERT INTO SystemProperties (SystemID, Property, Value)
 				VALUES (:systemid, :property, :value)');
 			$insert->execute($bind);
+			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $property));
 		}
-		$this->sendResponse(array(
-			'id' => $systemid,
-			'property' => $property,
-			'value' => $value
-		));
+		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => ''));
 	}
 	
 	public function deleteSystemProperty ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$property = $uriparts[3];
-		$pstatement = $this->db->prepare('DELETE FROM SystemProperties WHERE SystemID = :systemid AND Property = :property');
-		$pstatement->execute(array(
+		$delete = $this->db->prepare('DELETE FROM SystemProperties WHERE SystemID = :systemid AND Property = :property');
+		$delete->execute(array(
 			':systemid' => $systemid,
 			':property' => $property
 		));
-		$rowcount = $pstatement->rowCount();
-		$this->sendResponse(array(
-			'id' => $systemid,
-			'property' => $property,
-			'rowcount' => $rowcount
-		), ($rowcount ? 200 : 404));
+		$counter = $delete->rowCount();
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
+		else $this->sendErrorResponse('Delete node did not match any node', 404);
 	}
 	
 	public function getSystemProperty ($uriparts) {
@@ -152,7 +169,7 @@ class Systems extends ImplementAPI {
 			$result = $this->retrieveOneSystem($data, true);
 			$property = $uriparts[3];
 			if (isset($result['properties'][$property])) {
-				$this->sendResponse(array($property => $result['properties'][$property]));
+				$this->sendResponse(array('systemproperty' => array($property => $result['properties'][$property])));
 			}
 		}
 		$this->sendErrorResponse('', 404);
@@ -160,31 +177,21 @@ class Systems extends ImplementAPI {
 	
 	protected function readSystemData ($systemID) {
 		$id = (int) $systemID;
-		$statement = $this->db->query("SELECT * FROM System WHERE SystemID = $id");
-		return $statement->fetch();
+		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'SystemName AS name'));
+		$statement = $this->db->query("SELECT $selects FROM System WHERE SystemID = $id");
+		return $statement->fetch(PDO::FETCH_ASSOC);
 	}
 	
-	protected function retrieveOneSystem ($system, $withProperties=false) {
-		$this->nodes_query->execute(array(':systemid' => $system->SystemID));
+	protected function retrieveOneSystem ($system) {
+		$this->nodes_query->execute(array(':systemid' => (int) $system['system']));
 		// Can only be exactly one result for the latest backup
-		$this->backups_query->execute(array(':systemid' => $system->SystemID));
+		$this->backups_query->execute(array(':systemid' => $system['system']));
 						
-        $result = array(
-           	"id" => $system->SystemID,
-           	"name" => $system->SystemName,
-           	"startDate" => $system->InitialStart,
-           	"lastAccess" => $system->LastAccess,
-           	"status" => $system->State,
-           	"nodes" => $nodeids = $this->nodes_query->fetchAll(PDO::FETCH_COLUMN),
-           	"lastBackup" => $this->backups_query->fetchColumn()
-       	);
-		
-		if ($withProperties) {
-			$presults = $this->retrieveProperties($system->SystemID);
-			if (count($presults)) $result['properties'] = $presults;
-		}
-		
-		return $result;
+		$system['nodes'] = $this->nodes_query->fetchAll(PDO::FETCH_COLUMN);
+		$system['lastBackup'] = $this->backups_query->fetchColumn();
+		$presults = $this->retrieveProperties($system['system']);
+		if (count($presults)) $system['properties'] = $presults;
+		return $system;
 	}
 	
 	protected function retrieveProperties ($systemID) {

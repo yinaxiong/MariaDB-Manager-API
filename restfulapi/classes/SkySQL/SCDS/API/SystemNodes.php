@@ -40,9 +40,9 @@ class SystemNodes extends ImplementAPI {
 	protected static $fields = array(
 		'status' => array('sqlname' => 'State', 'default' => 0),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
-		'publicip' => array('sqlname' => 'PublicIP', 'default' => ''),
-		'privateip' => array('sqlname' => 'PrivateIP', 'default' => ''),
-		'instanceid' => array('sqlname' => 'InstanceID', 'default' => ''),
+		'publicIP' => array('sqlname' => 'PublicIP', 'default' => ''),
+		'privateIP' => array('sqlname' => 'PrivateIP', 'default' => ''),
+		'instanceID' => array('sqlname' => 'InstanceID', 'default' => ''),
 		'username' => array('sqlname' => 'Username', 'default' => ''),
 		'passwd' => array('sqlname' => 'passwd', 'default' => '')
 	);
@@ -79,7 +79,7 @@ class SystemNodes extends ImplementAPI {
 	public function getSystemAllNodes ($uriparts) {
 		$this->systemid = $uriparts[1];
 		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'NodeID AS id', 'NodeName AS name'));
-		$statement = $this->db->prepare('SELECT '.implode(', ',$selects).' FROM Node WHERE Node.SystemID = :systemID');
+		$statement = $this->db->prepare("SELECT $selects FROM Node WHERE Node.SystemID = :systemID");
 		$statement->execute(array(':systemID' => $this->systemid));
 		$this->returnNodes($statement);
 	}
@@ -88,8 +88,8 @@ class SystemNodes extends ImplementAPI {
 		$this->systemid = $uriparts[1];
 		$this->nodeid = $uriparts[3];
 		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'NodeID AS id', 'NodeName AS name'));
-		$statement = $this->db->prepare('SELECT '.implode(', ',$selects).' FROM Node 
-			WHERE Node.SystemID = :systemID AND Node.NodeID = :nodeID');
+		$statement = $this->db->prepare("SELECT $selects FROM Node 
+			WHERE Node.SystemID = :systemID AND Node.NodeID = :nodeID");
 		$statement->execute(array(':systemID' => $this->systemid, ':nodeID' => $this->nodeid));
 		$this->returnNodes($statement);
 	}
@@ -98,8 +98,7 @@ class SystemNodes extends ImplementAPI {
 		$nodes = $statement->fetchAll(PDO::FETCH_ASSOC);
 		if ($nodes) {
 			$this->extraNodeData($nodes);
-			$nodes = $this->filterResults($nodes);
-			$this->sendResponse(array('node' => $nodes));
+			$this->sendResponse(array('node' => $this->filterResults($nodes)));
 		}
 		else $this->sendErrorResponse('', 404);
 	}
@@ -149,13 +148,14 @@ class SystemNodes extends ImplementAPI {
 			$insvalue[] = ':nodeid';
 			$insname[] = 'NodeName';
 			$insvalue[] = ':name';
+			$bind[':name'] = $insertname;
 			$fields = implode(',',$insname);
 			$values = implode(',',$insvalue);
 			$insert = $this->db->prepare("INSERT INTO Node ($fields) VALUES ($values)");
 			$insert->execute($bind);
 			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $this->db->lastInsertId()));
 		}
-		$this->sendResponse(array('updatecount' => (isset($setter) ? $counter : 0), 'insertkey' => 0));
+		$this->sendResponse(array('updatecount' => (empty($setter) ? 0: $counter), 'insertkey' => 0));
 	}
 	
 	public function deleteSystemNode ($uriparts) {

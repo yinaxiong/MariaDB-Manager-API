@@ -64,7 +64,7 @@ abstract class ImplementAPI {
 		foreach ($fields as $name=>$about) {
 			$selects[] = $about['sqlname'].' AS '.$name;
 		}
-		return $selects;
+		return implode(',', $selects);
 	}
 	
 	protected function filterResults ($results) {
