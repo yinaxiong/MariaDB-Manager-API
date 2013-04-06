@@ -1,9 +1,8 @@
 #!/bin/bash
 
 # script takes taskID (rowid) as parameter and runs the steps that comprise the command in question
-steps=$(echo "SELECT StepID FROM CommandStep, CommandExecution WHERE CommandExecution.rowid = "$1" AND CommandStep.CommandID = CommandExecution.CommandID ORDER BY StepOrder;" | sqlite3 $2)
-steps=( $steps )
-echo 'stepIDs: '${#steps[@]}
+steps=$(echo "SELECT Steps FROM Commands, CommandExecution WHERE CommandExecution.rowid = "$1" AND Commands.CommandID = CommandExecution.CommandID;" | sqlite3 $2)
+echo 'stepIDs: '$steps
 
 # set command state to "Running"
 echo 'UPDATE CommandExecution SET State = 2 WHERE rowid = '$1';' | sqlite3 $2
@@ -14,7 +13,7 @@ params=${params//|/ }
 
 # loop through stepIDs comprising the command
 index=1
-for stepID in "${steps[@]}"
+for stepID in ${steps//,/ }
 do
 	# update CommandExecution to the current step, so the UI can advance the progress bar
 	echo 'UPDATE CommandExecution SET StepIndex = '$index' WHERE rowid = '$1';' | sqlite3 $2
