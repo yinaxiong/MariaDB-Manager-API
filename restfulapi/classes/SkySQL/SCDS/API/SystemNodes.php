@@ -205,7 +205,7 @@ class SystemNodes extends ImplementAPI {
 	
 	protected function getCommand ($nodeid) {
 		$query = $this->db->prepare('SELECT rowid, CommandID FROM CommandExecution 
-			WHERE SystemID = :systemid AND NodeID = :nodeid');
+			WHERE SystemID = :systemid AND NodeID = :nodeid AND State = 2');
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $nodeid));
 		$row = $query->fetch();
 		return $row ? array($row->rowid, $row->CommandID) : array(null, null);

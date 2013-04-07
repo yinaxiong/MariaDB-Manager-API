@@ -64,7 +64,7 @@ final class Monitors extends ImplementAPI {
 			VALUES (:name, :sql, :description, :icon, :type, :uiorder,
 			:delta, :monitortype, :systemaverage, :interval, :unit)");
 		$query->execute($this->monitorBind());
-		$this->sendResponse();
+		$this->sendResponse(array('updatecount' => 0, 'insertkey' => $this->db->lastInsertId()));
 	}
 	
 	public function updateMonitorClass ($uriparts) {
@@ -75,13 +75,16 @@ final class Monitors extends ImplementAPI {
 			Interval = :interval, Unit = :unit FROM Monitors
 			WHERE MonitorID = :monitorid");
 		$query->execute($this->monitorBind($this->monitorid));
-		$this->sendResponse();
+		$this->sendResponse(array('updatecount' => $query->rowCount(), 'insertkey' => 0));
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
 		$this->monitorid = $uriparts[0];
-		$query = $this->db->prepare('DELETE FROM Monitors WHERE MonitorID = :monitorid');
-		$query->execute(array(':monitorid' => $this->monitorid));
+		$delete = $this->db->prepare('DELETE FROM Monitors WHERE MonitorID = :monitorid');
+		$delete->execute(array(':monitorid' => $this->monitorid));
+		$counter = $delete->rowCount();
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
+		else $this->sendErrorResponse('Delete user property did not match any user property', 404);
 	}
 	
 	protected function monitorBind ($monitorid=0) {
@@ -132,6 +135,7 @@ final class Monitors extends ImplementAPI {
 			));
 		}
 		$this->db->query('COMMIT TRANSACTION');
+		$this->sendResponse();
 	}
 	
 	public function monitorData ($uriparts) {

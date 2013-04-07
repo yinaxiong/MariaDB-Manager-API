@@ -64,37 +64,35 @@ class SystemUsers extends ImplementAPI {
 			$salt = $this->makeSalt();
 			$passwordhash = sha1($salt.$password);
 			try {
-				$query = $this->db->prepare("INSERT INTO Users (UserName, Name, Password, Salt) VALUES (:username, :name, :password, :salt)");
-				$query->execute(array(
+				$insert = $this->db->prepare("INSERT INTO Users (UserName, Name, Password, Salt) VALUES (:username, :name, :password, :salt)");
+				$insert->execute(array(
 					':username' => $username,
 					':name' => $name,
 					':password' => $passwordhash,
 					':salt' => $salt
 				));
-				$this->sendResponse(array('username' => $username, 'name' => $name));
+				$this->sendResponse(array('updatecount' => 0,  'insertkey' => $username));
 			}
 			catch (PDOException $pe) {
 				$this->sendErrorResponse('User insertion failed unexpectedly', 500, $pe);
 			}
 		}
 		else {
-			$result['username'] = $username;
 			if ($name) {
-				$sets[] = 'Name = :name';
+				$setter[] = 'Name = :name';
 				$bind[':name'] = $name;
-				$result['name'] = $name;
 				
 			}
 			if ($password) {
-				$sets[] = 'Password = :password';
+				$setter[] = 'Password = :password';
 				$bind[':password'] = sha1($salt.$password);
 			}
-			if (isset($sets)) {
+			if (isset($setter)) {
 				$bind[':username'] = $username;
-				$query = $this->db->prepare('UPDATE Users SET '.implode(', ', $sets).' WHERE UserName = :username');
-				$query->execute($bind);
+				$update = $this->db->prepare('UPDATE Users SET '.implode(', ', $setter).' WHERE UserName = :username');
+				$update->execute($bind);
 			}
-			$this->sendResponse(array('result' => $result));
+			$this->sendResponse(array('updatecount' => (empty($setter) ? 0: $update->rowCount()), 'insertkey' => ''));
 		}
 	}
 	
@@ -109,11 +107,13 @@ class SystemUsers extends ImplementAPI {
 		$bind[':propertyname'] = $propertyname;
 		$update = $this->db->prepare('UPDATE UserProperties SET Value = :value WHERE UserID = :userid AND Property = :propertyname');
 		$update->execute($bind);
-		if (0 == $update->rowCount()) {
+		$counter = $update->rowCount();
+		if (0 == $counter) {
 			$insert = $this->db->prepare('INSERT INTO UserProperties (UserID, Property, Value) VALUES (:userid, :propertyname, :value)');
 			$insert->execute($bind);
+			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $propertyname));
 		}
-		$this->sendResponse();
+		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => ''));
 	}
 	
 	public function deleteUserProperty ($uriparts) {
@@ -127,7 +127,9 @@ class SystemUsers extends ImplementAPI {
 			':userid' => $userid,
 			':propertyname' => $propertyname
 		));
-		$this->sendResponse();
+		$counter = $delete->rowCount();
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
+		else $this->sendErrorResponse('Delete user property did not match any user property', 404);
 	}
 		
 	protected function makeSalt () {
@@ -142,9 +144,10 @@ class SystemUsers extends ImplementAPI {
 
 	public function deleteUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
-		$query = $this->db->prepare('DELETE FROM Users WHERE UserName = :username');
-		$query->execute(array(':username' => $username));
-		if ($query->rowCount()) $this->sendResponse();
+		$delete = $this->db->prepare('DELETE FROM Users WHERE UserName = :username');
+		$delete->execute(array(':username' => $username));
+		$counter = $delete->rowCount();
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
 		else $this->sendErrorResponse('Delete user did not match any user', 404);
 	}
 	

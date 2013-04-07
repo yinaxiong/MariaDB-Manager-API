@@ -157,9 +157,10 @@ class SystemBackups extends ImplementAPI {
 			$update = $this->db->prepare('UPDATE Backup SET '.implode(', ', $sets).' 
 				WHERE SystemID = :systemid AND BackupID = :backupid');
 			$update->execute($bind);
-			if ($update->rowCount()) $this->sendResponse(array('result' => 'updated'));
+			$counter = $update->rowCount();
 		}
-		$this->sendResponse(array('result' => 'noaction'));
+		else $counter = 0;
+		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
 	}
 	
 	public function getBackupStates () {
