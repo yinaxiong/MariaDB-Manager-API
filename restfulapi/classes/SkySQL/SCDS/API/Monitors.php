@@ -68,11 +68,11 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	public function updateMonitorClass ($uriparts) {
-		$this->monitorid = $uriparts[0];
+		$this->monitorid = $uriparts[1];
 		$query = $this->db->prepare("UPDATE Monitors SET Name = :name, SQL = :sql,
 			Description = :description, Icon = :icon, ChartType = :type, UIOrder = :uiorder,
 			delta = :delta, MonitorType = :monitortype, SystemAverage = :systemaverage,
-			Interval = :interval, Unit = :unit FROM Monitors
+			Interval = :interval, Unit = :unit
 			WHERE MonitorID = :monitorid");
 		$query->execute($this->monitorBind($this->monitorid));
 		$this->sendResponse(array('updatecount' => $query->rowCount(), 'insertkey' => 0));
@@ -101,7 +101,7 @@ final class Monitors extends ImplementAPI {
 			':interval' => $this->getParam('PUT','interval'), 
 			':unit' => $this->getParam('PUT','unit')
 		);
-		if ($monitorid) $bind[':systemid'] = $monitorid;
+		if ($monitorid) $bind[':monitorid'] = $monitorid;
 		return $bind;
 	}
 	
