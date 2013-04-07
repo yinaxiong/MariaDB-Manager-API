@@ -50,7 +50,7 @@ abstract class ImplementAPI {
 			if ($source) {
 				$input = $this->getParam($source, $name, $about['default']);
 				if ($input) {
-					$insname[] = $name;
+					$insname[] = $about['sqlname'];
 					$insvalue[] = ':'.$name;
 					$bind[':'.$name] = $input;
 					$setter[] = $about['sqlname'].' = :'.$name;
