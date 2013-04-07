@@ -33,11 +33,14 @@ abstract class ImplementAPI {
 	protected $requestor = null;
 	protected $transact = false;
 	protected $config = array();
+	protected $fieldnames = array();
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
 		$this->requestor = $requestor;
 		$this->config = $requestor->getConfig();
+		$filter = $this->getParam('GET', 'fields');
+		if ($filter) $this->fieldnames = array_map('trim', explode(',', $filter));
 	}
 	
 	protected function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -69,18 +72,21 @@ abstract class ImplementAPI {
 	
 	protected function filterResults ($results) {
 		$filter = $this->getParam('GET', 'fields');
-		if ($filter) {
-			$filterwords = explode(',', $filter);
+		if (count($this->fieldnames)) {
 			foreach ($results as $key=>$value) {
-				$filtered[$key] = $this->filterWords($value, $filterwords);
+				$filtered[$key] = $this->filterWords($value);
 			}
 			return $filtered;
 		}
 		else return $results;
 	}
 	
-	protected function filterWords ($value, $words) {
-		foreach ($words as $word) if (isset($value[$word])) {
+	protected function isFilterWord ($word) {
+		return empty($this->fieldnames) OR in_array($word, $this->fieldnames);
+	}
+	
+	protected function filterWords ($value) {
+		foreach ($this->fieldnames as $word) if (isset($value[$word])) {
 			$hits[$word] = $value[$word];
 		}
 		return empty($hits) ? null : (1 == count($hits)) ? $hits[$word] : $hits;

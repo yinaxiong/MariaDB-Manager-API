@@ -31,11 +31,9 @@ namespace SkySQL\SCDS\API;
 
 use \PDO as PDO;
 
-class SystemNodes extends ImplementAPI {
-	protected $systemid = 0;
+class SystemNodes extends SystemNodeCommon {
 	protected $nodeid = 0;
 	protected $monitorid = 0;
-	protected $monitorquery = null;
 	
 	protected static $fields = array(
 		'status' => array('sqlname' => 'State', 'default' => 0),
@@ -49,8 +47,6 @@ class SystemNodes extends ImplementAPI {
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
-		$this->monitorquery = $this->db->prepare('SELECT Value, MAX(Latest) FROM MonitorData 
-			WHERE SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid');
 	}
 	
 	public function nodeStates ($uriparts) {
@@ -105,10 +101,10 @@ class SystemNodes extends ImplementAPI {
 	
 	protected function extraNodeData (&$nodes) {
 		foreach ($nodes as &$node) {
-			$node['commands'] = is_null($node['status']) ? null : $this->getCommands($node['status']);
-			$node['connections'] = $this->getConnections($node['id']);
-			$node['packets'] = $this->getPackets($node['id']);
-			$node['health'] = $this->getHealth($node['id']);
+			$node['commands'] = ($this->isFilterWord('commands') AND $node['status']) ? $this->getCommands($node['status']) : null;
+			$node['connections'] = $this->isFilterWord('connections') ? $this->getConnections($node['id']) : null;
+			$node['packets'] = $this->isFilterWord('packets') ? $this->getPackets($node['id']) : null;
+			$node['health'] = $this->isFilterWord('health') ? $this->getHealth($node['id']) : null;
 			list($node['task'], $node['command']) = $this->getCommand($node['id']);
 		}
 	}
@@ -176,31 +172,6 @@ class SystemNodes extends ImplementAPI {
 		$query = $this->db->prepare('SELECT COUNT(*) FROM System WHERE SystemID = :systemid');
 		$query->execute(array(':systemid' => $this->systemid));
 		return $query->fetch(PDO::FETCH_COLUMN) ? true : false;
-	}
-	
-	protected function getCommands ($status) {
-		$query = $this->db->prepare('SELECT CommandID FROM ValidCommands WHERE State = :state');
-		$query->execute(array(':state' => $status));
-		return $query->fetchAll(PDO::FETCH_COLUMN);
-	}
-	
-	protected function getConnections ($nodeid) {
-		return $this->getMonitorData($nodeid, 1);
-	}
-	
-	protected function getPackets ($nodeid) {
-		return $this->getMonitorData($nodeid, 2);
-	}
-	
-	protected function getHealth ($nodeid) {
-		return $this->getMonitorData($nodeid, 3);
-	}
-	
-	protected function getMonitorData ($nodeid, $monitorid) {
-		$this->monitorquery->execute(
-			array(':systemid' => $this->systemid, ':monitorid' => $monitorid, ':nodeid' => $nodeid)
-		);
-		return $this->monitorquery->fetchAll(PDO::FETCH_COLUMN);
 	}
 	
 	protected function getCommand ($nodeid) {
