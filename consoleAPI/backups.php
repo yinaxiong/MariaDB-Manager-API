@@ -34,6 +34,8 @@ class SkyConsoleAPI {
 		} else {
 			return false;
 		}
+
+		$list = array();
 		
 		foreach ($query as $row) {
 			$id = $row['rowid'];
