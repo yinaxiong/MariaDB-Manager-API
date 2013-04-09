@@ -20,7 +20,7 @@ class SkyConsoleAPI {
 		if (isset($_GET["id"])) {
 			$id = $_GET["id"];
 			
-			$query = $this->db->query("SELECT * FROM Backup WHERE BackupID=".$id);
+			$query = $this->db->query("SELECT rowid, * FROM Backup WHERE rowid=".$id);
 		
 		} else if (isset($_GET["system"])) {
 			$system = $_GET["system"];
@@ -30,13 +30,13 @@ class SkyConsoleAPI {
 			else
 				$date = null;
 
-			$query = $this->db->query("SELECT * FROM Backup WHERE SystemID=".$system.(is_null($date) ? "" : " AND Started >= '".$date."'")." ORDER BY Started DESC" );
+			$query = $this->db->query("SELECT rowid, * FROM Backup WHERE SystemID=".$system.(is_null($date) ? "" : " AND Started >= '".$date."'")." ORDER BY Started DESC" );
 		} else {
 			return false;
 		}
 		
 		foreach ($query as $row) {
-			$id = $row['BackupID'];
+			$id = $row['rowid'];
 			$node = $row['NodeID'];
 			$level = $row['BackupLevel'];
 			$status = $row['State'];

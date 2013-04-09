@@ -19,22 +19,24 @@ class SkyConsoleAPI {
 
 		if (isset($_GET["group"])) {
 			$group = $_GET["group"];
-		
 			$commands = $this->db->query("SELECT * FROM Commands WHERE UIOrder IS NOT NULL AND UIGroup='".$group."' ORDER BY UIOrder");
-			
-			foreach ($commands as $row) {
+		} else {
+			$commands = $this->db->query("SELECT * FROM Commands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
+		}
+							
+		foreach ($commands as $row) {
 				$id = $row['CommandID'];
 				$name = $row['Name'];
 				$description = $row['Description'];
 				$icon = $row['Icon'];
 				$data[] = array("id" => $id, "name" => $name, "description" => $description, "icon" => $icon);
-			}
+		}
 			
-       		$result = array(
-            	"commands" => $data,
-        	);
-        	sendResponse(200, json_encode($result));
-        }
+       	$result = array(
+           	"commands" => $data,
+        );
+        sendResponse(200, json_encode($result));
+        
     }
         
 }
