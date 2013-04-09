@@ -44,8 +44,7 @@ use \PDOException;
 use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
 
-final class Request {
-	protected static $instance = null;
+abstract class Request {
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
@@ -89,6 +88,7 @@ final class Request {
 		array('class' => 'Monitors', 'method' => 'updateMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'Monitors', 'method' => 'createMonitorClass', 'uri' => 'monitorclass', 'http' => 'PUT'),
+		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'api', 'http' => 'GET'),
 		
 	);
 	
@@ -149,6 +149,7 @@ final class Request {
 	protected $authorization = '';
 	protected $accept = '';
 	protected $suffix = '';
+	protected $suppress = false;
 	
 	protected function __construct() {
 		if (!self::$uriTablePrepared) {
@@ -159,10 +160,20 @@ final class Request {
 			self::$uriTablePrepared = true;
 		}
         $this->config = parse_ini_file('/etc/scdsapi/api.ini', true);
+		$this->getHeaders();
+		$this->uri = $this->getURI();
+		$this->getSuffix();
+		$this->handleAccept();
+	}
+	
+	protected function getURI () {
 		$sepquery = explode('?', $_SERVER['REQUEST_URI']);
 		$sepindex = explode('index.php', $sepquery[0]);
 		$sepapi = explode('/api/', trim(end($sepindex), '/'));
-		$this->uri = trim(end($sepapi), '/');
+		return trim(end($sepapi), '/');
+	}
+	
+	protected function getSuffix() {
 		$periodpos = strrpos($this->uri, '.');
 		if (false !== $periodpos) {
 			$suffixpos = strlen($this->uri) - $periodpos;
@@ -171,19 +182,9 @@ final class Request {
 				$this->uri = substr($this->uri,0,-$suffixpos);
 			}
 		}
-		$this->headers = apache_request_headers();
-		if ('PUT' == $_SERVER['REQUEST_METHOD']) {
-			$rawput = file_get_contents("php://input");
-			$this->putdata = json_decode($rawput, true);
-			if (is_null($this->putdata)) $this->putdata = $rawput;
-		}
-		if ('POST' == $_SERVER['REQUEST_METHOD'] AND isset($_POST['_method'])) {
-			$this->requestviapost = true;
-			$this->requestmethod = $_POST['_method'];
-		}
-		else $this->requestmethod = $_SERVER['REQUEST_METHOD'];
-		$this->rfcdate = $this->getParam($this->requestmethod, '_rfcdate', @$this->headers['Date']);
-		$this->authorization = $this->getParam($this->requestmethod, '_authorization', @$this->headers['Authorization']);
+	}
+	
+	protected function handleAccept () {
 		if ('json' == $this->suffix) $this->accept = 'application/json';
 		else {
 			$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
@@ -192,11 +193,16 @@ final class Request {
 	}
 	
 	public static function getInstance() {
-		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
+		global $argv;
+		if (empty($argv)) {
+			$class = ('POST' == @$_SERVER['REQUEST_METHOD'] AND isset($_POST['_method'])) ? 'TunnelRequest' : 'StandardRequest';
+		}
+		else $class = 'CommandRequest';
+		return call_user_func(array(__NAMESPACE__.'\\'.$class,'getInstance'));
 	}
 
 	public function doControl () {
-		$this->checkSecurity();
+		if ('api' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
@@ -204,7 +210,7 @@ final class Request {
 			if (!class_exists($class)) {
 				$this->sendErrorResponse("Request {$_SERVER['REQUEST_URI']} no such class as $class", 404);
 			}
-			$object = new $class($this);
+			$object = 'Request' == $link['class'] ? $this : new $class($this);
 			$method = $link['method'];
 			if (!method_exists($object, $method)) {
 				$this->sendErrorResponse("Request {$_SERVER['REQUEST_URI']} no such method as $method in class $class", 404);
@@ -218,6 +224,18 @@ final class Request {
 			}
 		}
 		else $this->sendErrorResponse ("Request {$_SERVER['REQUEST_URI']} with HTTP request $this->requestmethod does not match the API", 404);
+	}
+	
+	protected function listAPI () {
+		foreach (self::$uriTable as $entry) {
+			$result[] = array (
+				'http' => $entry['http'],
+				'uri' => $entry['uri'],
+				'method' => $entry['method']
+			);
+		}
+		$this->accept = 'application/json';
+		$this->sendResponse($result);
 	}
 	
 	protected function checkSecurity () {
@@ -260,9 +278,9 @@ final class Request {
 		return @preg_match("/^$pattern$/", $actual);
 	}
         
-        public function getConfig () {
-            return $this->config;
-        }
+	public function getConfig () {
+		return $this->config;
+	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
 		if ($arrname != $this->requestmethod) return $def;
@@ -273,6 +291,7 @@ final class Request {
 			if (!is_array($this->putdata)) return $this->putdata;
 			$arr =& $this->putdata;
 		}
+		else return $def;
 		if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
 			if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
 			else return $def;

@@ -70,7 +70,7 @@ class API {
 		spl_autoload_register(array(__CLASS__, 'simpleAutoload'));
 	}
 	
-	public function startup ($runController=false, $controllerClass='Request') {
+	public function startup ($runController=false) {
 
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 
@@ -107,7 +107,7 @@ class API {
 		}
 
 		try {
-			$controller = call_user_func(array(__NAMESPACE__.'\\'.$controllerClass,'getInstance'));
+			$controller = Request::getInstance();
 			$errorhandler = ErrorRecorder::getInstance();
 			set_error_handler(array($errorhandler, 'PHPerror'));
 			register_shutdown_function(array($errorhandler, 'PHPFatalError'));

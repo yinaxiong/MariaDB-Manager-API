@@ -13,4 +13,5 @@ ini_set('display_errors', 1);
 error_reporting(-1);
 
 require (dirname(__FILE__).'/api.php');
+
 API::getInstance()->startup(true);
