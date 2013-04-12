@@ -24,16 +24,11 @@ class SkyConsoleAPI {
 		} else if (isset($_GET["status"]) && !empty($_GET["status"]) && ($_GET["status"] != "null")) {
 			$status = $_GET["status"];
 			$query = $this->db->query("SELECT rowid, * FROM CommandExecution WHERE State = " . $status);
-		} else if (isset($_GET["group"])) {
-			$group = $_GET["group"];
-			if (isset($_GET["node"]) && ($_GET["node"] != "null")) {
-				$node = $_GET["node"];
-				$query = $this->db->query("SELECT CE.rowid, CE.* FROM CommandExecution CE, Commands WHERE CE.CommandID = Commands.CommandID AND Commands.UIGroup='".$group."' AND NodeID='".$node."'");		
-			} else {
-				$query = $this->db->query("SELECT CE.rowid, CE.* FROM CommandExecution CE, Commands WHERE CE.CommandID = Commands.CommandID AND Commands.UIGroup='".$group."'");		
-			}
+		} else if (isset($_GET["node"]) && ($_GET["node"] != "null")) {
+			$node = $_GET["node"];
+			$query = $this->db->query("SELECT rowid, * FROM CommandExecution WHERE NodeID='".$node."' ORDER BY Start DESC");		
 		} else {
-			$query = $this->db->query("SELECT rowid, * FROM CommandExecution");
+			$query = $this->db->query("SELECT rowid, * FROM CommandExecution ORDER BY Start DESC");
 		}
 		
 		foreach ($query as $row) {
