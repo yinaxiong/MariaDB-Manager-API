@@ -46,6 +46,10 @@ class AdminDatabase {
 		$this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
 	}
 	
+	public function __destruct () {
+		$this->pdo = null;
+	}
+	
 	public function __call($name, $arguments) {
 		$this->lastcall = $name;
 		return call_user_func_array(array($this->pdo, $name), $arguments);
