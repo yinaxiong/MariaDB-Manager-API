@@ -50,8 +50,8 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/backup <br />
-			Parameters: from, to, limit, offset <br />
-			Defaults are forever, forever, 10, 0 respectively<br />
+			Parameters: from, to, fields, limit, offset <br />
+			Defaults are forever, forever, all fields, 10, 0 respectively<br />
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
@@ -60,6 +60,8 @@
 			<input type="text" name="from" id="from" /><br />
 			<label for="to">To - Date+Time</label>
 			<input type="text" name="to" id="to" /><br />
+			<label for="fields">Fields to return</label>
+			<input type="text" name="fields" id="fields" /><br />
 			<label for="limit">Max items to return</label>
 			<input type="text" name="limit" id="limit" /><br />
 			<label for="offset">Offset into items</label>

@@ -72,7 +72,7 @@ class SystemBackups extends ImplementAPI {
 		$statement = $this->db->prepare($mainquery);
 		$statement->execute($bind);
 		$results['backups'] = $statement->fetchALL(PDO::FETCH_ASSOC);
-        $this->sendResponse(array('result' => $results));
+        $this->sendResponse(array('result' => $this->filterResults($results)));
 	}
 	
 	protected function getDate ($datename) {
@@ -81,41 +81,6 @@ class SystemBackups extends ImplementAPI {
 			$time = strtotime($date);
 			if ($time) return date('d M Y H:i:s');
 			else $this->errors[] = "Invalid $datename date: $date";
-		}
-	}
-	
-	public function makeSystemBackup ($uriparts) {
-		$systemid = (int) $uriparts[1];
-		$node = $this->getParam('POST', 'node', 0);
-		if (!$node) $errors[] = 'No value provided for node when requesting system backup';
-		$level = $this->getParam('POST', 'level', 0);
-		if (!$level) $errors[] = 'No value provided for level when requesting system backup';
-		$parent = $this->getParam('POST', 'parent');
-		if (isset($errors)) $this->sendErrorResponse($errors, 400);
-		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)
-			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent");
-		try {
-			$query->execute(array(
-				':systemid' => $systemid,
-				':nodeid' => $node,
-				':level' => $level,
-				':parent' => $parent
-			));
-			$result['id'] = $this->db->lastInsertId();
-			// Extra work for incremental backup
-			if (2 == $level) {
-				$getlog = $this->db->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
-					WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupLevel = 1');
-				$getlog->execute(array(
-				':systemid' => $systemid,
-				':nodeid' => $node
-				));
-				$result['binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
-			}
-			$this->sendResponse(array('result' => $result));
-		}
-		catch (PDOException $pe) {
-			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $node, level $level, parent $parent", 500, $pe);
 		}
 	}
 	

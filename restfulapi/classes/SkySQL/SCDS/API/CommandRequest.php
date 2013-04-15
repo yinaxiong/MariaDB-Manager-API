@@ -57,7 +57,8 @@ final class CommandRequest extends Request {
 		if (isset($argv[3])) {
 			parse_str($argv[3], $_POST);
 	        $_POST['suppress_response_codes'] = 'true';
-	}
+		}
+		if (isset($argv[4])) $this->inifile = $argv[4];
 		parent::__construct();
 	}
 
@@ -76,7 +77,7 @@ final class CommandRequest extends Request {
 
 	protected function getURI () {
 		global $argv;
-		return trim(@$argv[2], '/');
+		return trim(@$argv[2], '/ \t\n\r\0\x0B');
 	}
 	
 	protected function handleAccept () {

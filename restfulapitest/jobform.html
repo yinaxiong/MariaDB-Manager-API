@@ -84,6 +84,147 @@
 		</p>
 	  </form>
 	  </div>
+	  <div class="section">
+	  <h3>Run a Command</h3>
+	  <form action="" method="post" id="runcommand" target="apiresults" onsubmit="return(setFields(this.id,'command','commandname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /command/{commandname} <br />
+			Parameters: systemid, nodeid, username, parameters (command dependent) <br />
+		</p>
+		<p class="formfields">
+			<label for="commandname">Command Name</label>
+			<select name="commandname" id="commandname">
+				<option value="backup">Backup</option>
+				<option value="restore">Restore</option>GE
+				<option value="start">Start</option>
+				<option value="stop">Stop</option>
+				<option value="restart">Restart</option>
+				<option value="isolate">Isolate</option>
+				<option value="recover">Recover</option>
+				<option value="promote">Promote</option>
+			</select><br />
+			<label for="systemc">System ID</label>
+			<input type="text" name="systemid" id="systemc" /><br />
+			<label for="nodec">Node ID</label>
+			<input type="text" name="nodeid" id="nodec" /><br />
+			<label for="username">Username</label>
+			<input type="text" name="username" id="username" /><br />
+			<label for="level">Level (backup)</label>
+			<input type="text" name="level" id="level" /><br />
+			<label for="parentid">Parent ID (backup)</label>
+			<input type="text" name="parentid" id="parentid" /><br />
+			<label for="params">Parameters</label>
+			<input type="text" name="params" id="params" /><br />
+			<input type="submit" class="submit" value="Run SQL" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get One Job</h3>
+	  <form action="" method="post" id="getjob" target="apiresults" onsubmit="return(setFields(this.id,'task','taskid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /task/{taskid} <br />
+			Parameters: taskid, state, group, nodeid, fields <br />
+		</p>
+		<p class="formfields">
+			<label for="task">Task ID</label>
+			<input type="text" name="taskid" id="taskid" /><br />
+			<label for="statej">State ID</label>
+			<input type="text" name="state" id="statej" /><br />
+			<label for="groupj">Group</label>
+			<input type="text" name="group" id="groupj" /><br />
+			<label for="nodej">Node ID</label>
+			<input type="text" name="nodeid" id="nodej" /><br />
+			<label for="fields1">Fields to return</label>
+			<input type="text" name="fields" id="fields1" /><br />
+			<input type="submit" class="submit" value="Get Job" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Multiple Jobs</h3>
+	  <form action="" method="post" id="getjobs" target="apiresults" onsubmit="return(setFields(this.id,'task'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /task <br />
+			Parameters: state, group, nodeid, fields <br />
+		</p>
+		<p class="formfields">
+			<label for="statej">State ID</label>
+			<input type="text" name="state" id="statej" /><br />
+			<label for="groupjs">Group</label>
+			<input type="text" name="group" id="groupjs" /><br />
+			<label for="nodejs">Node ID</label>
+			<input type="text" name="nodeid" id="nodejs" /><br />
+			<label for="fields">Fields to return</label>
+			<input type="text" name="fields" id="fields" /><br />
+			<input type="submit" class="submit" value="Get Jobs" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Bucket Data</h3>
+	  <form action="" method="post" id="getjobs" target="apiresults" onsubmit="return(setFields(this.id,'bucket'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /bucket <br />
+			Parameters: bucket, object <br />
+		</p>
+		<p class="formfields">
+			<label for="bucket">Bucket</label>
+			<input type="text" name="bucket" id="bucket" /><br />
+			<label for="object">Object</label>
+			<input type="text" name="object" id="object" /><br />
+			<input type="submit" class="submit" value="Get Data" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Run SQL to get information</h3>
+	  <form action="" method="post" id="runsql" target="apiresults" onsubmit="return(setFields(this.id,'runsql'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /runsql <br />
+			Parameters: SQL request (SELECT or SHOW) <br />
+		</p>
+		<p class="formfields">
+			<label for="sql">SQL</label>
+			<input type="text" name="sql" id="sql" /><br />
+			<label for="systemq">System ID</label>
+			<input type="text" name="systemid" id="systemq" /><br />
+			<label for="nodeq">Node ID</label>
+			<input type="text" name="nodeid" id="nodeq" /><br />
+			<input type="submit" class="submit" value="Run SQL" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
 	  </div>
 	  </div>
 		<script type="text/javascript" src="md5.js"></script>

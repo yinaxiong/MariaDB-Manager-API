@@ -56,13 +56,18 @@ class RunSQL extends ImplementAPI {
     }
 
 	protected function getHostData () {
-		$node = $this->getParam('GET', 'node', 0);
-		if ($node) {
-			$statement = $this->db->prepare("SELECT Hostname, Username, passwd FROM NodeData WHERE NodeID = :node");
-			$statement->execute(array(':node' => $node));
+		$systemid = $this->getParam('GET', 'systemid', 0);
+		$nodeid = $this->getParam('GET', 'nodeid', 0);
+		if ($systemid AND $nodeid) {
+			$statement = $this->db->prepare("SELECT Hostname, Username, passwd FROM NodeData 
+				WHERE SystemID = :systemid AND NodeID = :nodeid");
+			$statement->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $nodeid
+			));
 			$noderecord = $statement->fetch(PDO::FETCH_OBJ);
 			if ($noderecord) return $noderecord;
 		}
-		throw new PDOException ('No valid node provided');
+		throw new PDOException ('System ID and Node ID must be provided');
 	}
 }

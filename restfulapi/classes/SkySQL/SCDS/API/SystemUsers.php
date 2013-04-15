@@ -33,7 +33,7 @@ class SystemUsers extends ImplementAPI {
 	
 	public function getUsers () {
 		$query = $this->db->query("SELECT UserID AS id, UserName AS username, Name AS name FROM Users");
-        $this->sendResponse(array('users' => $query->fetchAll(PDO::FETCH_ASSOC)));
+        $this->sendResponse(array('users' => $this->filterResults((array) $query->fetchAll(PDO::FETCH_ASSOC))));
 	}
 	
 	public function getUserInfo ($uriparts) {

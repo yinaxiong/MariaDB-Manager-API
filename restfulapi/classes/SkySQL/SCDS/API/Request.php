@@ -22,7 +22,8 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * The Request class is the main controller for the API.
+ * The Request class is the main controller for the API.  It is an abstract
+ * class, and has one final subclass for each method of calling the API.
  * 
  * The $uriTable array defines the API RESTful interface, and links calls to
  * classes and methods.  The Request class puts this into effect.
@@ -79,9 +80,9 @@ abstract class Request {
 		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/(start|stop|restart|isolate|recover|promote)', 'http' => 'POST'),
-		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'getTasks', 'uri' => 'task', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/(start|stop|restart|isolate|recover|promote|backup|restore)', 'http' => 'POST'),
+		array('class' => 'Tasks', 'method' => 'getOneOrMoreTasks', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'getOneOrMoreTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
@@ -150,6 +151,7 @@ abstract class Request {
 	protected $accept = '';
 	protected $suffix = '';
 	protected $suppress = false;
+	protected $inifile = '/etc/scdsapi/api.ini';
 	
 	protected function __construct() {
 		if (!self::$uriTablePrepared) {
@@ -159,7 +161,7 @@ abstract class Request {
 			}
 			self::$uriTablePrepared = true;
 		}
-        $this->config = parse_ini_file('/etc/scdsapi/api.ini', true);
+        $this->config = parse_ini_file($this->inifile, true);
 		$this->getHeaders();
 		$this->uri = $this->getURI();
 		$this->getSuffix();

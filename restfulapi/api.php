@@ -117,7 +117,7 @@ class API {
 			echo 'Unhandled error: '.$e->getMessage();
 		}
 		catch (PDOException $pe) {
-			echo 'Unhandled error: '.$pe->getMessage();
+			echo 'Unhandled error: '.$pe->getMessage().api::trace();
 		}
 	}
 
@@ -128,12 +128,10 @@ class API {
 	public static function simpleAutoload ($classname) {
 		$classname = str_replace('\\', '/', $classname);
 		if (is_readable(CLASS_BASE.'/customclasses/'.$classname.'.php')) {
-			require_once(CLASS_BASE.'/customclasses/'.$classname.'.php');
-			return true;
+			return require_once(CLASS_BASE.'/customclasses/'.$classname.'.php');
 		}
 		if (is_readable(CLASS_BASE.'/classes/'.$classname.'.php')) {
-			require_once(CLASS_BASE.'/classes/'.$classname.'.php');
-			return true;
+			return require_once(CLASS_BASE.'/classes/'.$classname.'.php');
 		}
 		return false;
 	}

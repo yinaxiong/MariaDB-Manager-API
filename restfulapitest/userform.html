@@ -32,9 +32,11 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /user <br />
-			No parameters <br />
+			Parameters: fields <br />
 		</p>
 		<p class="formfields">
+			<label for="fields">Fields to return</label>
+			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

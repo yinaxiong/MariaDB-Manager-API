@@ -28,34 +28,32 @@
 
 namespace SkySQL\SCDS\API;
 
-use \PDO;
+use PDO;
 
 class Tasks extends ImplementAPI {
 	protected static $base = 'SELECT CE.TaskID AS id, CE.NodeID AS node, CE.CommandID AS command, 
 			CE.Params AS params, CE.StepIndex AS stepindex, CE.State AS status, CE.UserID AS user, CE.Start AS start, 
 			CE.Completed AS end FROM CommandExecution AS CE';
 	
-	public function getOneTask ($uriparts) {
-		$taskid = $uriparts[1];
-		$statement = $this->db->prepare(self::$base.' WHERE TaskID = :taskid');
-		$statement->execute(array(':taskid' => $taskid));
-		$this->queryResults($statement);
-	}
-	
-	public function getTasks () {
+	public function getOneOrMoreTasks ($uriparts) {
 		$sql = self::$base;
 		$bind = array();
-		$status = $this->getParam('GET', 'status', 0);
-		if ($status) {
+		$taskid = isset($uriparts[1]) ? (int) $uriparts[1] : 0;
+		if ($taskid) {
+			$where[] = 'CE.TaskID = :taskid';
+			$bind[':taskid'] = $taskid;
+		}
+		$state = $this->getParam('GET', 'state', 0);
+		if ($state) {
 			$where[] = 'CE.State = :state';
-			$bind[':state'] = $status;
+			$bind[':state'] = $state;
 		}
 		$group = $this->getParam('GET', 'group');
 		if ($group) {
 			$sql .= ' INNER JOIN Commands AS C ON CE.CommandID = C.CommandID';
 			$where[] = 'C.UIGroup = :group';
 			$bind[':group'] = $group;
-			$node = $this->getParam('GET', 'node', 0);
+			$node = $this->getParam('GET', 'nodeid', 0);
 			if ($node) {
 				$where[] = 'CE.NodeID = :nodeid';
 				$bind[':nodeid'] = $node;
@@ -68,14 +66,15 @@ class Tasks extends ImplementAPI {
 	}
 	
 	protected function queryResults ($statement) {
-		$this->sendResponse(array('tasks' => $statement->fetchAll(PDO::FETCH_ASSOC)));
+		$this->sendResponse(array('task' => $this->filterResults((array) $statement->fetchAll(PDO::FETCH_ASSOC))));
 	}
 	
 	public function runCommand ($uriparts) {
 		$command = urldecode($uriparts[1]);
 		$systemid = $this->getParam('POST', 'system', 0);
 		$nodeid = $this->getParam('POST', 'node', 0);
-		$userid = $this->getParam('POST', 'user', 0);
+		$userid = $this->getUserID();
+		if ('backup' == $command) $this->makeSystemBackup ($systemid, $nodeid, userid);
 		if ($systemid AND $nodeid AND $userid) {
 			$params = urldecode($this->getParam('POST', 'params'));
 			$insert = $this->db->prepare("INSERT INTO CommandExecution 
@@ -94,7 +93,48 @@ class Tasks extends ImplementAPI {
         	$rowID = $this->db->lastInsertId();
         	$cmd = $this->config['shell']['path']."RunCommand.sh $rowID \"".$this->config['database']['path'].'" > /dev/null 2>&1 &';
         	exec($cmd);
-        	$this->sendResponse(array('task' => $rowID));
+        	$this->getOneOrMoreTasks(array(1 => $rowID));
+		}
+		else $this->sendErrorResponse('Must supply valid system ID and username to run command');
+	}
+	
+	protected function getUserID () {
+		$username = $this->getParam('POST', 'username', 0);
+		$select = $this->db->prepare('SELECT UserID FROM User WHERE UserName = :username');
+		$select->execute(array(':username' => $username));
+		return $select->fetch(PDO::FETCH_COLUMN);
+	}
+	
+	protected function makeSystemBackup ($systemid, $nodeid, $userid) {
+		if (!$nodeid) $errors[] = 'No value provided for node when requesting system backup';
+		$level = $this->getParam('POST', 'level', 0);
+		if (!$level) $errors[] = 'No value provided for level when requesting system backup';
+		$parent = $this->getParam('POST', 'parentid');
+		if (isset($errors)) $this->sendErrorResponse($errors, 400);
+		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)
+			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent");
+		try {
+			$query->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $nodeid,
+				':level' => $level,
+				':parent' => $parent
+			));
+			$result['id'] = $this->db->lastInsertId();
+			// Extra work for incremental backup
+			if (2 == $level) {
+				$getlog = $this->db->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
+					WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupLevel = 1');
+				$getlog->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $nodeid
+				));
+				$result['binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
+			}
+			$this->sendResponse(array('backup' => $this->db->lastInsertId()));
+		}
+		catch (PDOException $pe) {
+			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $nodeid, level $level, parent $parent", 500, $pe);
 		}
 	}
 }

@@ -31,8 +31,16 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system <br />
-			No parameters <br />
+			Request URI will be /system
+			<br />
+			Parameters: 
+			<a class="tooltip" href="#">fields 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			Comma separated list of the field names that you would like to be returned. If not specified,
+			all fields are returned.
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="fieldsas">Fields to return</label>
@@ -52,7 +60,18 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
 			Request URI will be /system/{systemid} <br />
-			Parameters are name, state <br />
+			Parameters are 
+			<a class="tooltip" href="#">name,<span class="custom info">
+			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>name</strong><br />
+			The name you want to give to the system (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">state 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>state</strong><br />
+			The state ID to be given to the system (integer).
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
@@ -96,7 +115,14 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
 			Request URI will be /system/{systemid} <br />
-			No parameters <br />
+			Parameters: 
+			<a class="tooltip" href="#">fields 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			Comma separated list of the field names that you would like to be returned. If not specified,
+			all fields are returned.
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
@@ -140,7 +166,13 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
 			Request URI will be /system/{systemid}/property/{propertyname} <br />
-			Parameter is value <br />
+			Parameter is 
+			<a class="tooltip" href="#">value 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>value</strong><br />
+			The value you want to give to the property you are creating or updating.
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="systemidp">System ID</label>
