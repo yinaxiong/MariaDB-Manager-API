@@ -55,6 +55,7 @@ class SkyConsoleAPI {
 
 			$query = $this->db->query($src);
 			
+			$sets = array();
 			foreach ($query as $row) {
 				$value = $row['Value'];
 				$start = $row['Start'];

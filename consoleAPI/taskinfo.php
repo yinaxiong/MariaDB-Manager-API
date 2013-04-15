@@ -31,6 +31,8 @@ class SkyConsoleAPI {
 			$query = $this->db->query("SELECT rowid, * FROM CommandExecution ORDER BY Start DESC");
 		}
 		
+		$data = array();
+
 		foreach ($query as $row) {
 			$id = $row['rowid'];
 			$node = $row['NodeID'];

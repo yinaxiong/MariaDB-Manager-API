@@ -51,6 +51,7 @@ class SkyConsoleAPI {
 				$count = 15;
 			
 			$delta = $interval / $count;
+			$pairs = array();
 
 			while ($count-- > 0) {
 						
