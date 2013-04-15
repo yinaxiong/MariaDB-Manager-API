@@ -51,6 +51,7 @@ class SkyConsoleAPI {
 				$count = 15;
 			
 			$delta = $interval / $count;
+			$pairs = array();
 			
 			while ($count-- > 0) {
 						
@@ -71,7 +72,7 @@ class SkyConsoleAPI {
 				}
 
 		    } 
-			
+
         	$result = array(
             	"monitor_data" => is_null($pairs) ? null: array_reverse($pairs),
         	);

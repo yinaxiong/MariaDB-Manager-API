@@ -20,7 +20,7 @@ class SkyConsoleAPI {
 		if (isset($_GET["id"])) {
 			$id = $_GET["id"];
 			
-			$query = $this->db->query("SELECT rowid, * FROM Backup WHERE rowid=".$id);
+			$query = $this->db->query("SELECT rowid, * FROM Backup WHERE SystemID=".$id);
 		
 		} else if (isset($_GET["system"])) {
 			$system = $_GET["system"];
