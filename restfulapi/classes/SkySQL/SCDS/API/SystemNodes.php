@@ -36,7 +36,7 @@ class SystemNodes extends SystemNodeCommon {
 	protected $monitorid = 0;
 	
 	protected static $fields = array(
-		'status' => array('sqlname' => 'State', 'default' => 0),
+		'state' => array('sqlname' => 'State', 'default' => 0),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicIP' => array('sqlname' => 'PublicIP', 'default' => ''),
 		'privateIP' => array('sqlname' => 'PrivateIP', 'default' => ''),
@@ -101,7 +101,7 @@ class SystemNodes extends SystemNodeCommon {
 	
 	protected function extraNodeData (&$nodes) {
 		foreach ($nodes as &$node) {
-			$node['commands'] = ($this->isFilterWord('commands') AND $node['status']) ? $this->getCommands($node['status']) : null;
+			$node['commands'] = ($this->isFilterWord('commands') AND $node['state']) ? $this->getCommands($node['state']) : null;
 			$node['connections'] = $this->isFilterWord('connections') ? $this->getConnections($node['id']) : null;
 			$node['packets'] = $this->isFilterWord('packets') ? $this->getPackets($node['id']) : null;
 			$node['health'] = $this->isFilterWord('health') ? $this->getHealth($node['id']) : null;
