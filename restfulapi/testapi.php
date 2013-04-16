@@ -70,6 +70,7 @@ class TestAPI {
 		<input type="radio" name="testid" value="getBackupStates" />Get backup states<br />
 		<input type="radio" name="testid" value="makeBackupForm" />Make a backup<br />
 		<input type="radio" name="testid" value="createUserForm" />Create a user<br />
+		<input type="radio" name="testid" value="getAllUsers" />Get all user<br />
 		<input type="radio" name="testid" value="deleteUserForm" />Delete a user<br />
 		<input type="radio" name="testid" value="loginUserForm" />Login a user<br />
 		<input type="radio" name="testid" value="getCommands" />Get all commands<br />
@@ -276,6 +277,10 @@ BACKUP_FORM;
 	
 	public function makeBackup () {
 		return $this->apicall->makeBackup($this->systemid, @$_POST['nodeid'], @$_POST['level']);
+	}
+
+	public function getAllUsers () {
+		return $this->apicall->getSystemUsers();
 	}
 	
 	public function createUserForm () {

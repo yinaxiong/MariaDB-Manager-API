@@ -192,7 +192,7 @@ class SkysqlCallAPI {
 	protected function httpCall ($method, $args) {
 		$date = date('r');
 		$matches = array();
-		preg_match('#^https?://[a-z0-9-]+(\.[a-z0-9-]+)+([/?](.+))?#i', @$args[0], $matches);
+		preg_match('#^https?://[a-z0-9-]+(\.[a-z0-9-]+)*([/?](.+))?#i', @$args[0], $matches);
 		$uri = @$matches[3];
 		$authstring = md5($uri.AUTHORIZATION_CODE_SKYSQL_API.$date);
 		$this->requestor->header('Authorization: api-auth-'.AUTHORIZATION_ID_SKYSQL_API.'-'.$authstring, true);

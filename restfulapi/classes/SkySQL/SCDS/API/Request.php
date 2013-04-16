@@ -204,6 +204,7 @@ abstract class Request {
 	}
 
 	public function doControl () {
+		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n");
 		if ('api' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
@@ -243,7 +244,7 @@ abstract class Request {
 	protected function checkSecurity () {
 		$headertime = strtotime($this->rfcdate);
 		if ($headertime > time()+300 OR $headertime < time()-900) {
-			$this->log('Header time: '.$headertime.' actual time: '.time());
+			$this->log('Header time: '.($headertime ? $headertime : '*zero*').' actual time: '.time()."\n");
 			$this->sendErrorResponse('Date header out of range '.(empty($this->rfcdate) ? '*empty*' : $this->rfcdate).', current '.date('r'), 401);
 		}
 		$matches = array();
@@ -355,6 +356,7 @@ abstract class Request {
 	}
 	
 	protected function sendHeaders ($status) {
+		$this->log('HTTP Response: '.$status."\n");
 		$status_header = HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 		header($status_header);
 		header('Content-type: '.$this->accept);
