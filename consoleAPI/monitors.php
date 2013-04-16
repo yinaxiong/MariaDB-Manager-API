@@ -19,7 +19,7 @@ class SkyConsoleAPI {
 
 		$data = array();
 		
-		$monitors = $this->db->query("SELECT * FROM Monitors WHERE MonitorType = 'SQL' AND UIOrder IS NOT NULL ORDER BY UIOrder");
+		$monitors = $this->db->query("SELECT * FROM Monitors WHERE MonitorType = 'SQL'");
 
 		foreach ($monitors as $row) {
 			$id = $row['MonitorID'];
