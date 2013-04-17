@@ -1,6 +1,6 @@
 %define _topdir	 	%(echo $PWD)/
 %define name		admin_php
-%define release		2
+%define release		3
 %define version 	0.1
 %define buildroot %{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
@@ -14,7 +14,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-#Requires:		
+Requires:		php php_posix
 #BuildRequires:		
 
 %description
@@ -26,6 +26,9 @@ PHP sripts that implements admin console backend
 
 %build
 
+%post
+mkdir -p /usr/local/skysql/log
+chown apache:apache /usr/local/skysql/log
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
@@ -52,6 +55,9 @@ rm restfulapi/api.ini
 /etc/scdsapi/api.ini
 
 %changelog
+* Wed Apr 17 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-3
+- add postinst script to create log dir
+
 * Wed Apr 03 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-2
 - first packaged version
 
