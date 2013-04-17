@@ -226,7 +226,7 @@ abstract class Request {
 				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500, $pe);
 			}
 		}
-		else $this->sendErrorResponse ("Request {$_SERVER['REQUEST_URI']} with HTTP request $this->requestmethod does not match the API", 404);
+		else $this->sendErrorResponse ("Request $this->uri with HTTP request $this->requestmethod does not match the API", 404);
 	}
 	
 	protected function listAPI () {

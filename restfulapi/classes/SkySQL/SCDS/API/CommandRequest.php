@@ -77,7 +77,7 @@ final class CommandRequest extends Request {
 
 	protected function getURI () {
 		global $argv;
-		return trim(@$argv[2], '/ \t\n\r\0\x0B');
+		return trim(@$argv[2], "/ \t\n\r\0\x0B");
 	}
 	
 	protected function handleAccept () {
