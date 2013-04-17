@@ -99,8 +99,8 @@ class Tasks extends ImplementAPI {
 	}
 	
 	protected function getUserID () {
-		$username = $this->getParam('POST', 'username', 0);
-		$select = $this->db->prepare('SELECT UserID FROM User WHERE UserName = :username');
+		$username = $this->getParam('POST', 'username');
+		$select = $this->db->prepare('SELECT UserID FROM Users WHERE UserName = :username');
 		$select->execute(array(':username' => $username));
 		return $select->fetch(PDO::FETCH_COLUMN);
 	}

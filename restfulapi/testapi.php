@@ -70,7 +70,7 @@ class TestAPI {
 		<input type="radio" name="testid" value="getBackupStates" />Get backup states<br />
 		<input type="radio" name="testid" value="makeBackupForm" />Make a backup<br />
 		<input type="radio" name="testid" value="createUserForm" />Create a user<br />
-		<input type="radio" name="testid" value="getAllUsers" />Get all user<br />
+		<input type="radio" name="testid" value="getAllUsers" />Get all users<br />
 		<input type="radio" name="testid" value="deleteUserForm" />Delete a user<br />
 		<input type="radio" name="testid" value="loginUserForm" />Login a user<br />
 		<input type="radio" name="testid" value="getCommands" />Get all commands<br />

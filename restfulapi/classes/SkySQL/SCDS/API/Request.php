@@ -366,8 +366,13 @@ abstract class Request {
 	
 	public function log ($data) {
 		if (is_writeable($this->config['logging']['directory'])) {
-			if (!is_string($data)) $data = serialize($data);
-			file_put_contents($this->config['logging']['directory'].'/api.log', $data, FILE_APPEND);
+			$phpuser = posix_getpwuid(posix_geteuid());
+			$phpusername = isset($phpuser['name']) ? '.'.$phpuser['name'] : '';
+			$logfile = $this->config['logging']['directory']."/api$phpusername.log";
+			if (!file_exists($logfile) OR is_writeable($logfile)) {
+				if (!is_string($data)) $data = serialize($data);
+				file_put_contents($logfile, $data, FILE_APPEND);
+			}
 		}
 	}
 }

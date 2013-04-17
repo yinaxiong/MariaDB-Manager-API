@@ -35,7 +35,25 @@ namespace SkySQL\APIHELP;
 
 use SkySQL\COMMON\EAC_HTTP\HttpRequest;
 
-define ('LOCATION_OF_SKYSQL_API', 'http://api.skysql.black-sheep-research.com');
+/*
+ * The following symbol definitions must be reviewed and given values before use
+ * of the SkyksqlCallAPI class.
+ * 
+ * The location of the API means the URI that points to where the SCDS API
+ * has been implemented.
+ * 
+ * The authorization ID is the ID number that corresponds to the API Key used
+ * to secure communications.  It must correspond to an entry in the api.ini
+ * configuration file for the API, usually located at /etc/scdsapi/api.ini on
+ * the system running the API.
+ * 
+ * The authorization code is the actual Key used to secure communications (and
+ * again must correspond to an entry in api.ini).
+ * 
+ * The location of the log file, if writeable, will be used to write diagnostic
+ * information.
+ */
+define ('LOCATION_OF_SKYSQL_API', 'http://eng01.skysql.com/consoleAPI/api');
 define ('AUTHORIZATION_ID_SKYSQL_API', '1');
 define ('AUTHORIZATION_CODE_SKYSQL_API', '1f8d9e040e65d7b105538b1ed0231770');
 define ('LOG_FILE_SKYSQL_API', '/usr/local/skysql/log/api.log');
