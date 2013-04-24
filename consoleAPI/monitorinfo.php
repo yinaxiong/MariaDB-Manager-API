@@ -25,17 +25,24 @@ class SkyConsoleAPI {
 			$node = $_GET["node"];
 			
 			// use supplied time or latest time found in DB
-			if (isset($_GET["time"]) && !empty($_GET["time"]) && ($_GET["time"] != "null"))
-				$time = $_GET["time"];
-			else {
-				$src = "SELECT MAX(Latest) FROM MonitorData WHERE "
-					."MonitorID=".$monitor." AND SystemID=".$system." AND NodeId=".$node;
+			$src = "SELECT MAX(Latest) FROM MonitorData WHERE "
+				."MonitorID=".$monitor." AND SystemID=".$system." AND NodeId=".$node;
 
-				$query = $this->db->query($src);
+			$query = $this->db->query($src);
 
-				foreach ($query as $row) {
-					$time = $row['MAX(Latest)'];
-				}			
+			foreach ($query as $row) {
+				$time = $row['MAX(Latest)'];
+			}			
+
+			if (isset($_GET["time"]) && !empty($_GET["time"]) && ($_GET["time"] != "null")) {
+				$usertime = $_GET["time"];
+				if ($usertime==$time) {				
+        			$result = array(
+            			"monitor_data" => null,
+        			);
+        			sendResponse(200, json_encode($result));
+        			return true;
+        		}
 			}
 			
 			$unixtime = strtotime($time);
@@ -65,10 +72,9 @@ class SkyConsoleAPI {
 				$query = $this->db->query($src);
 			
 				foreach ($query as $row) {
-					$value = $row['Value'];
-					$start = $row['Start'];
 					$latest = $row['Latest'];
-					$pairs[] = array("time" => $time, "value" => $value, "start" => $start, "latest" => $latest);
+					$value = $row['Value'];
+					$pairs[] = array("latest" => $latest, "value" => $value);
 				}
 
 		    } 
