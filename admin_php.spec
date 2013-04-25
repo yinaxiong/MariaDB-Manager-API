@@ -29,6 +29,7 @@ PHP sripts that implements admin console backend
 %post
 mkdir -p /usr/local/skysql/log
 chown apache:apache /usr/local/skysql/log
+chown -R apache:apache /var/www
 sudo ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
 sudo sed -i "s/;date.timezone =/date.timezone = Europe\/London/" /etc/php.ini
 
