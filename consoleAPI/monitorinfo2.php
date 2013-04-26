@@ -18,26 +18,34 @@ class SkyConsoleAPI {
      
     function monitorInfo() {
 
-		if (isset($_GET["monitor"]) && isset($_GET["system"]) && isset($_GET["node"]) && isset($_GET["time"])) {
+		if (isset($_GET["monitor"]) && isset($_GET["system"]) && isset($_GET["node"])) {
 			
 			$monitor = $_GET["monitor"];
 			$system = $_GET["system"];
 			$node = $_GET["node"];
 
 			// use supplied time or latest time found in DB
-			if (isset($_GET["time"]) && !empty($_GET["time"]) && ($_GET["time"] != "null"))
-				$time = $_GET["time"];
-			else {
-				$src = "SELECT MAX(Latest) FROM MonitorData WHERE "
-					."MonitorID=".$monitor." AND SystemID=".$system." AND NodeId=".$node;
+			$src = "SELECT MAX(Latest) FROM MonitorData WHERE "
+				."MonitorID=".$monitor." AND SystemID=".$system." AND NodeId=".$node;
 
-				$query = $this->db->query($src);
+			$query = $this->db->query($src);
 
-				foreach ($query as $row) {
-					$time = $row['MAX(Latest)'];
-				}			
+			foreach ($query as $row) {
+				$time = $row['MAX(Latest)'];
+			}			
+
+			if (isset($_GET["time"]) && !empty($_GET["time"]) && ($_GET["time"] != "null")) {
+				if ($_GET["time"] == $time) {				
+        			$result = array(
+            			"monitor_data" => null,
+        			);
+        			sendResponse(200, json_encode($result));
+        			return true;
+        		} else {
+        			$time = $_GET["time"];
+        		}
 			}
-			
+						
 			$unixtime = strtotime($time);
 
 			if (isset($_GET["interval"]) && !empty($_GET["interval"]) && ($_GET["interval"] != "null"))
@@ -51,7 +59,7 @@ class SkyConsoleAPI {
 			
 			$src = "SELECT Value,Start,Latest FROM MonitorData WHERE "
 					."MonitorID=".$monitor." AND SystemID=".$system." AND NodeId=".$node
-					." AND Start < '".$endTime."' AND Latest >= '".$startTime."'";
+					." AND Start <= '".$endTime."' AND Latest >= '".$startTime."'";
 
 			$query = $this->db->query($src);
 			
@@ -60,10 +68,14 @@ class SkyConsoleAPI {
 				$value = $row['Value'];
 				$start = $row['Start'];
 				$latest = $row['Latest'];
-				$sets[] = array("value" => $value, "time" => $start);
+				$sets[] = array("value" => $value, "start" => $start, "latest" => $latest);
 			}
+			if ($start != $latest) {
+				$sets[] = array("value" => $value, "start" => $latest, "latest" => $latest);
+			}
+			$sets[0]["start"] = $startTime;
 						
-        	$result = array("monitor_data" => is_null($sets) ? null : $sets,);
+        	$result = array("monitor_data" => is_null($sets) ? null : $sets);
         	sendResponse(200, json_encode($result));
         	return true;
         }
