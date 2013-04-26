@@ -64,6 +64,8 @@ class SkyConsoleAPI {
 			$query = $this->db->query($src);
 			
 			$sets = array();
+			$start = 0;
+			$latest = 0;
 			foreach ($query as $row) {
 				$value = $row['Value'];
 				$start = $row['Start'];
@@ -73,8 +75,10 @@ class SkyConsoleAPI {
 			if ($start != $latest) {
 				$sets[] = array("value" => $value, "start" => $latest, "latest" => $latest);
 			}
-			$sets[0]["start"] = $startTime;
-						
+			if (!empty($sets)) {
+				$sets[0]["start"] = $startTime;
+			}
+			
         	$result = array("monitor_data" => is_null($sets) ? null : $sets);
         	sendResponse(200, json_encode($result));
         	return true;
