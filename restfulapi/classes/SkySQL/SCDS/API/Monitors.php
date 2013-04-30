@@ -147,20 +147,24 @@ final class Monitors extends ImplementAPI {
 		$count = $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
 		$results['count'] = $count;
 		$results['datamethod'] = $this->getParam('GET', 'datamethod', 'mean');
-		$monitorinfo = $this->db->prepare("SELECT $selector FROM MonitorData
+		$monitorinfo = $this->db->prepare("SELECT :endtime AS time, 
+			Value AS value, Start AS start, Latest AS latest FROM MonitorData
 			WHERE MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid
-			AND Start < :time AND Latest >= :time");
+			AND Start <= :endtime AND Latest >= :startime");
 		$pairs = array();
 		while ($count-- > 0) {
-			$time = date('Y-m-d H:i:s', $unixtime);
+			$endtime = date('Y-m-d H:i:s', $unixtime);
 			$unixtime -= $results['interval'];
+			$startime = date('Y-m-d H:i:s', $unixtime);
 			$monitorinfo->execute(array(
 				':monitorid' => $this->monitorid,
 				':systemid' => $this->systemid,
 				':nodeid' => $this->nodeid,
-				':time' => $time
+				':startime' => $startime,
+				':endtime' => $endtime
 			));
-			$pairs[] = $monitorinfo->fetchAll(PDO::FETCH_ASSOC);
+			$rows = $monitorinfo->fetchAll(PDO::FETCH_ASSOC);
+			if (!empty($rows)) $pairs[] = $rows;
 		}
 		$this->sendResponse(array('monitor_data' => array_reverse($pairs)));
 	}
@@ -180,7 +184,7 @@ final class Monitors extends ImplementAPI {
 	
 	protected function getLatestTime () {
 		$latest = $this->db->prepare('SELECT MAX(Latest) FROM MonitorData WHERE
-			MonitorID = :monitorid, SystemID = :systemid, NodeID = :nodeid');
+			MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid');
 		$latest->execute(array(
 			':monitorid' => $this->monitorid,
 			':systemid' => $this->systemid,

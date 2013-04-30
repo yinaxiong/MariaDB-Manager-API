@@ -29,10 +29,9 @@
  * 
  * The entry point from index.php is the startup method.  It enforces some security checks,
  * and aims to create a good seed for the PHP random number generator.  Standard definitions
- * are pulled in and a timer started for profiling.  A check on server load can be made,
- * and clients asked to back off if load is too high.  An instance of the main controller is
- * obtained and error handling set up.  Normally the controller is invoked, with the doControl
- * method.
+ * are pulled in.  A check on server load can be made, and clients asked to back off if load
+ * is too high.  An instance of the main controller is obtained and error handling set up.  
+ * Normally the controller is invoked, with the doControl method.
  * 
  * The trace static method is a utility for debugging and error logging purposes.
  * 
@@ -42,15 +41,13 @@ namespace SkySQL\SCDS\API;
 
 use \PDOException;
 use \Exception;
-use SkySQL\COMMON\Profiler;
 use SkySQL\COMMON\ErrorRecorder;
 
 if (!function_exists('apache_request_headers')) require ('apache_request_headers.php');
 
 class API {
 	private static $instance = null;
-	protected $timer = 0;
-	protected $ipaddress = '';
+	protected static $ipaddress = '';
 	
 	public static function getInstance () {
 	    return (self::$instance instanceof self) ? self::$instance : (self::$instance = new self());
@@ -63,6 +60,7 @@ class API {
 		
 		// Setting of defined symbols
 		define('ABSOLUTE_PATH', str_replace('\\', '/', dirname(__FILE__)));
+		require_once (ABSOLUTE_PATH.'/configs/definitions.php');
 		if (!defined('CLASS_BASE')) define ('CLASS_BASE', ABSOLUTE_PATH);
 		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
 		
@@ -74,31 +72,32 @@ class API {
 
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 
+		// Block some PHP hack attempts
 		foreach ($protects as $protect) {
 			if ( in_array($protect , array_keys($_REQUEST)) ||
 			in_array($protect , array_keys($_GET)) ||
 			in_array($protect , array_keys($_POST)) ||
 			in_array($protect , array_keys($_COOKIE)) ||
 			in_array($protect , array_keys($_FILES))) {
-				die('Invalid Request.');
+				header(HTTP_PROTOCOL.' 400 Bad Request');
+				die(HTTP_PROTOCOL.' 400 Bad Request.');
 			}
 		}
 		
 		clearstatcache();
-		
+
+		// Prepare to generate reasonably pseudo-random numbers
 		$stat = @stat(__FILE__);
 		if (empty($stat) OR !is_array($stat)) $stat = array(php_uname());
 		mt_srand(crc32(microtime().implode('|', $stat)));
 
-		require_once (CLASS_BASE.'/configs/definitions.php');
-
 		//require_once (CLASS_BASE.'/bootstrap/objectcache.php');
-		$this->timer = new Profiler();
+		// Do we want to support caching?
 
 		$max_load = defined('MAX_LOAD') ? (float) MAX_LOAD : 0;
-		if (function_exists('sys_getloadavg')) {
+		if ($max_load AND function_exists('sys_getloadavg')) {
 			$load = sys_getloadavg();
-			if ($max_load AND $load[0] > $max_load) {
+			if ($load[0] > $max_load) {
 				$retry = 60.0 * (mt_rand(75, 150)/100.0);
 				header ('Retry-After: '.(int)$retry);
 				header(HTTP_PROTOCOL.' 503 Too busy, try again later');
@@ -113,16 +112,13 @@ class API {
 			register_shutdown_function(array($errorhandler, 'PHPFatalError'));
 			if ($runController) $controller->doControl();
 		}
+		// The request handling code should catch all exceptions
 		catch (Exception $e) {
-			echo 'Unhandled error: '.$e->getMessage();
+			echo 'Unhandled error: '.$e->getMessage().api::trace();
 		}
 		catch (PDOException $pe) {
 			echo 'Unhandled error: '.$pe->getMessage().api::trace();
 		}
-	}
-
-	public function getElapsed () {
-		return $this->timer->getElapsed();
 	}
 
 	public static function simpleAutoload ($classname) {
@@ -136,8 +132,8 @@ class API {
 		return false;
 	}
 	
-	public function getIP () {
-		if ($this->ipaddress) return $this->ipaddress;
+	public static function getIP () {
+		if (self::$ipaddress) return self::$ipaddress;
 	    $ip = false;
 	    if (!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $_SERVER['HTTP_CLIENT_IP'];
 	    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
@@ -155,8 +151,8 @@ class API {
 	            }
 	        }
 	    }
-	    $this->ipaddress = (false == $ip AND isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : $ip;
-	    return $this->ipaddress;
+	    self::$ipaddress = (false == $ip AND isset($_SERVER['REMOTE_ADDR'])) ? $_SERVER['REMOTE_ADDR'] : $ip;
+	    return self::$ipaddress;
 	}
 
 	public static function trace ($error=true) {
@@ -170,7 +166,8 @@ class API {
 		if ($error) $counter++;
 		if (1000 < $counter) {
 		    echo $html;
-		    die (T_('Program killed - Probably looping'));
+			header(HTTP_PROTOCOL.' 500 Program killed - Probably looping');
+			die(' 500 Program killed - Probably looping');
         }
 		return $html;
 	}

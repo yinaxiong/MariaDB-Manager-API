@@ -50,8 +50,43 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/backup <br />
-			Parameters: from, to, fields, limit, offset <br />
-			Defaults are forever, forever, all fields, 10, 0 respectively<br />
+			Parameters:
+			<a class="tooltip" href="#">from,
+			<span class="custom info"><img src="images/Info.png" alt="From parameter" height="48" width="48" />
+			<strong>from</strong><br />
+			The start date and optionally time in any format that can be unambiguously recognised by the PHP strtotime function.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">to,
+			<span class="custom info"><img src="images/Info.png" alt="To parameter" height="48" width="48" />
+			<strong>to</strong><br />
+			The end date and optionally time in any format that can be unambiguously recognised by the PHP strtotime function.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">fields, 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			Comma separated list of the field names that you would like to be returned. If not specified,
+			all fields are returned.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">limit,
+			<span class="custom info"><img src="images/Info.png" alt="Limit parameter" height="48" width="48" />
+			<strong>limit</strong><br />
+			The maximum number of items to be returned (integer, default 10).
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">offset
+			<span class="custom info"><img src="images/Info.png" alt="Offset parameter" height="48" width="48" />
+			<strong>offset</strong><br />
+			The offset to start at within the full set of results (integer, default 0).
+			</span>
+			</a><br />
+			Defaults are since forever, until forever, all fields, 10, 0 respectively<br />
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
@@ -81,7 +116,41 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/backup/{backupid} <br />
-			Parameters: state, size, storage, binlog, log <br />
+			Parameters:
+			<a class="tooltip" href="#">state,
+			<span class="custom info"><img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>from</strong><br />
+			The state ID for the backup (integer, must match a possible state).
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">size,
+			<span class="custom info"><img src="images/Info.png" alt="Size parameter" height="48" width="48" />
+			<strong>size</strong><br />
+			The size of the backup (integer).
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">storage, 
+			<span class="custom info"><img src="images/Info.png" alt="Storage parameter" height="48" width="48" />
+			<strong>storage</strong><br />
+			The backup storage.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">binlog,
+			<span class="custom info"><img src="images/Info.png" alt="Binlog parameter" height="48" width="48" />
+			<strong>binlog</strong><br />
+			The backup binlog.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">log
+			<span class="custom info"><img src="images/Info.png" alt="Log parameter" height="48" width="48" />
+			<strong>log</strong><br />
+			The backup log.
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="systemidu">System ID</label>

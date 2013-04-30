@@ -88,7 +88,13 @@ final class ErrorRecorder  {
 
 	public function recordError ($smessage, $errorkey, $lmessage='', $exception=null) {
 		error_log($lmessage);
-		$database = AdminDatabase::getInstance();
+		try {
+			$database = AdminDatabase::getInstance();
+		}
+		catch (PDOException $pe) {
+			header(HTTP_PROTOCOL.' 500 Unable to access database '.$pe->getMessage());
+			die(HTTP_PROTOCOL.' 500 Unable to access database '.$pe->getMessage());
+		}
 		if ($exception instanceof PDOException) {
 			$sql = $database->getSQL();
 			$dberror = $exception->getCode();
@@ -100,7 +106,7 @@ final class ErrorRecorder  {
 		$findid = $database->prepare('UPDATE ErrorLog SET timestamp = :timestamp, ip = :ip, referer = :referer, get = :get, post = :post, trace = :trace WHERE errorkey = :errorkey');
 		$findid->execute(array(
 			':timestamp' => date ('Y-m-d H:i:s'),
-			':ip' => api::getInstance()->getIP(),
+			':ip' => api::getIP(),
 			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
 			':get' => @$_SERVER['REQUEST_URI'],
 			':post' => base64_encode(serialize($_POST)),
@@ -114,7 +120,7 @@ final class ErrorRecorder  {
 			:trace, :sql, :dberror, :dbmessage, :dbcall, :dbtrace, :errorkey);');
 		$insert->execute(array(
 			':timestamp' => date ('Y-m-d H:i:s'),
-			':ip' => api::getInstance()->getIP(),
+			':ip' => api::getIP(),
 			':smessage' => substr($smessage, 0, 250),
 			':lmessage' => ($lmessage ? $lmessage : $smessage),
 			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),

@@ -32,7 +32,15 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /user <br />
-			Parameters: fields <br />
+			Parameters:
+			<a class="tooltip" href="#">fields 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			Comma separated list of the field names that you would like to be returned. If not specified,
+			all fields are returned.
+			</span>
+			</a><br />
+			Default: All fields <br />
 		</p>
 		<p class="formfields">
 			<label for="fields">Fields to return</label>
@@ -52,7 +60,20 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
-			When PUTting, parameters are passed as JSON (name and password) <br />
+			When PUTting, parameters are passed as JSON (
+			<a class="tooltip" href="#">name
+			<span class="custom info"><img src="images/Info.png" alt="Name parameter" height="48" width="48" />
+			<strong>name</strong><br />
+			The ordinary name of the user (URL encoded string).
+			</span>
+			</a><br />
+			and
+			<a class="tooltip" href="#">password
+			<span class="custom info"><img src="images/Info.png" alt="Password parameter" height="48" width="48" />
+			<strong>password</strong><br />
+			Password for the user (URL encoded string).
+			</span>
+			</a>)<br />
 		</p>
 		<p class="formfields">
 			<label for="username">Username</label>
@@ -116,7 +137,13 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
-			Parameter is a POST data item, called password <br />
+			Parameter is a POST data item, called
+			<a class="tooltip" href="#">password
+			<span class="custom info"><img src="images/Info.png" alt="Password parameter" height="48" width="48" />
+			<strong>password</strong><br />
+			The password belonging to the user being authenticated (URL encoded string).
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="usernamel">Username</label>
@@ -138,7 +165,13 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /user/{username}/property/{propertyname} <br />
-			When PUTting, parameter is passed as JSON (value) <br />
+			When PUTting, parameter is passed as JSON, with a single field
+			<a class="tooltip" href="#">value
+			<span class="custom info"><img src="images/Info.png" alt="Value parameter" height="48" width="48" />
+			<strong>value</strong><br />
+			The value for the given property (URL encoded string).
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="usernamepp">Username</label>

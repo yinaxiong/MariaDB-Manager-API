@@ -28,7 +28,6 @@
 
 namespace SkySQL\SCDS\API;
 
-use SkySQL\COMMON\AdminDatabase;
 use \PDO as PDO;
 
 class Commands extends ImplementAPI {

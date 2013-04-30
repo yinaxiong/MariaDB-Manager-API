@@ -31,7 +31,6 @@ use SkySQL\COMMON\AdminDatabase;
 abstract class ImplementAPI {
 	protected $db = null;
 	protected $requestor = null;
-	protected $transact = false;
 	protected $config = array();
 	protected $fieldnames = array();
 
@@ -93,17 +92,16 @@ abstract class ImplementAPI {
 	}
 	
 	protected function startImmediateTransaction () {
-		$this->db->query('BEGIN IMMEDIATE TRANSACTION');
-		$this->transact = true;
+		$this->db->startImmediateTransaction();
 	}
 	
 	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
-		if ($this->transact) $this->db->query('COMMIT TRANSACTION');
+		$this->db->commitTransaction();
 		return $this->requestor->sendResponse($body, $status, $content_type);
 	}
 
 	protected function sendErrorResponse ($errors, $status=200, $content_type='application/json') {
-		if ($this->transact) $this->db->query('ROLLBACK TRANSACTION');
+		$this->db->rollbackTransaction();
 		return $this->requestor->sendErrorResponse($errors, $status, $content_type);
 	}
 	

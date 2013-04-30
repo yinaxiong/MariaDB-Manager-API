@@ -45,6 +45,28 @@ use \PDOException;
 use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
 
+class aliroProfiler {
+    private $start=0;
+    private $prefix='';
+
+    function __construct ( $prefix='' ) {
+        $this->start = microtime(true);
+        $this->prefix = $prefix;
+    }
+
+	public function reset () {
+		$this->start = microtime(true);
+	}
+
+    public function mark( $label ) {
+        return sprintf ( "$this->prefix %.3f $label", microtime(true) - $this->start );
+    }
+
+    public function getElapsed () {
+    	return microtime(true) - $this->start;
+    }
+}
+
 abstract class Request {
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
@@ -95,6 +117,7 @@ abstract class Request {
 	
 	protected static $uriTablePrepared = false;
 	protected static $uriregex = '([0-9a-zA-Z_\-\.\~\*\(\)]*)';
+	protected static $suffixes = array('html', 'json');
 	
 	protected static $codes = array(
         100 => 'Continue',
@@ -140,8 +163,10 @@ abstract class Request {
         505 => 'HTTP Version Not Supported'
 	);
 
+	protected $timer = null;
 	protected $config = array();
 	protected $uri = '';
+	protected $apibase = array();
 	protected $headers = array();
 	protected $requestmethod = '';
 	protected $requestviapost = false;
@@ -154,11 +179,14 @@ abstract class Request {
 	protected $inifile = '/etc/scdsapi/api.ini';
 	
 	protected function __construct() {
+		$this->timer = new aliroProfiler();
 		if (!self::$uriTablePrepared) {
 			foreach (self::$uriTable as &$uridata) {
 				$parts = explode('/', trim($uridata['uri'],'/'));
 				foreach ($parts as $part) $uridata['uriparts'][] = str_replace('*', self::$uriregex, $part);
+				$this->apibase[$parts[0]] = 1;
 			}
+			$this->apibase = array_keys($this->apibase);
 			self::$uriTablePrepared = true;
 		}
         $this->config = parse_ini_file($this->inifile, true);
@@ -166,22 +194,25 @@ abstract class Request {
 		$this->uri = $this->getURI();
 		$this->getSuffix();
 		$this->handleAccept();
+		if ('true' == $this->getParam($this->requestmethod, 'suppress_response_codes')) $this->suppress = true;
 	}
 	
 	protected function getURI () {
-		$sepquery = explode('?', $_SERVER['REQUEST_URI']);
+		$sepquery = explode('?', @$_SERVER['REQUEST_URI']);
 		$sepindex = explode('index.php', $sepquery[0]);
-		$sepapi = explode('/api/', trim(end($sepindex), '/'));
-		return trim(end($sepapi), '/');
+		$afterindex = trim(end($sepindex), '/');
+		$sepapi = explode('/', $afterindex);
+		while (count($sepapi) AND !in_array($sepapi[0],$this->apibase)) array_shift($sepapi);
+		return count($sepapi) ? implode('/',$sepapi) : $afterindex;
 	}
 	
 	protected function getSuffix() {
-		$periodpos = strrpos($this->uri, '.');
-		if (false !== $periodpos) {
-			$suffixpos = strlen($this->uri) - $periodpos;
-			if (0 < $suffixpos AND 6 > $suffixpos) {
-				if (1 < $suffixpos) $this->suffix = substr($this->uri,-($suffixpos-1));
-				$this->uri = substr($this->uri,0,-$suffixpos);
+		foreach (self::$suffixes as $suffix) {
+			$slen = strlen($suffix) + 1;
+			if (substr($this->uri,-$slen) == '.'.$suffix) {
+				$this->uri = substr($this->uri,0,-$slen);
+				$this->suffix = $suffix;
+				break;
 			}
 		}
 	}
@@ -204,19 +235,19 @@ abstract class Request {
 	}
 
 	public function doControl () {
-		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n");
+		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
 		if ('api' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			$class = __NAMESPACE__.'\\'.$link['class'];
 			if (!class_exists($class)) {
-				$this->sendErrorResponse("Request {$_SERVER['REQUEST_URI']} no such class as $class", 404);
+				$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
 			}
 			$object = 'Request' == $link['class'] ? $this : new $class($this);
 			$method = $link['method'];
 			if (!method_exists($object, $method)) {
-				$this->sendErrorResponse("Request {$_SERVER['REQUEST_URI']} no such method as $method in class $class", 404);
+				$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 404);
 			}
 			try {
 				$object->$method($uriparts);
@@ -237,7 +268,6 @@ abstract class Request {
 				'method' => $entry['method']
 			);
 		}
-		$this->accept = 'application/json';
 		$this->sendResponse($result);
 	}
 	
@@ -286,8 +316,8 @@ abstract class Request {
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
-		if ($arrname != $this->requestmethod) return $def;
-		if ($this->requestviapost) $arr =& $_POST;
+		if (is_array($arrname)) $arr =& $arrname;
+		elseif ($this->requestviapost) $arr =& $_POST;
 		elseif ('GET' == $arrname) $arr =& $_GET;
 		elseif ('POST' == $arrname) $arr =& $_POST;
 		elseif ('PUT' == $arrname) {
@@ -300,9 +330,8 @@ abstract class Request {
 			else return $def;
 		}
 		
-		$result = $def;
 	    if (isset($arr[$name])) {
-	        if (is_array($arr[$name])) foreach ($arr[$name] as $key=>$element) {
+	        if (is_array($arr[$name])) foreach (array_keys($arr[$name]) as $key) {
 	        	$result[$key] = $this->getParam ($arr[$name], $key, $def, $mask);
 	        }
 	        else {
@@ -315,53 +344,42 @@ abstract class Request {
 	            }
 	        }
 	    }
-	    return $result;
+	    return isset($result) ? $result : $def;
 	}
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
-		$suppress = 'true' == $this->getParam($this->requestmethod, 'suppress_response_codes') ? true : false;
-		if ($suppress) $body['httpcode'] = $status;
-		$status_header = $this->sendHeaders($status, $suppress);
-		if (empty($body)) $body = $status_header;
-		if ('application/json' == $this->accept) {
-			echo json_encode($body);
-			exit;
-		}
-		echo print_r($body, true);
+		if ($this->suppress) $body['httpcode'] = $status;
+		$this->sendHeaders($status);
+		echo 'application/json' == $this->accept ? json_encode($body) : print_r($body, true);
 		exit;
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
-		$suppress = 'true' == $this->getParam($this->requestmethod, 'suppress_response_codes') ? true : false;
-		$status_header = $this->sendHeaders($status, $suppress);
-		if (empty($errors)) $errors = $status_header;
-		if ($errors AND 'text/html' == $this->accept) {
+		$this->sendHeaders($status);
+		if ('text/html' == $this->accept) {
 			$statusname = @self::$codes[$status];
-			$text = "<p>Error(s) accompanying return code $status $statusname:";
-			foreach ((array) $errors as $error) $text .= '</br>'.$error;
-			$text .= '</p>';
+			$errortext = implode('<br />', (array) $errors);
+			if (empty($errortext)) $errortext = '*none*';
+			$text = "<p>Error(s) accompanying return code $status $statusname:<br />$errortext</p>";
 		}
-		//$data = empty($errors) ? '' : array('errors' => (array) $errors);
 		$recorder = ErrorRecorder::getInstance();
 		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
 		if ('application/json' == $this->accept) {
 			$body['errors'] = (array) $errors;
-			if ($suppress) $body['httpcode'] = $status;
+			if ($this->suppress) $body['httpcode'] = $status;
 			echo json_encode($body);
-			exit;
 		}
-		echo print_r($text, true);
+		else echo $text;
 		exit;
 	}
 	
 	protected function sendHeaders ($status) {
-		$this->log('HTTP Response: '.$status."\n");
-		$status_header = HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
-		header($status_header);
+		$this->log("Time to handle request {$this->timer->mark('seconds')}\n");
+		$this->log("HTTP Response: $status\n");
+		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '')));
 		header('Content-type: '.$this->accept);
 		header('Cache-Control: no-store');
-		return $status_header;
 	}
 	
 	public function log ($data) {

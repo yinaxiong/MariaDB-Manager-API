@@ -30,9 +30,10 @@
 	  <h2>About the API for the SkySQL Cloud Data Suite</h2>
 	  <p>
 		  The API is a RESTful web service, allowing control of one or more SkySQL
-		  Cloud Systems.  Calls are made to different URIs depending on which resource
-		  is being accessed.  Different HTTP methods are used, in accordance with 
-		  REST principles:
+		  Cloud Systems.  A truly RESTful interface relies on a Resource Oriented
+		  Architecture, and the SCDS API does that.  Calls are made to different URIs 
+		  depending on which resource is being accessed.  Different HTTP methods are 
+		  used, in accordance with REST principles:
 	  </p>
 	  <ul>
 		  <li>Retrieve a representation of a resource: HTTP GET</li>
@@ -42,7 +43,78 @@
 	  </ul>
 	  <p>
 		  The main resources handled by the SCDS API are Systems, Nodes, Users, Backups,
-		  Commands and Jobs.  Each has a page where you can run the various API requests.
+		  Monitors, Commands/Jobs.  Each has a page where you can run the various API requests.
+	  </p>
+	  <h3>Resources Managed by the API</h3>
+	  <p>
+		  Up to now, the main resources that are understood by the API are:
+	  </p>
+	  <ul>
+		  <li>Systems (which also have properties)</li>
+		  <li>Nodes</li>
+		  <li>Users (which also have properties)</li>
+		  <li>Backups</li>
+		  <li>Monitor Classes</li>
+		  <li>Monitor Instances (which have sets of data associated with them)</li>
+		  <li>Commands</li>
+		  <li>Jobs</li>
+	  </ul>
+	  <p>
+		  Subsidiary resources are really just lookups for short codes, and they
+		  can be processed on the related main resource page:
+	  </p>
+	  <ul>
+		  <li>Backup possible states</li>
+		  <li>Node possible states</li>
+		  <li>Command possible states</li>
+		  <li>Command steps</li>
+	  </ul>
+	  <p>
+		  An oddball that does not altogether fit with the scheme but is included
+		  on the Commands page is:<br />
+		  bucket<br /><br />
+		  There is also an API call on the Commands page to run SQL (limited to 
+		  SELECT or SHOW) on the database. Details of the main resources follow.
+		  All the main resources can be created, updated or deleted through the API.
+	  </p>
+	  <h3>Systems</h3>
+	  <p>
+		  A system is a group of nodes that run database servers in a linked way
+		  so as to produce a single integrated database service.  The use of
+		  multiple nodes is aimed at solving problems of scaling and load handling.
+		  Connected resources are system properties, which are name-value pairs
+		  associated with a particular system.  
+	  </p>
+	  <h3>Nodes</h3>
+	  <p>
+		  A node is a single &quot;machine&quot; that is part of a system.  It is
+		  typically a virtual private server (or VPS) and may be provisioned by
+		  the use of cloud services.  Nodes can typically be started and stopped
+		  (either deliberately or by accident) without bringing down the system.
+		  One node is the master database, but not necessarily always the same
+		  node.  Another node (never the master) runs this API.
+	  </p>
+	  <h3>Users</h3>
+	  <p>
+		  The API allows users to control the system, and provides user
+		  authentication.
+	  </p>
+	  <h3>Backups</h3>
+	  <p>
+		  Access to currently existing backups of system and nodes is available
+		  through the API.
+	  </p>
+	  <h3>Monitors</h3>
+	  <p>
+		  
+	  </p>
+	  <h3>Commands</h3>
+	  <p>
+		  
+	  </p>
+	  <h3>Jobs</h3>
+	  <p>
+		  
 	  </p>
 	  <h3>Securing the API</h3>
 	  <p>

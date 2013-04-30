@@ -37,6 +37,7 @@ class AdminDatabase {
     protected $sql = '';
     protected $trace = '';
     protected $lastcall = '';
+	protected $transact = false;
 	
     protected function __construct () {
         $config = Request::getInstance()->getConfig();
@@ -47,6 +48,7 @@ class AdminDatabase {
 	}
 	
 	public function __destruct () {
+		if ($this->transact) $this->rollbackTransaction ();
 		$this->pdo = null;
 	}
 	
@@ -56,19 +58,18 @@ class AdminDatabase {
 	}
 	
 	public function prepare () {
-		$arguments = func_get_args();
-		$this->sql = $arguments[0];
-		$this->trace = Diagnostics::trace();
-		$this->lastcall = 'prepare';
-		return call_user_func_array(array($this->pdo, 'prepare'), $arguments);
+		return $this->saveAndCall('prepare', func_get_args());
 	}
 	
 	public function query () {
-		$arguments = func_get_args();
+		return $this->saveAndCall('query', func_get_args());
+	}
+	
+	protected function saveAndCall ($type, $arguments) {
 		$this->sql = $arguments[0];
 		$this->trace = Diagnostics::trace();
-		$this->lastcall = 'query';
-		return call_user_func_array(array($this->pdo, 'query'), $arguments);
+		$this->lastcall = $type;
+		return call_user_func_array(array($this->pdo, $type), $arguments);
 	}
 	
 	public function getSQL () {
@@ -85,5 +86,20 @@ class AdminDatabase {
 	
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
+	}
+	
+	public function startImmediateTransaction () {
+		$this->query('BEGIN IMMEDIATE TRANSACTION');
+		$this->transact = true;
+	}
+	
+	public function commitTransaction () {
+		if ($this->transact) $this->query('COMMIT TRANSACTION');
+		$this->transact = false;
+	}
+	
+	public function rollbackTransaction () {
+		if ($this->transact) $this->query('ROLLBACK TRANSACTION');
+		$this->transact = false;
 	}
 }
