@@ -155,7 +155,7 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/data<br />
-			Parameters: <br />
+			Parameters: start, finish, interval, count<br />
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
@@ -164,6 +164,46 @@
 			<input type="text" name="nodeid" id="nodeid" /><br />
 			<label for="monitoridg">Monitor ID or Name</label>
 			<input type="text" name="monitorid" id="monitoridg" /><br />
+			<label for="monitorstart">Start (unix) time</label>
+			<input type="text" name="start" id="monitorstart" /><br />
+			<label for="monitorfinish">Finish (unix) time</label>
+			<input type="text" name="finish" id="monitorfinish" /><br />
+			<label for="monitorinterval">Interval size (secs)</label>
+			<input type="text" name="interval" id="monitorinterval" /><br />
+			<label for="monitorcount">Count of intervals</label>
+			<input type="text" name="count" id="monitorcount" /><br />
+			<input type="submit" class="submit" value="Get Data" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Raw Monitor Data</h3>
+	  <form action="" method="post" id="getrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/rawdata<br />
+			Parameters: start, finish, interval, count<br />
+		</p>
+		<p class="formfields">
+			<label for="rsystemid">System ID</label>
+			<input type="text" name="systemid" id="rsystemid" /><br />
+			<label for="rnodeid">Node ID</label>
+			<input type="text" name="nodeid" id="rnodeid" /><br />
+			<label for="rmonitoridg">Monitor ID or Name</label>
+			<input type="text" name="monitorid" id="rmonitoridg" /><br />
+			<label for="rmonitorstart">Start (unix) time</label>
+			<input type="text" name="start" id="rmonitorstart" /><br />
+			<label for="rmonitorfinish">Finish (unix) time</label>
+			<input type="text" name="finish" id="rmonitorfinish" /><br />
+			<label for="rmonitorinterval">Interval size (secs)</label>
+			<input type="text" name="interval" id="rmonitorinterval" /><br />
+			<label for="rmonitorcount">Count of intervals</label>
+			<input type="text" name="count" id="rmonitorcount" /><br />
 			<input type="submit" class="submit" value="Get Data" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

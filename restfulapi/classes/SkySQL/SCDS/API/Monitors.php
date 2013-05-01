@@ -106,31 +106,38 @@ final class Monitors extends ImplementAPI {
 	
 	public function storeMonitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts);
-		$value = $this->getParam('PUT', 'value');
+		$value = $this->getParam('POST', 'value');
+		$stamp = $this->getParam('POST', 'timestamp', time());
 		if (!$value) $this->returnErrorResponse('Updating monitor data but no value supplied', 400);
+		if ('null' == $value) $value = null;
 		
 		$this->db->query('BEGIN EXCLUSIVE TRANSACTION');
-		$update = $this->db->prepare('SELECT Value, rowid FROM MonitorData WHERE
+		$check = $this->db->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
 			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
 			ORDER BY Latest DESC');
-		$update->execute(array(
+		$check->execute(array(
 			':monitorid' => $this->monitorid,
 			':systemid' => $this->systemid,
 			':nodeid' => $this->nodeid
 		));
-		$lastrecord = $update->fetch();
-		if ($lastrecord->Value == $value) {
-			$store = $this->db->prepare("UPDATE MonitorData SET Latest = datetime('now') WHERE rowid = :rowid");
-			$store->execute(array(':rowid', $lastrecord->rowid));
+		$lastrecord = $check->fetch();
+		if ($lastrecord->Value == $value AND $lastrecord->Repeats) {
+			$store = $this->db->prepare("UPDATE MonitorData SET Stamp = :stamp, Repeats = Repeats + 1 WHERE rowid = :rowid");
+			$store->execute(array(
+				':stamp' => $stamp,
+				':rowid' => $lastrecord->rowid
+			));
 		}
 		else {
-			$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Start, Latest)
-				VALUES (:systemid, :nodeid, :monitorid, :value, datetime('now'), datetime('now')");
+			$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Stamp, Repeats)
+				VALUES (:systemid, :nodeid, :monitorid, :value, :stamp, :repeats");
 			$store->execute(array(
 				':monitorid' => $this->monitorid,
 				':systemid' => $this->systemid,
 				':nodeid' => $this->nodeid,
-				':value' => $value
+				':value' => $value,
+				':stamp' => $stamp,
+				':repeats' => ($lastrecord->Value == $value ? 1 : 0)
 			));
 		}
 		$this->db->query('COMMIT TRANSACTION');
@@ -139,33 +146,75 @@ final class Monitors extends ImplementAPI {
 	
 	public function monitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
-		$timeparm = $this->getParam('GET', 'time');
-		$unixtime = strtotime(empty($timeparm) ? $this->getLatestTime() : $timeparm);
-		$results['endtime'] = $unixtime;
-		$results['interval'] = $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
-		$count = $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
-		$results['count'] = $count;
-		$results['datamethod'] = $this->getParam('GET', 'datamethod', 'mean');
-		$monitorinfo = $this->db->prepare("SELECT :endtime AS time, 
-			Value AS value, Start AS start, Latest AS latest FROM MonitorData
-			WHERE MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid
-			AND Start <= :endtime AND Latest >= :startime");
-		$pairs = array();
-		while ($count-- > 0) {
-			$endtime = date('Y-m-d H:i:s', $unixtime);
-			$unixtime -= $results['interval'];
-			$startime = date('Y-m-d H:i:s', $unixtime);
-			$monitorinfo->execute(array(
-				':monitorid' => $this->monitorid,
-				':systemid' => $this->systemid,
-				':nodeid' => $this->nodeid,
-				':startime' => $startime,
-				':endtime' => $endtime
-			));
-			$rows = $monitorinfo->fetchAll(PDO::FETCH_ASSOC);
-			if (!empty($rows)) $pairs[] = $rows;
+		$this->getSpanParameters();
+		if ($this->start) {
+			$this->count = (int) floor(($this->finish - $this->start) / $this->interval);
+			$this->finish = $this->start + ($this->count * $this->interval);
 		}
-		$this->sendResponse(array('monitor_data' => array_reverse($pairs)));
+		else {
+			$this->start = $this->finish - ($this->interval * $this->count);
+		}
+		$data = $this->getRawData($this->start, $this->finish);
+		if (empty($data)) $this->sendResponse(array('monitor_data' => array()));
+		array_unshift($data, $this->getPreceding($this->start, $data[0]['value']));
+		$results[0]['value'] = $k = 0;
+		$results[0]['timestamp'] = $this->start + (int) $this->interval/2;
+		$base = $this->start;
+		$top = $base + $this->interval;
+		$n = count($data);
+		$data[$n+1]['timestamp'] = $data[$n]['timestamp'] = $this->finish+10;
+		$data[$n+1]['value'] = $data[$n]['value'] = $data[$n-1]['value'];
+		$n++;
+		for ($i=0; $i < $n; $i++) {
+			$results[$k]['value'] += $data[$i]['value'] * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$data[$i]['timestamp'])));
+			while ($k < $this->count AND $data[$i]['timestamp'] > $top) {
+				$results[$k]['value'] = $results[$k]['value'] / $this->interval;
+				$k++;
+				if ($k >= $this->count) break 2;
+				$results[$k]['value'] = 0;
+				$results[$k]['timestamp'] = $results[$k-1]['timestamp'] + $this->interval;
+				$base += $this->interval;
+				$top = $base + $this->interval;
+				$results[$k]['value'] += $data[$i-1]['value'] * min($this->interval,(min($top,$data[$i]['timestamp']) - max($base,$data[$i-1]['timestamp'])));
+			}
+		}
+		$this->sendResponse(array('monitor_data' => $results));
+	}
+	
+	public function getRawMonitorData ($uriparts) {
+		$this->analyseMonitorURI($uriparts, 'monitorData');
+		$this->getSpanParameters();
+		if ($this->start) $data = $this->getRawData($this->start, $this->finish);
+		else $data = $this->getRawData($this->finish - ($this->interval * $this->count), $this->finish);
+		$this->sendResponse(array('monitor_rawdata' => $data));
+	}
+	
+	protected function getPreceding ($start, $startvalue) {
+		$preceding = $this->db->prepare('SELECT Value AS value, Stamp AS timestamp, Repeats AS repeats
+			FROM MonitorData WHERE Stamp < :start ORDER BY Stamp DESC');
+		$preceding->execute(array(':start' => $start));
+		$data = $preceding->fetch(PDO::FETCH_ASSOC);
+		if (empty($data)) {
+			unset($data);
+			$data['timestamp'] = $start;
+			$data['value'] = $startvalue;
+		}
+		return $data;
+	}
+	
+	protected function getRawData ($from, $to) {
+		$select = $this->db->prepare('SELECT Value AS value, 
+			Stamp AS timestamp, Repeats AS repeats FROM MonitorData
+			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
+			AND Stamp BETWEEN :from AND :to ORDER BY Stamp');
+		$select->execute(array(
+			':monitorid' => $this->monitorid,
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid,
+			':from' => $from,
+			':to' => $to
+		));
+		return $select->fetchALL(PDO::FETCH_ASSOC);
 	}
 	
 	protected function analyseMonitorURI ($uriparts) {
@@ -179,6 +228,13 @@ final class Monitors extends ImplementAPI {
 			$this->monitorid = $uriparts[3];
 		}
 		else $this->sendErrorResponse("Internal contradiction in Monitors->storeMonitorData", 500);
+	}
+	
+	protected function getSpanParameters () {
+		$this->start = $this->getParam('GET', 'start', 0);
+		$this->finish = $this->getParam('GET', 'finish', time());
+		$this->interval = $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
+		$this->count = $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
 	}
 	
 	protected function getLatestTime () {
