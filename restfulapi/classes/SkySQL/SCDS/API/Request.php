@@ -116,7 +116,7 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'updateMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'Monitors', 'method' => 'createMonitorClass', 'uri' => 'monitorclass', 'http' => 'POST'),
-		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'api', 'http' => 'GET'),
+		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'apilist', 'http' => 'GET'),
 		
 	);
 	
