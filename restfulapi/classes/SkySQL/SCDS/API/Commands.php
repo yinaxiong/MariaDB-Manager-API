@@ -51,7 +51,7 @@ class Commands extends ImplementAPI {
 	
 	public function getSteps () {
 		$stepstatement = $this->db->query('SELECT StepID AS id, Script AS script, 
-			Icon AS icon, Descriptioni AS description FROM Step');
+			Icon AS icon, Description AS description FROM Step');
 		$steps = $this->filterResults($stepstatement->fetchAll(PDO::FETCH_ASSOC));
 		$this->sendResponse(array("command_steps" => $steps));
 	}
