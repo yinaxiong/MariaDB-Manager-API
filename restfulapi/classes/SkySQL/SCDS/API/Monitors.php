@@ -36,7 +36,6 @@ final class Monitors extends ImplementAPI {
 	protected $monitorid = 0;
 	
 	public function getMonitorClasses ($uriparts) {
-		$where[] = 'UIOrder IS NOT NULL';
 		if (!empty($uriparts[1])) {
 			if (preg_match('/[0-9]+/', $uriparts[1])) {
 				$where[] = 'MonitorID = :monitorid';
@@ -48,11 +47,12 @@ final class Monitors extends ImplementAPI {
 			}
 		}
 		else $bind = array();
-		$query = $this->db->prepare("SELECT MonitorID AS id, Name AS name, SQL AS sql,
-			Description AS description, Icon AS icon, ChartType AS type, UIOrder AS uiorder,
+		$sql = "SELECT MonitorID AS id, Name AS name, SQL AS sql,
+			Description AS description, Icon AS icon, ChartType AS type, 
 			delta, MonitorType AS monitortype, SystemAverage AS systemaverage,
-			Interval AS interval, Unit AS unit FROM Monitors
-			WHERE ".implode(' AND ', $where)." ORDER BY UIOrder");
+			Interval AS interval, Unit AS unit FROM Monitors";
+		if (!empty($where)) $sql .= ' WHERE '.implode(' AND ', $where);
+		$query = $this->db->prepare($sql);
 		$query->execute($bind);
 		$types = $this->filterResults($query->fetchAll(PDO::FETCH_ASSOC));
         $this->sendResponse(array('monitorclasses' => $types));
@@ -60,8 +60,8 @@ final class Monitors extends ImplementAPI {
 	
 	public function createMonitorClass () {
 		$query = $this->db->prepare("INSERT INTO Monitors (Name, SQL, Description,
-			Icon, ChartType, UIOrder, delta, MonitorType, SystemAverage, Interval, Unit)
-			VALUES (:name, :sql, :description, :icon, :type, :uiorder,
+			Icon, ChartType, delta, MonitorType, SystemAverage, Interval, Unit)
+			VALUES (:name, :sql, :description, :icon, :type,
 			:delta, :monitortype, :systemaverage, :interval, :unit)");
 		$query->execute($this->monitorBind());
 		$this->sendResponse(array('updatecount' => 0, 'insertkey' => $this->db->lastInsertId()));
@@ -70,7 +70,7 @@ final class Monitors extends ImplementAPI {
 	public function updateMonitorClass ($uriparts) {
 		$this->monitorid = $uriparts[1];
 		$query = $this->db->prepare("UPDATE Monitors SET Name = :name, SQL = :sql,
-			Description = :description, Icon = :icon, ChartType = :type, UIOrder = :uiorder,
+			Description = :description, Icon = :icon, ChartType = :type, 
 			delta = :delta, MonitorType = :monitortype, SystemAverage = :systemaverage,
 			Interval = :interval, Unit = :unit
 			WHERE MonitorID = :monitorid");
@@ -79,12 +79,12 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
-		$this->monitorid = $uriparts[0];
+		$this->monitorid = $uriparts[1];
 		$delete = $this->db->prepare('DELETE FROM Monitors WHERE MonitorID = :monitorid');
 		$delete->execute(array(':monitorid' => $this->monitorid));
 		$counter = $delete->rowCount();
 		if ($counter) $this->sendResponse(array('deletecount' => $counter));
-		else $this->sendErrorResponse('Delete user property did not match any user property', 404);
+		else $this->sendErrorResponse('Delete monitor class did not match any monitor class', 404);
 	}
 	
 	protected function monitorBind ($monitorid=0) {
@@ -94,7 +94,6 @@ final class Monitors extends ImplementAPI {
 			':description' => $this->getParam('PUT','description'), 
 			':icon' => $this->getParam('PUT','icon'), 
 			':type' => $this->getParam('PUT','type'), 
-			':uiorder' => $this->getParam('PUT','uiorder'),
 			':delta' => $this->getParam('PUT','delta'), 
 			':monitortype' => $this->getParam('PUT','monitortype'), 
 			':systemaverage' => $this->getParam('PUT','systemaverage'), 

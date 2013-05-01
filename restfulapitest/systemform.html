@@ -213,6 +213,80 @@
 			</p>
 		</form>
 	  </div>
+	  <div class="section">
+	  <h3>Get Application Property</h3>
+	  <form action="" method="post" id="getapplicprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /application/{appid}/property/{propertyname} <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="appidpg">Application ID</label>
+			<input type="text" name="appid" id="appidpg" /><br />
+			<label for="propertynameag">Property Name</label>
+			<input type="text" name="propertyname" id="propertynameag" /><br />
+			<input type="submit" class="submit" value="Get Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Create or Update an Application Property</h3>
+	  <form action="" method="post" id="putappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /application/{appid}/property/{propertyname} <br />
+			Parameter is 
+			<a class="tooltip" href="#">value 
+			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>value</strong><br />
+			The value you want to give to the property you are creating or updating.
+			</span>
+			</a><br />
+		</p>
+		<p class="formfields">
+			<label for="appidp">ApplicationID</label>
+			<input type="text" name="appid" id="appdp" /><br />
+			<label for="propertynamea">Property Name</label>
+			<input type="text" name="propertyname" id="propertynamea" /><br />
+			<label for="value">Value</label>
+			<input type="text" name="value" id="value" /><br />
+			<input type="submit" class="submit" value="Create or Update Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete an Application Property</h3>
+	  <form action="" method="post" id="delappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/property/{propertyname} <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="appiddp">Application ID</label>
+			<input type="text" name="appid" id="appiddp" /><br />
+			<label for="propertynamed">Property Name</label>
+			<input type="text" name="propertyname" id="propertynamed" /><br />
+			<input type="submit" class="submit" value="Delete Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
 	</div>
 	<div id="sidebar">
 	  <div id="preamble">

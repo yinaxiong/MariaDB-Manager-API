@@ -71,6 +71,9 @@ abstract class Request {
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
+		array('class' => 'Application', 'method' => 'getApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
+		array('class' => 'Application', 'method' => 'setApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
+		array('class' => 'Application', 'method' => 'deleteApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
 		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
 		array('class' => 'Systems', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
@@ -110,7 +113,7 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'updateMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'Monitors', 'method' => 'createMonitorClass', 'uri' => 'monitorclass', 'http' => 'PUT'),
+		array('class' => 'Monitors', 'method' => 'createMonitorClass', 'uri' => 'monitorclass', 'http' => 'POST'),
 		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'api', 'http' => 'GET'),
 		
 	);

@@ -71,10 +71,10 @@ class Tasks extends ImplementAPI {
 	
 	public function runCommand ($uriparts) {
 		$command = urldecode($uriparts[1]);
-		$systemid = $this->getParam('POST', 'system', 0);
-		$nodeid = $this->getParam('POST', 'node', 0);
+		$systemid = $this->getParam('POST', 'systemid', 0);
+		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		$userid = $this->getUserID();
-		if ('backup' == $command) $this->makeSystemBackup ($systemid, $nodeid, userid);
+		if ('backup' == $command) $this->makeSystemBackup ($systemid, $nodeid, $userid);
 		if ($systemid AND $nodeid AND $userid) {
 			$params = urldecode($this->getParam('POST', 'params'));
 			$insert = $this->db->prepare("INSERT INTO CommandExecution 
@@ -112,7 +112,7 @@ class Tasks extends ImplementAPI {
 		$parent = $this->getParam('POST', 'parentid');
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)
-			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent");
+			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent)");
 		try {
 			$query->execute(array(
 				':systemid' => $systemid,

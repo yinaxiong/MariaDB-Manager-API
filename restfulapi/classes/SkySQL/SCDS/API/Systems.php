@@ -161,7 +161,7 @@ class Systems extends SystemNodeCommon {
 		));
 		$counter = $delete->rowCount();
 		if ($counter) $this->sendResponse(array('deletecount' => $counter));
-		else $this->sendErrorResponse('Delete node did not match any node', 404);
+		else $this->sendErrorResponse('Delete system property did not match any system property', 404);
 	}
 	
 	public function getSystemProperty ($uriparts) {

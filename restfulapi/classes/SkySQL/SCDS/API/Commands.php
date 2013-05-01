@@ -39,7 +39,7 @@ class Commands extends ImplementAPI {
 			$commands->execute(array(':group' => $group));
 		}
 		else $commands = $this->db->query("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon, Steps AS steps FROM Commands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
-		$results = $commands->fetchAll(PDO::FETCH_ASSOC);
+		$results = $this->filterResults($commands->fetchAll(PDO::FETCH_ASSOC));
 		if (count($results)) $this->sendResponse(array('commands' => $results));
 		else $this->sendErrorResponse('', 404);
 	}
@@ -50,14 +50,9 @@ class Commands extends ImplementAPI {
 	}
 	
 	public function getSteps () {
-		$data = array();
-		$commandquery = $this->db->query('SELECT CommandID FROM Commands');
-		$stepstatement = $this->db->prepare('SELECT StepID FROM CommandStep WHERE CommandID = :commandid ORDER BY StepOrder');
-		foreach ($commandquery->fetchAll(PDO::FETCH_COLUMN) as $commandid) {
-			$stepstatement->execute(array(':commandid' => (int) $commandid));
-			$steps = $stepstatement->fetchAll(PDO::FETCH_COLUMN);
-			$data[] = array("command" => $commandid, "steps" => $steps);
-		}
-		$this->sendResponse(array("command_steps" => $data));
+		$stepstatement = $this->db->query('SELECT StepID AS id, Script AS script, 
+			Icon AS icon, Descriptioni AS description FROM Step');
+		$steps = $this->filterResults($stepstatement->fetchAll(PDO::FETCH_ASSOC));
+		$this->sendResponse(array("command_steps" => $steps));
 	}
 }
