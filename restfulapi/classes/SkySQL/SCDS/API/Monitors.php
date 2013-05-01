@@ -114,7 +114,7 @@ final class Monitors extends ImplementAPI {
 		$this->db->query('BEGIN EXCLUSIVE TRANSACTION');
 		$check = $this->db->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
 			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
-			ORDER BY Latest DESC');
+			ORDER BY Stamp DESC');
 		$check->execute(array(
 			':monitorid' => $this->monitorid,
 			':systemid' => $this->systemid,
@@ -130,7 +130,7 @@ final class Monitors extends ImplementAPI {
 		}
 		else {
 			$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Stamp, Repeats)
-				VALUES (:systemid, :nodeid, :monitorid, :value, :stamp, :repeats");
+				VALUES (:systemid, :nodeid, :monitorid, :value, :stamp, :repeats)");
 			$store->execute(array(
 				':monitorid' => $this->monitorid,
 				':systemid' => $this->systemid,
@@ -166,16 +166,26 @@ final class Monitors extends ImplementAPI {
 		$data[$n+1]['value'] = $data[$n]['value'] = $data[$n-1]['value'];
 		$n++;
 		for ($i=0; $i < $n; $i++) {
-			$results[$k]['value'] += $data[$i]['value'] * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$data[$i]['timestamp'])));
-			while ($k < $this->count AND $data[$i]['timestamp'] > $top) {
+			$thistime = $data[$i]['timestamp'];
+			$thisvalue = $data[$i]['value'];
+			if ($thistime >= $base AND $thistime <= $top) {
+				if (isset($results[$k]['min'])) {
+					$results[$k]['min'] = min($results[$k]['min'],$thisvalue);
+					$results[$k]['max'] = max($results[$k]['max'],$thisvalue);
+				}
+				else $results[$k]['min'] = $results[$k]['max'] = $thisvalue;
+			}
+			$results[$k]['value'] += $thisvalue * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$thistime)));
+			while ($k < $this->count AND $thistime > $top) {
 				$results[$k]['value'] = $results[$k]['value'] / $this->interval;
+				if (!isset($results[$k]['min'])) $results[$k]['min'] = $results[$k]['max'] = $results[$k]['value'];
 				$k++;
 				if ($k >= $this->count) break 2;
 				$results[$k]['value'] = 0;
 				$results[$k]['timestamp'] = $results[$k-1]['timestamp'] + $this->interval;
 				$base += $this->interval;
 				$top = $base + $this->interval;
-				$results[$k]['value'] += $data[$i-1]['value'] * min($this->interval,(min($top,$data[$i]['timestamp']) - max($base,$data[$i-1]['timestamp'])));
+				$results[$k]['value'] += $data[$i-1]['value'] * min($this->interval,(min($top,$thistime) - max($base,$data[$i-1]['timestamp'])));
 			}
 		}
 		$this->sendResponse(array('monitor_data' => $results));
