@@ -364,7 +364,7 @@ abstract class Request {
 			if (!is_array($this->putdata)) return $this->putdata;
 			$arr =& $this->putdata;
 		}
-		return $arr;
+		return isset($arr) ? $arr : null;
 	}
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
