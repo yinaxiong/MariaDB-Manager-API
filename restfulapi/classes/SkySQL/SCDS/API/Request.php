@@ -86,6 +86,7 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/rawdata', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/rawdata', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
+		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE'),
@@ -238,6 +239,10 @@ abstract class Request {
 		else $class = 'CommandRequest';
 		return call_user_func(array(__NAMESPACE__.'\\'.$class,'getInstance'));
 	}
+	
+	public function getMethod () {
+		return $this->requestmethod;
+	}
 
 	public function doControl () {
 		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
@@ -371,6 +376,7 @@ abstract class Request {
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
+		foreach ((array) $errors as $error) $this->log($error."\n");
 		$this->sendHeaders($status);
 		if ('text/html' == $this->accept) {
 			$statusname = @self::$codes[$status];

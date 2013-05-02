@@ -62,6 +62,7 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	public function createMonitorClass () {
+		//$this->log(print_r($_POST,true))."\n";
 		$query = $this->db->prepare("INSERT INTO Monitors (Name, SQL, Description,
 			ChartType, delta, MonitorType, SystemAverage, Interval, Unit)
 			VALUES (:name, :sql, :description, :type,
@@ -92,15 +93,15 @@ final class Monitors extends ImplementAPI {
 	
 	protected function monitorBind ($monitorid=0) {
 		$bind = array(
-			':name' => $this->getParam('PUT','name'), 
-			':sql' => $this->getParam('PUT','sql'), 
-			':description' => $this->getParam('PUT','description'), 
-			':type' => $this->getParam('PUT','type'), 
-			':delta' => $this->getParam('PUT','delta'), 
-			':monitortype' => $this->getParam('PUT','monitortype'), 
-			':systemaverage' => $this->getParam('PUT','systemaverage'), 
-			':interval' => $this->getParam('PUT','interval'), 
-			':unit' => $this->getParam('PUT','unit')
+			':name' => $this->getParam($this->requestmethod,'name'), 
+			':sql' => $this->getParam($this->requestmethod,'sql'), 
+			':description' => $this->getParam($this->requestmethod,'description'), 
+			':type' => $this->getParam($this->requestmethod,'type'), 
+			':delta' => $this->getParam($this->requestmethod,'delta'), 
+			':monitortype' => $this->getParam($this->requestmethod,'monitortype'), 
+			':systemaverage' => $this->getParam($this->requestmethod,'systemaverage'), 
+			':interval' => $this->getParam($this->requestmethod,'interval'), 
+			':unit' => $this->getParam($this->requestmethod,'unit')
 		);
 		if ($monitorid) $bind[':monitorid'] = $monitorid;
 		return $bind;

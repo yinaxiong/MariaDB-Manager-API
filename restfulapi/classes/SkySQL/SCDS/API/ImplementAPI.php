@@ -33,11 +33,13 @@ abstract class ImplementAPI {
 	protected $requestor = null;
 	protected $config = array();
 	protected $fieldnames = array();
+	protected $requestmethod = '';
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
 		$this->requestor = $requestor;
 		$this->config = $requestor->getConfig();
+		$this->requestmethod = $requestor->getMethod();
 		$filter = $this->getParam('GET', 'fields');
 		if ($filter) $this->fieldnames = array_map('trim', explode(',', $filter));
 	}
