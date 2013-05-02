@@ -321,15 +321,8 @@ abstract class Request {
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
-		if (is_array($arrname)) $arr =& $arrname;
-		elseif ($this->requestviapost) $arr =& $_POST;
-		elseif ('GET' == $arrname) $arr =& $_GET;
-		elseif ('POST' == $arrname) $arr =& $_POST;
-		elseif ('PUT' == $arrname) {
-			if (!is_array($this->putdata)) return $this->putdata;
-			$arr =& $this->putdata;
-		}
-		else return $def;
+		$arr = $this->getArrayFromName($arrname);
+		if (!is_array($arr)) return $def;
 		if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
 			if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
 			else return $def;
@@ -350,6 +343,23 @@ abstract class Request {
 	        }
 	    }
 	    return isset($result) ? $result : $def;
+	}
+	
+	public function paramEmpty ($arrname, $name) {
+		$arr = $this->getArrayFromName($arrname);
+		return (is_array($arr)) ? !isset($arr[$name]) : true;
+	}
+	
+	protected function getArrayFromName ($arrname) {
+		if (is_array($arrname)) $arr =& $arrname;
+		elseif ($this->requestviapost) $arr =& $_POST;
+		elseif ('GET' == $arrname) $arr =& $_GET;
+		elseif ('POST' == $arrname) $arr =& $_POST;
+		elseif ('PUT' == $arrname) {
+			if (!is_array($this->putdata)) return $this->putdata;
+			$arr =& $this->putdata;
+		}
+		return $arr;
 	}
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON

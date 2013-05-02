@@ -46,6 +46,10 @@ abstract class ImplementAPI {
 		return $this->requestor->getParam($arrname, $name, $def, $mask);
 	}
 	
+	protected function paramEmpty ($arrname, $name) {
+		return $this->requestor->paramEmpty($arrname, $name);
+	}
+	
 	protected function settersAndBinds ($source, $fields) {
 		$bind = $setter = $insname = $insvalue = array();
 		foreach ($fields as $name=>$about) {

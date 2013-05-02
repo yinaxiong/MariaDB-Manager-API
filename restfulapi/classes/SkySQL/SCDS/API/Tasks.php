@@ -74,7 +74,6 @@ class Tasks extends ImplementAPI {
 		$systemid = $this->getParam('POST', 'systemid', 0);
 		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		$userid = $this->getUserID();
-		if ('backup' == $command) $this->makeSystemBackup ($systemid, $nodeid, $userid);
 		if ($systemid AND $nodeid AND $userid) {
 			$params = urldecode($this->getParam('POST', 'params'));
 			$insert = $this->db->prepare("INSERT INTO CommandExecution 
@@ -105,36 +104,4 @@ class Tasks extends ImplementAPI {
 		return $select->fetch(PDO::FETCH_COLUMN);
 	}
 	
-	protected function makeSystemBackup ($systemid, $nodeid, $userid) {
-		if (!$nodeid) $errors[] = 'No value provided for node when requesting system backup';
-		$level = $this->getParam('POST', 'level', 0);
-		if (!$level) $errors[] = 'No value provided for level when requesting system backup';
-		$parent = $this->getParam('POST', 'parentid');
-		if (isset($errors)) $this->sendErrorResponse($errors, 400);
-		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)
-			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent)");
-		try {
-			$query->execute(array(
-				':systemid' => $systemid,
-				':nodeid' => $nodeid,
-				':level' => $level,
-				':parent' => $parent
-			));
-			$result['id'] = $this->db->lastInsertId();
-			// Extra work for incremental backup
-			if (2 == $level) {
-				$getlog = $this->db->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
-					WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupLevel = 1');
-				$getlog->execute(array(
-				':systemid' => $systemid,
-				':nodeid' => $nodeid
-				));
-				$result['binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
-			}
-			$this->sendResponse(array('backup' => $this->db->lastInsertId()));
-		}
-		catch (PDOException $pe) {
-			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $nodeid, level $level, parent $parent", 500, $pe);
-		}
-	}
 }

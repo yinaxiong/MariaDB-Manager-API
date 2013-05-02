@@ -174,7 +174,7 @@ class Systems extends SystemNodeCommon {
 				$this->sendResponse(array('systemproperty' => array($property => $result['properties'][$property])));
 			}
 		}
-		$this->sendErrorResponse('', 404);
+		$this->sendErrorResponse('Property not found', 404);
 	}
 	
 	protected function readSystemData () {

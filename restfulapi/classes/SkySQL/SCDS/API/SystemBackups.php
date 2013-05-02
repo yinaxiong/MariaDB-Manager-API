@@ -36,6 +36,19 @@ use \PDO;
 use \PDOException;
 
 class SystemBackups extends ImplementAPI {
+	protected static $fields = array(
+		'level' => array('sqlname' => 'BackupLevel', 'default' => 0),
+		'parent' => array('sqlname' => 'ParentID', 'default' => 0),
+		'state' => array('sqlname' => 'State', 'default' => 0),
+		'started' => array('sqlname' => 'Started', 'default' => ''),
+		'updated' => array('sqlname' => 'Updated', 'default' => ''),
+		'restored' => array('sqlname' => 'Restored', 'default' => ''),
+		'size' => array('sqlname' => 'Size', 'default' => 0),
+		'storage' => array('sqlname' => 'Storage', 'default' => ''),
+		'binlog' => array('sqlname' => 'BinLog', 'default' => ''),
+		'log' => array('sqlname' => 'Log', 'default' => ''),
+	);
+
 	protected $errors = array();
 
 	public function getSystemBackups ($uriparts) {
@@ -128,6 +141,39 @@ class SystemBackups extends ImplementAPI {
 		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
 	}
 	
+	protected function makeSystemBackup ($systemid, $nodeid, $userid) {
+		if (!$nodeid) $errors[] = 'No value provided for node when requesting system backup';
+		$level = $this->getParam('POST', 'level', 0);
+		if (!$level) $errors[] = 'No value provided for level when requesting system backup';
+		$parent = $this->getParam('POST', 'parentid');
+		if (isset($errors)) $this->sendErrorResponse($errors, 400);
+		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)
+			VALUES(:systemid, :nodeid, :level, datetime('now'), :parent)");
+		try {
+			$query->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $nodeid,
+				':level' => $level,
+				':parent' => $parent
+			));
+			$result['id'] = $this->db->lastInsertId();
+			// Extra work for incremental backup
+			if (2 == $level) {
+				$getlog = $this->db->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
+					WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupLevel = 1');
+				$getlog->execute(array(
+				':systemid' => $systemid,
+				':nodeid' => $nodeid
+				));
+				$result['binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
+			}
+			$this->sendResponse(array('backup' => $this->db->lastInsertId()));
+		}
+		catch (PDOException $pe) {
+			$this->sendErrorResponse("Failed backup request, system ID $systemid, node ID $nodeid, level $level, parent $parent", 500, $pe);
+		}
+	}
+
 	public function getBackupStates () {
 		$query = $this->db->query('SELECT State AS state, Description AS description FROM BackupStates');
         $this->sendResponse(array("backupStates" => $query->fetchAll(PDO::FETCH_ASSOC)));

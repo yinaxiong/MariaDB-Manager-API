@@ -105,9 +105,9 @@ final class Monitors extends ImplementAPI {
 	
 	public function storeMonitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts);
+		if ($this->paramEmpty('POST', 'value')) $this->sendErrorResponse('Updating monitor data but no value supplied', 400);
 		$value = $this->getParam('POST', 'value');
 		$stamp = $this->getParam('POST', 'timestamp', time());
-		if (!$value) $this->returnErrorResponse('Updating monitor data but no value supplied', 400);
 		if ('null' == $value) $value = null;
 		
 		$this->db->query('BEGIN EXCLUSIVE TRANSACTION');
@@ -120,7 +120,7 @@ final class Monitors extends ImplementAPI {
 			':nodeid' => $this->nodeid
 		));
 		$lastrecord = $check->fetch();
-		if ($lastrecord->Value == $value AND $lastrecord->Repeats) {
+		if (is_object($lastrecord) AND $lastrecord->Value == $value AND $lastrecord->Repeats) {
 			$store = $this->db->prepare("UPDATE MonitorData SET Stamp = :stamp, Repeats = Repeats + 1 WHERE rowid = :rowid");
 			$store->execute(array(
 				':stamp' => $stamp,
@@ -136,7 +136,7 @@ final class Monitors extends ImplementAPI {
 				':nodeid' => $this->nodeid,
 				':value' => $value,
 				':stamp' => $stamp,
-				':repeats' => ($lastrecord->Value == $value ? 1 : 0)
+				':repeats' => ((is_object($lastrecord) AND $lastrecord->Value == $value) ? 1 : 0)
 			));
 		}
 		$this->db->query('COMMIT TRANSACTION');
