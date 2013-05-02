@@ -34,6 +34,9 @@ final class Monitors extends ImplementAPI {
 	protected $systemid = 0;
 	protected $nodeid = 0;
 	protected $monitorid = 0;
+	protected $rawtimes = array();
+	protected $rawvalues = array();
+	protected $rawrepeats = array();
 	
 	public function getMonitorClasses ($uriparts) {
 		if (!empty($uriparts[1])) {
@@ -167,8 +170,8 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getAveraged($data) {
-		$results[0]['timestamp'] = $this->start + (int) $this->interval/2;
-		$results[0]['value'] = $k = 0;
+		$results['timestamp'][0] = $this->start + (int) $this->interval/2;
+		$results['value'][0] = $k = 0;
 		$base = $this->start;
 		$top = $base + $this->interval;
 		$n = count($data);
@@ -177,22 +180,22 @@ final class Monitors extends ImplementAPI {
 		$n++;
 		for ($i=0; $i < $n; $i++) {
 			$thistime = $data[$i]['timestamp'];
-			$results[$k]['value'] += $data[$i]['value'] * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$thistime)));
+			$results['value'][$k] += $data[$i]['value'] * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$thistime)));
 			while ($k < $this->count AND $thistime > $top) {
-				$results[$k]['value'] = $results[$k]['value'] / $this->interval;
+				$results['value'][$k] = $results['value'][$k] / $this->interval;
 				$k++;
 				if ($k >= $this->count) break 2;
-				$results[$k]['timestamp'] = $results[$k-1]['timestamp'] + $this->interval;
+				$results['timestamp'][$k] = $results['timestamp'][$k-1] + $this->interval;
 				$base = $top;
 				$top = $base + $this->interval;
-				$results[$k]['value'] = $data[$i-1]['value'] * min($this->interval,(min($top,$thistime) - max($base,$data[$i-1]['timestamp'])));
+				$results['value'][$k] = $data[$i-1]['value'] * min($this->interval,(min($top,$thistime) - max($base,$data[$i-1]['timestamp'])));
 			}
 		}
 		return $results;
 	}
 	
 	protected function getMinMax ($data) {
-		$results[0]['timestamp'] = $this->start + (int) $this->interval/2;
+		$results['timestamp'][0] = $this->start + (int) $this->interval/2;
 		$k = 0;
 		$base = $this->start;
 		$top = $base + $this->interval;
@@ -204,16 +207,16 @@ final class Monitors extends ImplementAPI {
 			$thistime = $data[$i]['timestamp'];
 			$thisvalue = $data[$i]['value'];
 			if ($thistime < $top) {
-				$results[$k]['min'] = isset($results[$k]['min']) ? min ($results[$k]['min'],$thisvalue) : $thisvalue;
-				$results[$k]['max'] = isset($results[$k]['max']) ? max ($results[$k]['max'],$thisvalue) : $thisvalue;
+				$results['min'][$k] = isset($results['min'][$k]) ? min ($results['min'][$k],$thisvalue) : $thisvalue;
+				$results['max'][$k] = isset($results['max'][$k]) ? max ($results['max'][$k],$thisvalue) : $thisvalue;
 			}
 			while ($k < $this->count AND $thistime > $top) {
-				if (!isset($results[$k]['min'])) {
-					$results[$k]['min'] = $results[$k]['max'] = $data[$i-1]['value'];
+				if (!isset($results['min'][$k])) {
+					$results['min'][$k] = $results['max'][$k] = $data[$i-1]['value'];
 				}
 				$k++;
 				if ($k >= $this->count) break 2;
-				$results[$k]['timestamp'] = $results[$k-1]['timestamp'] + $this->interval;
+				$results['timestamp'][$k] = $results['timestamp'][$k-1] + $this->interval;
 				$base = $top;
 				$top = $base + $this->interval;
 			}
@@ -225,7 +228,9 @@ final class Monitors extends ImplementAPI {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
 		$start = $this->start ? $this->start : $this->finish - ($this->interval * $this->count);
-		$this->sendResponse(array('monitor_rawdata' => $this->getRawData($start, $this->finish)));
+		$data = $this->getRawData($start, $this->finish);
+		array_walk($data, array($this,'transformRawData'));
+		$this->sendResponse(array('monitor_rawdata' => array('timestamp' => $this->rawtimes, 'value' => $this->rawvalues, 'repeats' => $this->rawrepeats)));
 	}
 	
 	protected function getPreceding ($start) {
@@ -248,6 +253,12 @@ final class Monitors extends ImplementAPI {
 			':to' => $to
 		));
 		return $select->fetchALL(PDO::FETCH_ASSOC);
+	}
+	
+	protected function transformRawData ($rawdata) {
+		$this->rawtimes[] = $rawdata['timestamp'];
+		$this->rawvalues[] = $rawdata['value'];
+		$this->rawrepeats[] = $rawdata['repeats'];
 	}
 	
 	protected function analyseMonitorURI ($uriparts) {
