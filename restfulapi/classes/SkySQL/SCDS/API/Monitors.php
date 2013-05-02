@@ -48,7 +48,7 @@ final class Monitors extends ImplementAPI {
 		}
 		else $bind = array();
 		$sql = "SELECT MonitorID AS id, Name AS name, SQL AS sql,
-			Description AS description, Icon AS icon, ChartType AS type, 
+			Description AS description, ChartType AS type, 
 			delta, MonitorType AS monitortype, SystemAverage AS systemaverage,
 			Interval AS interval, Unit AS unit FROM Monitors";
 		if (!empty($where)) $sql .= ' WHERE '.implode(' AND ', $where);
@@ -60,8 +60,8 @@ final class Monitors extends ImplementAPI {
 	
 	public function createMonitorClass () {
 		$query = $this->db->prepare("INSERT INTO Monitors (Name, SQL, Description,
-			Icon, ChartType, delta, MonitorType, SystemAverage, Interval, Unit)
-			VALUES (:name, :sql, :description, :icon, :type,
+			ChartType, delta, MonitorType, SystemAverage, Interval, Unit)
+			VALUES (:name, :sql, :description, :type,
 			:delta, :monitortype, :systemaverage, :interval, :unit)");
 		$query->execute($this->monitorBind());
 		$this->sendResponse(array('updatecount' => 0, 'insertkey' => $this->db->lastInsertId()));
@@ -70,7 +70,7 @@ final class Monitors extends ImplementAPI {
 	public function updateMonitorClass ($uriparts) {
 		$this->monitorid = $uriparts[1];
 		$query = $this->db->prepare("UPDATE Monitors SET Name = :name, SQL = :sql,
-			Description = :description, Icon = :icon, ChartType = :type, 
+			Description = :description, ChartType = :type, 
 			delta = :delta, MonitorType = :monitortype, SystemAverage = :systemaverage,
 			Interval = :interval, Unit = :unit
 			WHERE MonitorID = :monitorid");
@@ -92,7 +92,6 @@ final class Monitors extends ImplementAPI {
 			':name' => $this->getParam('PUT','name'), 
 			':sql' => $this->getParam('PUT','sql'), 
 			':description' => $this->getParam('PUT','description'), 
-			':icon' => $this->getParam('PUT','icon'), 
 			':type' => $this->getParam('PUT','type'), 
 			':delta' => $this->getParam('PUT','delta'), 
 			':monitortype' => $this->getParam('PUT','monitortype'), 
@@ -155,10 +154,46 @@ final class Monitors extends ImplementAPI {
 			$this->start = $this->finish - ($this->interval * $this->count);
 		}
 		$data = $this->getRawData($this->start, $this->finish);
-		if (empty($data)) $this->sendResponse(array('monitor_data' => array()));
-		array_unshift($data, $this->getPreceding($this->start, $data[0]['value']));
-		$results[0]['value'] = $k = 0;
+		$preceding = $this->getPreceding($this->start);
+		if (empty($preceding)) {
+			if (empty($data)) $this->sendResponse(array('monitor_data' => array()));
+			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
+		}
+		else array_unshift($data, $preceding);
+		if ('avg' == $this->getParam('GET', 'method', 'avg')) {
+			$this->sendResponse(array('monitor_data' => $this->getAveraged($data)));
+		}
+		else $this->sendResponse(array('monitor_data' => $this->getMinMax($data)));
+	}
+	
+	protected function getAveraged($data) {
 		$results[0]['timestamp'] = $this->start + (int) $this->interval/2;
+		$results[0]['value'] = $k = 0;
+		$base = $this->start;
+		$top = $base + $this->interval;
+		$n = count($data);
+		$data[$n+1]['timestamp'] = $data[$n]['timestamp'] = $this->finish+10;
+		$data[$n+1]['value'] = $data[$n]['value'] = $data[$n-1]['value'];
+		$n++;
+		for ($i=0; $i < $n; $i++) {
+			$thistime = $data[$i]['timestamp'];
+			$results[$k]['value'] += $data[$i]['value'] * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$thistime)));
+			while ($k < $this->count AND $thistime > $top) {
+				$results[$k]['value'] = $results[$k]['value'] / $this->interval;
+				$k++;
+				if ($k >= $this->count) break 2;
+				$results[$k]['timestamp'] = $results[$k-1]['timestamp'] + $this->interval;
+				$base = $top;
+				$top = $base + $this->interval;
+				$results[$k]['value'] = $data[$i-1]['value'] * min($this->interval,(min($top,$thistime) - max($base,$data[$i-1]['timestamp'])));
+			}
+		}
+		return $results;
+	}
+	
+	protected function getMinMax ($data) {
+		$results[0]['timestamp'] = $this->start + (int) $this->interval/2;
+		$k = 0;
 		$base = $this->start;
 		$top = $base + $this->interval;
 		$n = count($data);
@@ -168,48 +203,36 @@ final class Monitors extends ImplementAPI {
 		for ($i=0; $i < $n; $i++) {
 			$thistime = $data[$i]['timestamp'];
 			$thisvalue = $data[$i]['value'];
-			if ($thistime >= $base AND $thistime <= $top) {
-				if (isset($results[$k]['min'])) {
-					$results[$k]['min'] = min($results[$k]['min'],$thisvalue);
-					$results[$k]['max'] = max($results[$k]['max'],$thisvalue);
-				}
-				else $results[$k]['min'] = $results[$k]['max'] = $thisvalue;
+			if ($thistime < $top) {
+				$results[$k]['min'] = isset($results[$k]['min']) ? min ($results[$k]['min'],$thisvalue) : $thisvalue;
+				$results[$k]['max'] = isset($results[$k]['max']) ? max ($results[$k]['max'],$thisvalue) : $thisvalue;
 			}
-			$results[$k]['value'] += $thisvalue * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$thistime)));
 			while ($k < $this->count AND $thistime > $top) {
-				$results[$k]['value'] = $results[$k]['value'] / $this->interval;
-				if (!isset($results[$k]['min'])) $results[$k]['min'] = $results[$k]['max'] = $results[$k]['value'];
+				if (!isset($results[$k]['min'])) {
+					$results[$k]['min'] = $results[$k]['max'] = $data[$i-1]['value'];
+				}
 				$k++;
 				if ($k >= $this->count) break 2;
-				$results[$k]['value'] = 0;
 				$results[$k]['timestamp'] = $results[$k-1]['timestamp'] + $this->interval;
-				$base += $this->interval;
+				$base = $top;
 				$top = $base + $this->interval;
-				$results[$k]['value'] += $data[$i-1]['value'] * min($this->interval,(min($top,$thistime) - max($base,$data[$i-1]['timestamp'])));
 			}
 		}
-		$this->sendResponse(array('monitor_data' => $results));
+		return $results;
 	}
 	
 	public function getRawMonitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
-		if ($this->start) $data = $this->getRawData($this->start, $this->finish);
-		else $data = $this->getRawData($this->finish - ($this->interval * $this->count), $this->finish);
-		$this->sendResponse(array('monitor_rawdata' => $data));
+		$start = $this->start ? $this->start : $this->finish - ($this->interval * $this->count);
+		$this->sendResponse(array('monitor_rawdata' => $this->getRawData($start, $this->finish)));
 	}
 	
-	protected function getPreceding ($start, $startvalue) {
+	protected function getPreceding ($start) {
 		$preceding = $this->db->prepare('SELECT Value AS value, Stamp AS timestamp, Repeats AS repeats
 			FROM MonitorData WHERE Stamp < :start ORDER BY Stamp DESC');
 		$preceding->execute(array(':start' => $start));
-		$data = $preceding->fetch(PDO::FETCH_ASSOC);
-		if (empty($data)) {
-			unset($data);
-			$data['timestamp'] = $start;
-			$data['value'] = $startvalue;
-		}
-		return $data;
+		return $preceding->fetch(PDO::FETCH_ASSOC);
 	}
 	
 	protected function getRawData ($from, $to) {
@@ -245,18 +268,5 @@ final class Monitors extends ImplementAPI {
 		$this->finish = $this->getParam('GET', 'finish', time());
 		$this->interval = $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
 		$this->count = $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
-	}
-	
-	protected function getLatestTime () {
-		$latest = $this->db->prepare('SELECT MAX(Latest) FROM MonitorData WHERE
-			MonitorID = :monitorid AND SystemID = :systemid AND NodeID = :nodeid');
-		$latest->execute(array(
-			':monitorid' => $this->monitorid,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid
-		));
-		$date = $latest->fetch(PDO::FETCH_COLUMN);
-		if ($date) return $date;
-		$this->sendResponse(array('monitor_data' => array()));
 	}
 }

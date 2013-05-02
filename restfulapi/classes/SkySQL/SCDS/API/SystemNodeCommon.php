@@ -37,7 +37,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
-		$this->monitorquery = $this->db->prepare('SELECT Value, MAX(Latest) FROM MonitorData 
+		$this->monitorquery = $this->db->prepare('SELECT Value, MAX(Stamp) FROM MonitorData 
 			WHERE SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid');
 	}
 

@@ -336,6 +336,12 @@
 			with the approximately similar name.
 		</p>
 		<p>
+			If parameters (apart from the information in the URI) are submitted with a
+			GET request, they must be supplied in the form of a standard query string.
+			That is, a series of name-data assignments separated by ampersand.
+			For example, 'systemid=4&amp;nodeid=2'
+		</p>
+		<p>
 			Where parameters are submitted with an HTTP PUT request, there is a single string passed
 			with the request.  The string must be JSON.  It is formed by creating an associative
 			array with keys that are the names of the parameters.  As you might expect, the corresponding
