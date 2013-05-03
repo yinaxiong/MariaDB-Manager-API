@@ -59,6 +59,7 @@ class Tasks extends ImplementAPI {
 				$bind[':nodeid'] = $node;
 			}
 		}
+var_dump($where);
 		if (isset($where)) $sql .= ' WHERE '.implode(' AND ', $where);
 		$statement = $this->db->prepare($sql);
 		$statement->execute($bind);
@@ -72,6 +73,7 @@ class Tasks extends ImplementAPI {
 	public function runCommand ($uriparts) {
 		$command = urldecode($uriparts[1]);
 		$commandid = $this->getCommandID($command);
+var_dump($command,$commandid);
 		$systemid = $this->getParam('POST', 'systemid', 0);
 		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		$userid = $this->getUserID();
@@ -103,6 +105,7 @@ class Tasks extends ImplementAPI {
 		$getter->execute(array(':command' => $command));
 		$id = $getter->fetch(PDO::FETCH_COLUMN);
 		if (!$id) $this->sendErrorResponse("Apparently valid command $command not found in Commands table", 500);
+		return $id;
 	}
 	
 	protected function getUserID () {
