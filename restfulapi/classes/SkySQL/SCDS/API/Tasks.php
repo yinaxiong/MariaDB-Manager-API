@@ -71,6 +71,7 @@ class Tasks extends ImplementAPI {
 	
 	public function runCommand ($uriparts) {
 		$command = urldecode($uriparts[1]);
+		$commandid = $this->getCommandID($command);
 		$systemid = $this->getParam('POST', 'systemid', 0);
 		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		$userid = $this->getUserID();
@@ -82,7 +83,7 @@ class Tasks extends ImplementAPI {
 			$insert->execute(array(
 				':systemid' => $systemid,
 				':nodeid' => $nodeid,
-				':commandid' => $command,
+				':commandid' => $commandid,
 				':params' => $params,
 				':completed' => null,
 				':stepindex' => 0,
@@ -95,6 +96,13 @@ class Tasks extends ImplementAPI {
         	$this->getOneOrMoreTasks(array(1 => $rowID));
 		}
 		else $this->sendErrorResponse('Must supply valid system ID and username to run command');
+	}
+	
+	protected function getCommandID ($command) {
+		$getter = $this->db->prepare('SELECT CommandID FROM Commands WHERE Name LIKE :command');
+		$getter->execute(array(':command' => $command));
+		$id = $getter->fetch(PDO::FETCH_COLUMN);
+		if (!$id) $this->sendErrorResponse("Apparently valid command $command not found in Commands table", 500);
 	}
 	
 	protected function getUserID () {
