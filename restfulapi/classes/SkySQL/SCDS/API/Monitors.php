@@ -164,10 +164,7 @@ final class Monitors extends ImplementAPI {
 			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
 		}
 		else array_unshift($data, $preceding);
-		if ('avg' == $this->getParam('GET', 'method', 'avg')) {
-			$this->sendResponse(array('monitor_data' => $this->getAveraged($data)));
-		}
-		else $this->sendResponse(array('monitor_data' => $this->getMinMax($data)));
+		$this->sendResponse(array('monitor_data' => ('avg' == $this->getParam('GET', 'method', 'avg') ? $this->getAveraged($data) : $this->getMinMax($data))));
 	}
 	
 	protected function getAveraged($data) {
@@ -176,20 +173,22 @@ final class Monitors extends ImplementAPI {
 		$base = $this->start;
 		$top = $base + $this->interval;
 		$n = count($data);
-		$data[$n+1]['timestamp'] = $data[$n]['timestamp'] = $this->finish+10;
-		$data[$n+1]['value'] = $data[$n]['value'] = $data[$n-1]['value'];
-		$n++;
+		//$data[$n+1]['timestamp'] = 
+		$data[$n]['timestamp'] = $this->finish+10;
+		//$data[$n+1]['value'] = 
+		$data[$n]['value'] = $data[$n-1]['value'];
+		//$n++;
 		for ($i=0; $i < $n; $i++) {
-			$thistime = $data[$i]['timestamp'];
-			$results['value'][$k] += $data[$i]['value'] * min($this->interval,(min($top,$data[$i+1]['timestamp']) - max($base,$thistime)));
-			while ($k < $this->count AND $thistime > $top) {
+			$nexttime = $data[$i+1]['timestamp'];
+			$results['value'][$k] += $data[$i]['value'] * min($this->interval,(min($top,$nexttime) - max($base,$data[$i]['timestamp'])));
+			while ($k < $this->count AND $nexttime > $top) {
 				$results['value'][$k] = $results['value'][$k] / $this->interval;
 				$k++;
 				if ($k >= $this->count) break 2;
 				$results['timestamp'][$k] = $results['timestamp'][$k-1] + $this->interval;
 				$base = $top;
 				$top = $base + $this->interval;
-				$results['value'][$k] = $data[$i-1]['value'] * min($this->interval,(min($top,$thistime) - max($base,$data[$i-1]['timestamp'])));
+				$results['value'][$k] = $data[$i]['value'] * (min($top,$data[$i+1]['timestamp']) - $base);
 			}
 		}
 		return $results;
