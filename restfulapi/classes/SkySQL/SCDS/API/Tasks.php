@@ -44,20 +44,15 @@ class Tasks extends ImplementAPI {
 			$bind[':taskid'] = $taskid;
 		}
 		$state = $this->getParam('GET', 'state', 0);
-		if ($state) {
+		if (!$this->paramEmpty('GET', 'state')) {
 			$where[] = 'CE.State = :state';
 			$bind[':state'] = $state;
 		}
-		$group = $this->getParam('GET', 'group');
-		if ($group) {
+		$node = $this->getParam('GET', 'nodeid', 0);
+		if ($node) {
 			$sql .= ' INNER JOIN Commands AS C ON CE.CommandID = C.CommandID';
-			$where[] = 'C.UIGroup = :group';
-			$bind[':group'] = $group;
-			$node = $this->getParam('GET', 'nodeid', 0);
-			if ($node) {
-				$where[] = 'CE.NodeID = :nodeid';
-				$bind[':nodeid'] = $node;
-			}
+			$where[] = 'CE.NodeID = :nodeid';
+			$bind[':nodeid'] = $node;
 		}
 		if (isset($where)) $sql .= ' WHERE '.implode(' AND ', $where);
 		$statement = $this->db->prepare($sql);
@@ -76,7 +71,7 @@ class Tasks extends ImplementAPI {
 		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		$userid = $this->getUserID();
 		if ($systemid AND $nodeid AND $userid) {
-			$params = urldecode($this->getParam('POST', 'params'));
+			$params = $this->getParam('POST', 'params');
 			$insert = $this->db->prepare("INSERT INTO CommandExecution 
 				(SystemID, NodeID, CommandID, Params, Start, Completed, StepIndex, State, UserID) 
 				VALUES (:systemid, :nodeid, :commandid, :params, datetime('now'), :completed, :stepindex, :state, :userid)");

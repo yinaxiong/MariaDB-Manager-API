@@ -51,8 +51,10 @@ final class StandardRequest extends Request {
 	protected function __construct () {
 		if ('PUT' == $_SERVER['REQUEST_METHOD']) {
 			$rawput = file_get_contents("php://input");
-			$this->putdata = json_decode($rawput, true);
-			if (is_null($this->putdata)) $this->putdata = $rawput;
+			$dejson = json_decode($rawput, true);
+			if (false === stripos($rawput, '=')) $dequery = $rawput;
+			else parse_str($rawput, $dequery);
+			$this->putdata = (is_null($dejson) OR (is_array($dequery) AND count($dejson) < count($dequery))) ? $dequery : $dejson;
 		}
 		$this->requestmethod = $_SERVER['REQUEST_METHOD'];
 		parent::__construct();

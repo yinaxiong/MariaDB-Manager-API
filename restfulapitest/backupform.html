@@ -110,6 +110,43 @@
 	  </form>
 	  </div>
 	  <div class="section">
+	  <h3>Create a System Backup</h3>
+	  <form action="" method="post" id="createback" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/backup <br />
+			Parameters:
+			<a class="tooltip" href="#">nodeid,
+			<span class="custom info"><img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>nodeid</strong><br />
+			The node ID for the backup (integer, must match an existing node for the chosen system).
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">level,
+			<span class="custom info"><img src="images/Info.png" alt="Size parameter" height="48" width="48" />
+			<strong>level</strong><br />
+			The backup level, where a level of 1 is a full backup, or a level of 2 is an incremental backup.
+			</span>
+			</a><br />
+		</p>
+		<p class="formfields">
+			<label for="systemidc">System ID</label>
+			<input type="text" name="systemid" id="systemidc" /><br />
+			<label for="nodeid">Node ID</label>
+			<input type="text" name="nodeid" id="nodeid" /><br />
+			<label for="level">Level ID</label>
+			<input type="text" name="level" id="level" /><br />
+			<input type="submit" class="submit" value="Create Backup" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
 	  <h3>Update a System Backup</h3>
 	  <form action="" method="post" id="updateback" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup','backupid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">

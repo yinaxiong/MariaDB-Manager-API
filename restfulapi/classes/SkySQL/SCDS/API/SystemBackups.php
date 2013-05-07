@@ -141,10 +141,13 @@ class SystemBackups extends ImplementAPI {
 		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
 	}
 	
-	protected function makeSystemBackup ($systemid, $nodeid, $userid) {
+	public function makeSystemBackup ($uriparts) {
+		$systemid = (int) $uriparts[1];
+		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		if (!$nodeid) $errors[] = 'No value provided for node when requesting system backup';
 		$level = $this->getParam('POST', 'level', 0);
 		if (!$level) $errors[] = 'No value provided for level when requesting system backup';
+		if ($level AND $level != 1 AND $level != 2) $errors[] = "Level given $level, must be 1 or 2 (full or incremental)";
 		$parent = $this->getParam('POST', 'parentid');
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$query = $this->db->prepare("INSERT INTO Backup (SystemID, NodeID, BackupLevel, Started, ParentID)

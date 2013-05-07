@@ -32,12 +32,10 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /command <br />
-			Parameter: group <br />
+			Parameter: fields <br />
 			Default: All groups <br />
 		</p>
 		<p class="formfields">
-			<label for="group">Group</label>
-			<input type="text" name="group" id="group" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="List" />
@@ -99,7 +97,7 @@
 			<label for="commandname">Command Name</label>
 			<select name="commandname" id="commandname">
 				<option value="backup">Backup</option>
-				<option value="restore">Restore</option>GE
+				<option value="restore">Restore</option>
 				<option value="start">Start</option>
 				<option value="stop">Stop</option>
 				<option value="restart">Restart</option>
@@ -134,15 +132,13 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /task/{taskid} <br />
-			Parameters: taskid, state, group, nodeid, fields <br />
+			Parameters: taskid, state, nodeid, fields <br />
 		</p>
 		<p class="formfields">
 			<label for="task">Task ID</label>
 			<input type="text" name="taskid" id="taskid" /><br />
 			<label for="statej">State ID</label>
 			<input type="text" name="state" id="statej" /><br />
-			<label for="groupj">Group</label>
-			<input type="text" name="group" id="groupj" /><br />
 			<label for="nodej">Node ID</label>
 			<input type="text" name="nodeid" id="nodej" /><br />
 			<label for="fields1">Fields to return</label>
@@ -162,17 +158,15 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /task <br />
-			Parameters: state, group, nodeid, fields <br />
+			Parameters: state, nodeid, fields <br />
 		</p>
 		<p class="formfields">
-			<label for="statej">State ID</label>
-			<input type="text" name="state" id="statej" /><br />
-			<label for="groupjs">Group</label>
-			<input type="text" name="group" id="groupjs" /><br />
+			<label for="statejm">State ID</label>
+			<input type="text" name="state" id="statejm" /><br />
 			<label for="nodejs">Node ID</label>
 			<input type="text" name="nodeid" id="nodejs" /><br />
-			<label for="fields">Fields to return</label>
-			<input type="text" name="fields" id="fields" /><br />
+			<label for="fieldsm">Fields to return</label>
+			<input type="text" name="fields" id="fieldsm" /><br />
 			<input type="submit" class="submit" value="Get Jobs" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -183,7 +177,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Bucket Data</h3>
-	  <form action="" method="post" id="getjobs" target="apiresults" onsubmit="return(setFields(this.id,'bucket'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getbucket" target="apiresults" onsubmit="return(setFields(this.id,'bucket'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
