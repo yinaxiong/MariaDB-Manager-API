@@ -86,7 +86,10 @@ class Tasks extends ImplementAPI {
 				':userid' => $userid
 			));
         	$rowID = $this->db->lastInsertId();
-        	$cmd = $this->config['shell']['path']."RunCommand.sh $rowID \"".$this->config['database']['path'].'" > /dev/null 2>&1 &';
+			$runfile = rtrim($this->config['shell']['path'],'/\\').'/RunCommand.sh';
+			if (!file_exists($runfile)) $this->sendErrorResponse("Script for run command $runfile does not exist", 500);
+			if (!is_executable($runfile)) $this->sendErrorResponse("Script for run command $runfile exists but is not executable", 500);
+			$cmd = "$runfile $rowID \"{$this->config['database']['path']}\" > /dev/null 2>&1 &";
         	exec($cmd);
         	$this->getOneOrMoreTasks(array(1 => $rowID));
 		}
