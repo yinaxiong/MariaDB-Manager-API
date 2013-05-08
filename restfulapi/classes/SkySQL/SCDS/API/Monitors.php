@@ -168,7 +168,7 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getAveraged($data) {
-		$results['timestamp'][0] = $this->start + (int) $this->interval/2;
+		$results['timestamp'][0] = $this->start + (int) ($this->interval/2);
 		$results['value'][0] = $k = 0;
 		$base = $this->start;
 		$top = $base + $this->interval;
@@ -275,9 +275,9 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getSpanParameters () {
-		$this->start = $this->getParam('GET', 'start', 0);
-		$this->finish = $this->getParam('GET', 'finish', time());
-		$this->interval = $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
-		$this->count = $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
+		$this->start = (int) $this->getParam('GET', 'start', 0);
+		$this->finish = (int) $this->getParam('GET', 'finish', time());
+		$this->interval = (int) $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
+		$this->count = (int) $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
 	}
 }
