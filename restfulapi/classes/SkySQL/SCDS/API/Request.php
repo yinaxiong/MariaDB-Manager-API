@@ -246,7 +246,7 @@ abstract class Request {
 
 	public function doControl () {
 		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
-		if ('api' != $this->uri) $this->checkSecurity();
+		//if ('api' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
