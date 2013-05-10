@@ -160,6 +160,21 @@ final class Monitors extends ImplementAPI {
 		$this->sendResponse();
 	}
 	
+	public function monitorLatest ($uriparts) {
+		$this->analyseMonitorURI($uriparts, 'monitorData');
+		$select = $this->db->prepare('SELECT Value FROM MonitorData
+			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
+			ORDER BY Stamp DESC');
+		$select->execute(array(
+			':monitorid' => $this->monitorid,
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid
+		));
+		$latest = $select->fetch(PDO::FETCH_COLUMN);
+		if (false === $latest) $this->sendErrorResponse('No data matches the request', 404);
+		else $this->sendResponse(array('latest' => $latest));
+	}
+	
 	public function monitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
