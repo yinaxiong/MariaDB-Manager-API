@@ -38,6 +38,16 @@ final class Monitors extends ImplementAPI {
 	protected $rawvalues = array();
 	protected $rawrepeats = array();
 	
+	protected static $fields = array(
+		'description' => array('sqlname' => 'Description', 'default' => ''),
+		'type' => array('sqlname' => 'ChartType', 'default' => ''),
+		'delta' => array('sqlname' => 'delta', 'default' => 0),
+		'monitortype' => array('sqlname' => 'MonitorType', 'default' => ''),
+		'systemaverage' => array('sqlname' => 'SystemAverage', 'default' => ''),
+		'interval' => array('sqlname' => 'Interval', 'default' => ''),
+		'unit' => array('sqlname' => 'Unit', 'default' => '')		
+	);
+	
 	public function getMonitorClasses ($uriparts) {
 		if (!empty($uriparts[1])) {
 			if (preg_match('/[0-9]+/', $uriparts[1])) {
@@ -73,13 +83,16 @@ final class Monitors extends ImplementAPI {
 	
 	public function updateMonitorClass ($uriparts) {
 		$this->monitorid = $uriparts[1];
-		$query = $this->db->prepare("UPDATE Monitors SET Name = :name, SQL = :sql,
-			Description = :description, ChartType = :type, 
-			delta = :delta, MonitorType = :monitortype, SystemAverage = :systemaverage,
-			Interval = :interval, Unit = :unit
-			WHERE MonitorID = :monitorid");
-		$query->execute($this->monitorBind($this->monitorid));
-		$this->sendResponse(array('updatecount' => $query->rowCount(), 'insertkey' => 0));
+		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
+		$bind[':monitorid'] = $this->monitorid;
+		if (!empty($setter)) {
+			$update = $this->db->prepare('UPDATE Monitors SET '.implode(', ',$setter).
+				' WHERE MonitorID = :monitorid');
+			$update->execute($bind);
+			$counter = $update->fetch(PDO::FETCH_COLUMN);
+		}
+		else $counter = 0;
+		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
@@ -151,7 +164,7 @@ final class Monitors extends ImplementAPI {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
 		if ($this->start) {
-			$this->count = (int) floor(($this->finish - $this->start) / $this->interval);
+			$this->count = min($this->count, (int) floor(($this->finish - $this->start) / $this->interval));
 			$this->finish = $this->start + ($this->count * $this->interval);
 		}
 		else {
@@ -235,8 +248,14 @@ final class Monitors extends ImplementAPI {
 	
 	protected function getPreceding ($start) {
 		$preceding = $this->db->prepare('SELECT Value AS value, Stamp AS timestamp, Repeats AS repeats
-			FROM MonitorData WHERE Stamp < :start ORDER BY Stamp DESC');
-		$preceding->execute(array(':start' => $start));
+			FROM MonitorData WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
+			AND Stamp < :start ORDER BY Stamp DESC');
+		$preceding->execute(array(
+			':monitorid' => $this->monitorid,
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid,
+			':start' => $start
+		));
 		return $preceding->fetch(PDO::FETCH_ASSOC);
 	}
 	

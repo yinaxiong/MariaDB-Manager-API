@@ -55,14 +55,12 @@ abstract class ImplementAPI {
 	protected function settersAndBinds ($source, $fields) {
 		$bind = $setter = $insname = $insvalue = array();
 		foreach ($fields as $name=>$about) {
-			if ($source) {
+			if ($source AND !$this->paramEmpty($source, $name)) {
 				$input = $this->getParam($source, $name, $about['default']);
-				if ($input) {
-					$insname[] = $about['sqlname'];
-					$insvalue[] = ':'.$name;
-					$bind[':'.$name] = $input;
-					$setter[] = $about['sqlname'].' = :'.$name;
-				}
+				$insname[] = $about['sqlname'];
+				$insvalue[] = ':'.$name;
+				$bind[':'.$name] = $input;
+				$setter[] = $about['sqlname'].' = :'.$name;
 			}
 		}
 		return array($insname, $insvalue, $setter, $bind);

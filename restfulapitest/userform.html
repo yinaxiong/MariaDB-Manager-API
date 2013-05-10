@@ -79,9 +79,9 @@
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="name">Personal Name</label>
-			<input type="text" name="name" id="name" /><br />
+			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="password">Password</label>
-			<input type="text" name="password" id="password" /><br />
+			<input type="text" id="password" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'password');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

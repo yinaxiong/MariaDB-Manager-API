@@ -113,11 +113,11 @@ class API {
 			if ($runController) $controller->doControl();
 		}
 		// The request handling code should catch all exceptions
-		catch (Exception $e) {
-			echo 'Unhandled error: '.$e->getMessage().api::trace();
-		}
 		catch (PDOException $pe) {
-			echo 'Unhandled error: '.$pe->getMessage().api::trace();
+			echo 'Unhandled database error: '.$pe->getMessage().api::trace();
+		}
+		catch (Exception $e) {
+			echo 'Unhandled general error: '.$e->getMessage().api::trace();
 		}
 	}
 

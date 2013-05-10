@@ -100,45 +100,23 @@ class SystemBackups extends ImplementAPI {
 	public function updateSystemBackup ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$backupid = (int) $uriparts[3];
-		$state = $this->getParam('PUT', 'state', 0);
-		$size = $this->getParam('PUT', 'size', 0);
-		$storage = $this->getParam('PUT', 'storage');
-		$binlog = $this->getParam('PUT', 'binlog');
-		$log = $this->getParam('PUT', 'log');
-		$restored = strtolower($this->getParam('PUT', 'restored'));
-		if ($state) {
-			$sets[] = 'State = :state';
-			$bind[':state'] = $state;
-		}
-		if ($size) {
-			$sets[] = 'Size = :size';
-			$bind[':size'] = $size;
-		}
-		if ($storage) {
-			$sets[] = 'Storage = :storage';
-			$bind[':storage'] = $storage;
-		}
-		if ($binlog) {
-			$sets[] = 'BinLog = :binlog';
-			$bind[':binlog'] = $binlog;
-		}
-		if ($log) {
-			$sets[] = 'Log = :log';
-			$bind[':log'] = $log;
-		}
-		if ('yes' == $restored) {
-			$sets[] = "Restored = datetime('now')";
-		}
-		if (isset($sets)) {
-			$bind[':systemid'] = $systemid;
-			$bind[':backupid'] = $backupid;
-			$update = $this->db->prepare('UPDATE Backup SET '.implode(', ', $sets).' 
-				WHERE SystemID = :systemid AND BackupID = :backupid');
+		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
+		$bind[':systemid'] = $systemid;
+		$bind[':backupid'] = $backupid;
+		if (!empty($setter)) {
+			$update = $this->db->prepare('UPDATE Backup SET '.implode(', ',$setter).
+				' WHERE SystemID = :systemid AND BackupID = :backupid');
 			$update->execute($bind);
-			$counter = $update->rowCount();
+			$counter = $update->fetch(PDO::FETCH_COLUMN);
 		}
 		else $counter = 0;
 		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
+		/*		
+		if ('yes' == $restored) {
+			$sets[] = "Restored = datetime('now')";
+		}
+		 * 
+		 */
 	}
 	
 	public function makeSystemBackup ($uriparts) {

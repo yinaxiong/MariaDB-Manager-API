@@ -11,6 +11,16 @@ function setFields () {
 	setAuth(uri.substring(1), form);
 	return true;
 }
+function setName (id, name) {
+	var element = document.getElementById(id);
+	element.name = name;
+	element.classList.add("hasdata");
+}
+function unsetName (id) {
+	var element = document.getElementById(id);
+	element.name = "";
+	element.classList.remove("hasdata");
+}
 function setAuth (uri, form) {
 	var oDate = new Date();
 	var d = GetRFC822Date(oDate);

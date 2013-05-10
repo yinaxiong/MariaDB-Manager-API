@@ -195,15 +195,15 @@
 			<label for="backupid">Backup ID</label>
 			<input type="text" name="backupid" id="backupid" /><br />
 			<label for="state">State ID</label>
-			<input type="text" name="state" id="state" /><br />
+			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="size">Size</label>
-			<input type="text" name="size" id="size" /><br />
+			<input type="text" id="size" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'size');" /><br />
 			<label for="storage">Storage</label>
-			<input type="text" name="storage" id="storage" /><br />
+			<input type="text" id="storage" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'storage');" /><br />
 			<label for="binlog">BinLog</label>
-			<input type="text" name="binlog" id="binlog" /><br />
+			<input type="text" id="binlog" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'binlog');" /><br />
 			<label for="log">Log</label>
-			<input type="text" name="log" id="log" /><br />
+			<input type="text" id="log" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'log');" /><br />
 			<input type="submit" class="submit" value="Update Backup" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

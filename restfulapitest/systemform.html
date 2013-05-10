@@ -78,9 +78,9 @@
 			<label for="systemid">System ID</label>
 			<input type="text" name="systemid" id="systemid" /><br />
 			<label for="name">System Name</label>
-			<input type="text" name="name" id="name" /><br />
+			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State ID</label>
-			<input type="text" name="state" id="state" /><br />
+			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

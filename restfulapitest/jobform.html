@@ -132,15 +132,15 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /task/{taskid} <br />
-			Parameters: taskid, state, nodeid, fields <br />
+			Parameters: state, nodeid, fields <br />
 		</p>
 		<p class="formfields">
 			<label for="task">Task ID</label>
 			<input type="text" name="taskid" id="taskid" /><br />
 			<label for="statej">State ID</label>
-			<input type="text" name="state" id="statej" /><br />
+			<input type="text" id="statej" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="nodej">Node ID</label>
-			<input type="text" name="nodeid" id="nodej" /><br />
+			<input type="text" id="nodej" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Get Job" />
@@ -162,12 +162,34 @@
 		</p>
 		<p class="formfields">
 			<label for="statejm">State ID</label>
-			<input type="text" name="state" id="statejm" /><br />
+			<input type="text" id="statejm" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="nodejs">Node ID</label>
-			<input type="text" name="nodeid" id="nodejs" /><br />
+			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
 			<label for="fieldsm">Fields to return</label>
 			<input type="text" name="fields" id="fieldsm" /><br />
 			<input type="submit" class="submit" value="Get Jobs" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Update a Job</h3>
+	  <form action="" method="post" id="putjob" target="apiresults" onsubmit="return(setFields(this.id,'task','taskid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /task/{taskid} <br />
+			Parameters: state<br />
+		</p>
+		<p class="formfields">
+			<label for="tasku">Task ID</label>
+			<input type="text" name="taskid" id="taskidu" /><br />
+			<label for="stateju">State ID</label>
+			<input type="text" name="state" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<input type="submit" class="submit" value="Update Job" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />

@@ -213,6 +213,11 @@ label {
 	text-decoration: underline;
 }
 
+/* Optional parameters when data will be sent */
+.hasdata {
+	background-color: #FFCCFF;
+}
+
 /* Tooltips */
 
 .tooltip {

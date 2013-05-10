@@ -211,23 +211,23 @@
 			<label for="monitoridu">Monitor ID or Name</label>
 			<input type="text" name="monitorid" id="monitoridu" /><br />
 			<label for="nameu">Name</label>
-			<input type="text" name="name" id="nameu" /><br />
+			<input type="text" id="nameu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="sqlu">SQL</label>
-			<input type="text" name="sql" id="sqlu" /><br />
+			<input type="text" id="sqlu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'sql');" /><br />
 			<label for="descriptionu">Description</label>
-			<input type="text" name="description" id="descriptionu" /><br />
+			<input type="text" id="descriptionu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'description');" /><br />
 			<label for="typeu">Type</label>
-			<input type="text" name="type" id="typeu" /><br />
+			<input type="text" id="typeu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'type');" /><br />
 			<label for="deltau">Delta</label>
-			<input type="text" name="delta" id="deltau" /><br />
+			<input type="text" id="deltau" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'delta');" /><br />
 			<label for="monitortypeu">Monitor Type</label>
-			<input type="text" name="monitortype" id="monitortypeu" /><br />
+			<input type="text" id="monitortypeu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'monitortype');" /><br />
 			<label for="systemaverageu">System Average</label>
-			<input type="text" name="systemaverage" id="systemaveragu" /><br />
+			<input type="text" id="systemaveragu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'systemaverage');" /><br />
 			<label for="intervalu">Interval</label>
-			<input type="text" name="interval" id="intervalu" /><br />
+			<input type="text" id="intervalu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'interval');" /><br />
 			<label for="unitu">Unit</label>
-			<input type="text" name="unit" id="unitu" /><br />
+			<input type="text" id="unitu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'unit');" /><br />
 			<input type="submit" class="submit" value="Update Class" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -257,7 +257,7 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Get Monitor Data</h3>
+	  <h3>Get Node Monitor Data</h3>
 	  <form action="" method="post" id="getdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -268,12 +268,12 @@
 			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
 			<strong>start</strong><br />
 			The time to start the first interval to be returned - unix time in seconds. 
-			If the start time is specified, then the count will be recalculated and any
-			value submitted for count will be overridden. The calculation is based on taking
-			the given start time and computing the maximum number of intervals that can be
-			obtained without exceeding the finish time.  If no start time is specified, then
+			If the start time is specified, then the count (either submitted or defaulted)
+			may be recalculated.  The count will never be increased, but it will be
+			reduced if necessary to ensure that the finish time is no more than the
+			value submitted (or defaulted to the present).  If no start time is specified, then
 			the start time is computed by taking the finish time and going back by the 
-			specified count of intervals.
+			specified (or defaulted) count of intervals.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">finish,<span class="custom info">
 			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
@@ -328,7 +328,7 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Get Raw Monitor Data</h3>
+	  <h3>Get Raw Node Monitor Data</h3>
 	  <form action="" method="post" id="getrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -378,6 +378,132 @@
 			<input type="text" name="interval" id="rmonitorinterval" /><br />
 			<label for="rmonitorcount">Count of intervals</label>
 			<input type="text" name="count" id="rmonitorcount" /><br />
+			<input type="submit" class="submit" value="Get Data" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get System Monitor Data</h3>
+	  <form action="" method="post" id="getsysdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','monitor','monitorid','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/monitor/{monitor}/data<br />
+			Parameters:
+			<a class="tooltip" href="#">start,<span class="custom info">
+			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
+			<strong>start</strong><br />
+			The time to start the first interval to be returned - unix time in seconds. 
+			If the start time is specified, then the count (either submitted or defaulted)
+			may be recalculated.  The count will never be increased, but it will be
+			reduced if necessary to ensure that the finish time is no more than the
+			value submitted (or defaulted to the present).  If no start time is specified, then
+			the start time is computed by taking the finish time and going back by the 
+			specified (or defaulted) count of intervals.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">finish,<span class="custom info">
+			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
+			<strong>finish</strong><br />
+			The time to stop the last interval to be returned - unix time in seconds.  Default
+			is the present time.  If a start time is specified, then the finish time may be
+			adjusted so as to have an integral number of intervals from the start time up to
+			the finish time.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">interval,<span class="custom info">
+			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<strong>interval</strong><br />
+			Number of seconds in each time interval.  The number of intervals may be
+			specified below, although it may be overridden if a start time is given - see
+			the tip for the start field.  The given interval is always used and never
+			recalculated.  There is a default value in the API configuration file.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">count<span class="custom info">
+			<img src="images/Info.png" alt="Count parameter" height="48" width="48" />
+			<strong>count</strong><br />
+			The number of time intervals for which interpolated observations are wanted.
+			It may be overridden by a calculation based on start time - see the tip for
+			start.  Otherwise, the start time is calculated by taking the finish time and
+			going back by the specified number of time intervals.  There is a default
+			value in the API configuration file.
+			</span></a>
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="systemids">System ID</label>
+			<input type="text" name="systemid" id="systemids" /><br />
+			<label for="monitoridgs">Monitor ID or Name</label>
+			<input type="text" name="monitorid" id="monitoridgs" /><br />
+			<label for="monitorstarts">Start (unix) time</label>
+			<input type="text" name="start" id="monitorstarts" /><br />
+			<label for="monitorfinishs">Finish (unix) time</label>
+			<input type="text" name="finish" id="monitorfinishs" /><br />
+			<label for="monitorintervals">Interval size (secs)</label>
+			<input type="text" name="interval" id="monitorintervals" /><br />
+			<label for="monitorcounts">Count of intervals</label>
+			<input type="text" name="count" id="monitorcounts" /><br />
+			<label for="methods">Method (avg or minmax)</label>
+			<input type="text" name="method" id="methods" /><br />
+			<input type="submit" class="submit" value="Get Data" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Raw System Monitor Data</h3>
+	  <form action="" method="post" id="getsysrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','monitor','monitorid','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/monitor/{monitor}/rawdata<br />
+			Parameters:
+			<a class="tooltip" href="#">start,<span class="custom info">
+			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
+			<strong>start</strong><br />
+			The time to start selecting observations to be returned - unix time in seconds. 
+			If the start time is specified, it will be used. If no start time is specified, then
+			the start time is computed by taking the finish time and going back by the 
+			specified count of intervals.  The start time is the first variable in a SQL
+			BETWEEN clause.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">finish,<span class="custom info">
+			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
+			<strong>finish</strong><br />
+			The time to stop selecting observations to be returned - unix time in seconds.  Default
+			is the present time.  The stop time is the second variable in a SQL BETWEEN clause.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">interval,<span class="custom info">
+			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<strong>interval</strong><br />
+			Number of seconds in each time interval.  Only used to compute the start time
+			if none is specified.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">count<span class="custom info">
+			<img src="images/Info.png" alt="Count parameter" height="48" width="48" />
+			<strong>count</strong><br />
+			Only used to compute the start time if none is specified.
+			</span></a>
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="rsystemids">System ID</label>
+			<input type="text" name="systemid" id="rsystemids" /><br />
+			<label for="rmonitoridgs">Monitor ID or Name</label>
+			<input type="text" name="monitorid" id="rmonitoridgs" /><br />
+			<label for="rmonitorstarts">Start (unix) time</label>
+			<input type="text" name="start" id="rmonitorstarts" /><br />
+			<label for="rmonitorfinishs">Finish (unix) time</label>
+			<input type="text" name="finish" id="rmonitorfinishs" /><br />
+			<label for="rmonitorintervals">Interval size (secs)</label>
+			<input type="text" name="interval" id="rmonitorintervals" /><br />
+			<label for="rmonitorcounts">Count of intervals</label>
+			<input type="text" name="count" id="rmonitorcounts" /><br />
 			<input type="submit" class="submit" value="Get Data" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

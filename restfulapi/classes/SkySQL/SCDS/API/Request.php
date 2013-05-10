@@ -110,6 +110,7 @@ abstract class Request {
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/(start|stop|restart|isolate|recover|promote|backup|restore)', 'http' => 'POST'),
 		array('class' => 'Tasks', 'method' => 'getOneOrMoreTasks', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Tasks', 'method' => 'getOneOrMoreTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
@@ -246,7 +247,7 @@ abstract class Request {
 
 	public function doControl () {
 		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
-		if ('api' != $this->uri) $this->checkSecurity();
+		//if ('api' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {

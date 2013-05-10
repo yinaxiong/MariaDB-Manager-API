@@ -36,6 +36,7 @@ class Systems extends SystemNodeCommon {
 	protected $backups_query = null;
 	
 	protected static $fields = array(
+		'name' => array('sqlname' => 'SystemName', 'defaultCallBack' => 'defaultName'),
 		'startDate' => array('sqlname' => 'InitialStart', 'default' => ''),
 		'lastAccess' => array('sqlname' => 'LastAccess', 'default' => ''),
 		'state' => array('sqlname' => 'State', 'default' => 0)
@@ -52,7 +53,7 @@ class Systems extends SystemNodeCommon {
 			$systems = $this->db->query('SELECT SystemID AS id FROM System');
 			$this->sendResponse(array("system" => $systems->fetchAll(PDO::FETCH_ASSOC)));
 		}
-		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'SystemName AS name'));
+		$selects = $this->getSelects(self::$fields, array('SystemID AS system'));
 		$query = $this->db->query("SELECT $selects FROM System");
 		$results = array();
 		foreach ($query->fetchAll(PDO::FETCH_ASSOC) as $system) {
@@ -73,13 +74,6 @@ class Systems extends SystemNodeCommon {
 		if (!$this->systemid) $this->sendErrorResponse('Creating a system with ID of zero is not permitted', 400);
 		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
 		$bind[':systemid'] = $this->systemid;
-		$name = $this->getParam('PUT', 'name');
-		if ($name) {
-			$insertname = $name;
-			$setter[] = 'SystemName = :name';
-			$bind[':name'] = $name;
-		}
-		else $insertname = 'System '.sprintf('%06d', $this->systemid);
 		if (isset($bind[':startDate'])) $bind[':startDate'] = date('Y-m-d H:i:s', strtotime($bind[':startDate']));
 		if (isset($bind[':lastAccess'])) $bind[':lastAccess'] = date('Y-m-d H:i:s', strtotime($bind[':lastAccess']));
 		$this->startImmediateTransaction();
@@ -96,6 +90,11 @@ class Systems extends SystemNodeCommon {
 			$counter = $update->fetch(PDO::FETCH_COLUMN);
 		}
 		if (0 == $counter) {
+			if (empty($bind[':name'])) {
+				$bind[':name'] = 'System '.sprintf('%06d', $this->systemid);
+				$insname[] = 'SystemName';
+				$insvalue[] = ':name';
+			}
 			if (empty($bind[':startDate'])) {
 				$bind[':startDate'] = date('Y-m-d H:i:s');
 				$insname[] = 'InitialStart';
@@ -108,9 +107,6 @@ class Systems extends SystemNodeCommon {
 			}
 			$insname[] = 'SystemID';
 			$insvalue[] = ':systemid';
-			$insname[] = 'SystemName';
-			$insvalue[] = ':name';
-			$bind[':name'] = $insertname;
 			$fields = implode(',',$insname);
 			$values = implode(',',$insvalue);
 			$insert = $this->db->prepare("INSERT INTO System ($fields) VALUES ($values)");
@@ -178,7 +174,7 @@ class Systems extends SystemNodeCommon {
 	}
 	
 	protected function readSystemData () {
-		$selects = $this->getSelects(self::$fields, array('SystemID AS system', 'SystemName AS name'));
+		$selects = $this->getSelects(self::$fields, array('SystemID AS system'));
 		$statement = $this->db->query("SELECT $selects FROM System WHERE SystemID = $this->systemid");
 		return $statement->fetch(PDO::FETCH_ASSOC);
 	}

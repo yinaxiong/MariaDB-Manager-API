@@ -168,21 +168,21 @@
 			<label for="nodeid">Node ID</label>
 			<input type="text" name="nodeid" id="nodeid" /><br />
 			<label for="name">Node Name</label>
-			<input type="text" name="name" id="name" /><br />
+			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State ID</label>
-			<input type="text" name="state" id="state" /><br />
+			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="hostname">Hostname</label>
-			<input type="text" name="hostname" id="hostname" /><br />
+			<input type="text" id="hostname" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'hostname');" /><br />
 			<label for="publicip">Public IP</label>
-			<input type="text" name="publicIP" id="publicip" /><br />
+			<input type="text" id="publicip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'publicIP');" /><br />
 			<label for="privateip">Private IP</label>
-			<input type="text" name="privateIP" id="privateip" /><br />
+			<input type="text" id="privateip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'privateIP');" /><br />
 			<label for="instanceid">Instance ID</label>
-			<input type="text" name="instanceID" id="instanceid" /><br />
+			<input type="text" id="instanceid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'instanceID');" /><br />
 			<label for="username">User Name</label>
-			<input type="text" name="username" id="username" /><br />
+			<input type="text" id="username" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'username');" /><br />
 			<label for="passwd">Password</label>
-			<input type="text" name="passwd" id="passwd" /><br />
+			<input type="text" id="passwd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'passwd');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

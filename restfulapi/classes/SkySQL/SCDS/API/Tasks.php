@@ -43,13 +43,13 @@ class Tasks extends ImplementAPI {
 			$where[] = 'CE.TaskID = :taskid';
 			$bind[':taskid'] = $taskid;
 		}
-		$state = $this->getParam('GET', 'state', 0);
 		if (!$this->paramEmpty('GET', 'state')) {
+			$state = $this->getParam('GET', 'state', 0);
 			$where[] = 'CE.State = :state';
 			$bind[':state'] = $state;
 		}
-		$node = $this->getParam('GET', 'nodeid', 0);
-		if ($node) {
+		if (!$this->paramEmpty('GET', 'nodeid')) {
+			$node = $this->getParam('GET', 'nodeid', 0);
 			$sql .= ' INNER JOIN Commands AS C ON CE.CommandID = C.CommandID';
 			$where[] = 'CE.NodeID = :nodeid';
 			$bind[':nodeid'] = $node;
@@ -58,6 +58,20 @@ class Tasks extends ImplementAPI {
 		$statement = $this->db->prepare($sql);
 		$statement->execute($bind);
 		$this->queryResults($statement);
+	}
+	
+	public function updateTask ($uriparts) {
+		$taskid = (int) $uriparts[1];
+		$state = (int) $this->getParam('PUT', 'state', 0);
+		if ($state) {
+			$update = $this->db->prepare('UPDATE CommandExecution SET State = :state WHERE TaskID = :taskid');
+			$update->execute(array(
+				':state' => $state,
+				':taskid' => $taskid
+			));
+			$this->sendResponse(array('updatecount' => $update->rowCount(), 'insertkey' => 0));
+		}
+		$this->sendErrorResponse('The given task ID was not found', 404);
 	}
 	
 	protected function queryResults ($statement) {

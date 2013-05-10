@@ -117,13 +117,6 @@ class SystemNodes extends SystemNodeCommon {
 		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
 		$bind[':systemid'] = $this->systemid;
 		$bind[':nodeid'] = $this->nodeid;
-		$name = $this->getParam('PUT', 'name');
-		if ($name) {
-			$insertname = $name;
-			$setter[] = 'NodeName = :name';
-			$bind[':name'] = $name;
-		}
-		else $insertname = 'Node '.sprintf('%06d', $this->nodeid);
 		$this->startImmediateTransaction();
 		if (!empty($setter)) {
 			$update = $this->db->prepare('UPDATE Node SET '.implode(', ',$setter).
@@ -142,9 +135,11 @@ class SystemNodes extends SystemNodeCommon {
 			$insvalue[] = ':systemid';
 			$insname[] = 'NodeID';
 			$insvalue[] = ':nodeid';
-			$insname[] = 'NodeName';
-			$insvalue[] = ':name';
-			$bind[':name'] = $insertname;
+			if (empty($bind[':name'])) {
+				$bind[':name'] = 'Node '.sprintf('%06d', $this->nodeid);
+				$insname[] = 'NodeName';
+				$insvalue[] = ':name';
+			}
 			$fields = implode(',',$insname);
 			$values = implode(',',$insvalue);
 			$insert = $this->db->prepare("INSERT INTO Node ($fields) VALUES ($values)");
@@ -175,10 +170,10 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function getCommand ($nodeid) {
-		$query = $this->db->prepare('SELECT rowid, CommandID FROM CommandExecution 
+		$query = $this->db->prepare('SELECT TaskID, CommandID FROM CommandExecution 
 			WHERE SystemID = :systemid AND NodeID = :nodeid AND State = 2');
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $nodeid));
 		$row = $query->fetch();
-		return $row ? array($row->rowid, $row->CommandID) : array(null, null);
+		return $row ? array($row->TaskID, $row->CommandID) : array(null, null);
 	}
 }

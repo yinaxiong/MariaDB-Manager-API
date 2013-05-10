@@ -45,6 +45,11 @@
 		  The main resources handled by the SCDS API are Systems, Nodes, Users, Backups,
 		  Monitors, Commands/Jobs.  Each has a page where you can run the various API requests.
 	  </p>
+	  <p>
+		  Because the API is potentially open to the public internet and is managing critical
+		  resources, it is secured to limit acccess.  Please read the security section
+		  below before attempting to use the API independently of this front end.
+	  </p>
 	  <h3>Resources Managed by the API</h3>
 	  <p>
 		  Up to now, the main resources that are understood by the API are:
@@ -77,7 +82,7 @@
 		  SELECT or SHOW) on the database. Details of the main resources follow.
 		  All the main resources can be created, updated or deleted through the API.
 	  </p>
-	  <h3>Systems</h3>
+	  <h4>Systems</h4>
 	  <p>
 		  A system is a group of nodes that run database servers in a linked way
 		  so as to produce a single integrated database service.  The use of
@@ -85,7 +90,7 @@
 		  Connected resources are system properties, which are name-value pairs
 		  associated with a particular system.  
 	  </p>
-	  <h3>Nodes</h3>
+	  <h4>Nodes</h4>
 	  <p>
 		  A node is a single &quot;machine&quot; that is part of a system.  It is
 		  typically a virtual private server (or VPS) and may be provisioned by
@@ -94,27 +99,101 @@
 		  One node is the master database, but not necessarily always the same
 		  node.  Another node (never the master) runs this API.
 	  </p>
-	  <h3>Users</h3>
+	  <h4>Users</h4>
 	  <p>
 		  The API allows users to control the system, and provides user
 		  authentication.
 	  </p>
-	  <h3>Backups</h3>
+	  <h4>Backups</h4>
 	  <p>
 		  Access to currently existing backups of system and nodes is available
 		  through the API.
 	  </p>
-	  <h3>Monitors</h3>
+	  <h4>Monitors</h4>
 	  <p>
 		  
 	  </p>
-	  <h3>Commands</h3>
+	  <h4>Commands</h4>
 	  <p>
 		  
 	  </p>
-	  <h3>Jobs</h3>
+	  <h4>Jobs</h4>
 	  <p>
 		  
+	  </p>
+	  <h3>Configuring the API</h3>
+	  <p>
+		  There is a configuration file that provides some basic information
+		  for the API and allows some defaults to be set.  It is located in
+		  /etc/scdsapi/api.ini and as distributed contains the following
+		  information:
+	  </p>
+	  <pre>
+; This is the INI file for the SkySQL Cloud Data Suite API
+;
+; The database section defines access to the administration DB
+; 
+; Current development relies on SQLite for the admin DB and
+; the parameters are the path to the SQLite file and the PDO
+; connection string for the SQLite DB.  User and password are
+; not currently used, and are included only in case a different
+; database might be used in future.
+[database]
+; path should become obsolete when all DB access is via the API
+path = "/usr/local/skysql/SQLite/AdminConsole/admin"
+pdoconnect = "sqlite:/usr/local/skysql/SQLite/AdminConsole/admin"
+user = ""
+password = ""
+; 
+; The logging section controls how the API will log information
+; 
+; The directory is for the API's own log.  If it is provided and
+; the stated directory is writeable by the API, then the API will write an
+; access log called api.log into the specified directory.
+; (Note that the API is run by the Apache web server, so the user
+; that runs the API scripts and needs to write the log depends on
+; the configuration of Apache).
+; The error email address, if specified, will be used to notify errors.
+[logging]
+directory = "/usr/local/skysql/log"
+erroremail = "someone@example.com"
+;
+; The shell section configures how shell commands will run. It contains
+; a path, which indicates the location of the RunCommand.sh script that
+; runs the various commands that can be executed through the API.
+;
+[shell]
+path = "shell/"
+;
+; Monitor defaults determines how many readings and what intervals the
+; API will return to a request for Monitor data, if no such parameters
+; are specified in the request.  The interval is in seconds.  The
+; defaults indicate that a total of 15 values will be returned, each
+; one covering a period of half an hour, covering a total of 7.5 hours.
+[monitor-defaults]
+interval = 1800
+count = 15
+;
+; The API keys section provides security for the API
+;
+; An arbitrary number of keys can be specified.  Each key must be assigned
+; to an integer, which is the API Key ID.  Corresponding to the ID is
+; the actual API Key.  It can be any arbitrary string of characters - a
+; convenient way to create meaningless keys is to take the MD5 hash of some
+; random text.
+;
+; Each piece of software that uses the API should have its own ID and key.
+[apikeys]
+1 = "1f8d9e040e65d7b105538b1ed0231770"
+	  </pre>
+	  <p>
+		  The path to the SQLite database could be different, but will be set by the SCDS
+		  provisioning system.  User and password are not required so long as SQLite is
+		  used for the administration database.  If the logging directory is writeable by
+		  the web server when running the API, and the errorlog option is set to yes, 
+		  information about requests to the API will be recorded there.  If an email
+		  address is provided in erroremail, the errors will be mailed to that address.
+		  The shell path defines how system calls will be handled by the API.
 	  </p>
 	  <h3>Securing the API</h3>
 	  <p>
@@ -197,7 +276,7 @@
 	  <pre>
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-d
-RewriteRule ^(.*) /index.php [L]
+RewriteRule ^(.*) /api.php [L]
 	  </pre>
 	  <p>
 		  Depending on the web server configuration, it may also be necessary to use URI
@@ -210,44 +289,6 @@ RewriteRule .* - [E=HTTP_IF_MODIFIED_SINCE:%{HTTP:If-Modified-Since}]
 RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
 	  </pre>
 	  <p>
-	  </p>
-	  <h3>Configuring the API</h3>
-	  <p>
-		  The API has a configuration file called api.ini.  As mentioned above when discussing
-		  installation, the configuration file is located at /etc/scdsapi/api.ini and should be
-		  readable but not writeable by the web server when it is running the API.
-	  </p>
-	  <p>
-		  The configuration file installed by default will be something like:
-	  </p>
-	  <pre>
-; This is the INI file for the SkySQL Cloud Data Suite API
-[database]
-; path should become obsolete when all DB access is via the API
-path = "/usr/local/skysql/SQLite/AdminConsole/admin"
-pdoconnect = "sqlite:/usr/local/skysql/SQLite/AdminConsole/admin"
-user = ""
-password = ""
-[logging]
-directory = "/usr/local/skysql/log"
-errorlog = yes
-erroremail = "someone@example.com"
-[shell]
-path = "shell/"
-[monitor-defaults]
-interval = 1800
-count = 15
-[apikeys]
-1 = "1f8d9e040e65d7b105538b1ed0231770"
-	  </pre>
-	  <p>
-		  The path to the SQLite database could be different, but will be set by the SCDS
-		  provisioning system.  User and password are not required so long as SQLite is
-		  used for the administration database.  If the logging directory is writeable by
-		  the web server when running the API, and the errorlog option is set to yes, 
-		  information about requests to the API will be recorded there.  If an email
-		  address is provided in erroremail, the errors will be mailed to that address.
-		  The shell path defines how system calls will be handled by the API.
 	  </p>
 	  </div>
 	</div>
