@@ -36,6 +36,7 @@ class SystemNodes extends SystemNodeCommon {
 	protected $monitorid = 0;
 	
 	protected static $fields = array(
+		'name' => array('sqlname' => 'NodeName', 'default' => ''),
 		'state' => array('sqlname' => 'State', 'default' => 0),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicIP' => array('sqlname' => 'PublicIP', 'default' => ''),
@@ -112,25 +113,33 @@ class SystemNodes extends SystemNodeCommon {
 	public function putSystemNode ($uriparts) {
 		$this->systemid = $uriparts[1];
 		if (!$this->validateSystem()) $this->sendErrorResponse('Create node gave non-existent system ID '.$this->systemid, 400);
-		$this->nodeid = $uriparts[3];
-		if (!$this->nodeid) $this->sendErrorResponse('Cannot create or update node with ID of zero', 400);
+		//$this->nodeid = isset($uriparts[3]) ? $uriparts[3] : 0;
+		$this->nodeid = @$uriparts[3];
 		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
 		$bind[':systemid'] = $this->systemid;
-		$bind[':nodeid'] = $this->nodeid;
 		$this->startImmediateTransaction();
-		if (!empty($setter)) {
-			$update = $this->db->prepare('UPDATE Node SET '.implode(', ',$setter).
-				' WHERE SystemID = :systemid AND NodeID = :nodeid');
-			$update->execute($bind);
-			$counter = $update->rowCount();
+		if ($this->nodeid) {
+			$bind[':nodeid'] = $this->nodeid;
+			if (!empty($setter)) {
+				$update = $this->db->prepare('UPDATE Node SET '.implode(', ',$setter).
+					' WHERE SystemID = :systemid AND NodeID = :nodeid');
+				$update->execute($bind);
+				$counter = $update->rowCount();
+			}
+			else {
+				$update = $this->db->prepare('SELECT COUNT(*) FROM Node
+					WHERE SystemID = :systemid AND NodeID = :nodeid');
+				$update->execute($bind);
+				$counter = $update->fetch(PDO::FETCH_COLUMN);
+			}
 		}
 		else {
-			$update = $this->db->prepare('SELECT COUNT(*) FROM Node
-				WHERE SystemID = :systemid AND NodeID = :nodeid');
-			$update->execute($bind);
-			$counter = $update->fetch(PDO::FETCH_COLUMN);
+			$highest = $this->db->prepare('SELECT MAX(NodeID) FROM Node WHERE SystemID = :systemid');
+			$highest->execute(array(':systemid' => $this->systemid));
+			$this->nodeid = 1 + (int) $highest->fetch(PDO::FETCH_COLUMN);
+			$bind[':nodeid'] = $this->nodeid;
 		}
-		if (0 == $counter) {
+		if (empty($counter)) {
 			$insname[] = 'SystemID';
 			$insvalue[] = ':systemid';
 			$insname[] = 'NodeID';
@@ -144,7 +153,7 @@ class SystemNodes extends SystemNodeCommon {
 			$values = implode(',',$insvalue);
 			$insert = $this->db->prepare("INSERT INTO Node ($fields) VALUES ($values)");
 			$insert->execute($bind);
-			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $this->db->lastInsertId()));
+			$this->sendResponse(array('updatecount' => 0,  'insertkey' => $this->nodeid));
 		}
 		$this->sendResponse(array('updatecount' => (empty($setter) ? 0: $counter), 'insertkey' => 0));
 	}

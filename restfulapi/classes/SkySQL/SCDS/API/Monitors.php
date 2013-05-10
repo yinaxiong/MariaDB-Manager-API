@@ -178,6 +178,7 @@ final class Monitors extends ImplementAPI {
 	public function monitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
+		$average = ('avg' == $this->getParam('GET', 'method', 'avg'));
 		if ($this->start) {
 			$this->count = min($this->count, (int) floor(($this->finish - $this->start) / $this->interval));
 			$this->finish = $this->start + ($this->count * $this->interval);
@@ -188,11 +189,17 @@ final class Monitors extends ImplementAPI {
 		$data = $this->getRawData($this->start, $this->finish);
 		$preceding = $this->getPreceding($this->start);
 		if (empty($preceding)) {
-			if (empty($data)) $this->sendResponse(array('monitor_data' => array()));
+			if (empty($data)) $this->sendNullData($average);
 			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
 		}
 		else array_unshift($data, $preceding);
-		$this->sendResponse(array('monitor_data' => ('avg' == $this->getParam('GET', 'method', 'avg') ? $this->getAveraged($data) : $this->getMinMax($data))));
+		$this->sendResponse(array('monitor_data' => ($average ? $this->getAveraged($data) : $this->getMinMax($data))));
+	}
+	
+	protected function sendNullData ($average) {
+		if ($average) $data = array('timestamp' => array(), 'value' => array());
+		else $data = array('timestamp' => array(), 'min' => array(), 'max' => array());
+		$this->sendResponse(array('monitor_data' => $data));
 	}
 	
 	protected function getAveraged($data) {
