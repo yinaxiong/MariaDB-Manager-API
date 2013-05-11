@@ -36,7 +36,7 @@ class Systems extends SystemNodeCommon {
 	protected $backups_query = null;
 	
 	protected static $fields = array(
-		'name' => array('sqlname' => 'SystemName', 'defaultCallBack' => 'defaultName'),
+		'name' => array('sqlname' => 'SystemName', 'default' => ''),
 		'startDate' => array('sqlname' => 'InitialStart', 'default' => ''),
 		'lastAccess' => array('sqlname' => 'LastAccess', 'default' => ''),
 		'state' => array('sqlname' => 'State', 'default' => 0)

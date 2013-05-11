@@ -20,21 +20,21 @@ class SkyConsoleAPI {
 		
 		if (isset($_GET["task"]) && !empty($_GET["task"]) && ($_GET["task"] != "null")) {
 			$task = $_GET["task"];
-			$query = $this->db->query("SELECT rowid, * FROM CommandExecution WHERE rowid = " . $task);
+			$query = $this->db->query("SELECT * FROM CommandExecution WHERE TaskID = " . $task);
 		} else if (isset($_GET["status"]) && !empty($_GET["status"]) && ($_GET["status"] != "null")) {
 			$status = $_GET["status"];
-			$query = $this->db->query("SELECT rowid, * FROM CommandExecution WHERE State = " . $status);
+			$query = $this->db->query("SELECT * FROM CommandExecution WHERE State = " . $status);
 		} else if (isset($_GET["node"]) && ($_GET["node"] != "null")) {
 			$node = $_GET["node"];
-			$query = $this->db->query("SELECT rowid, * FROM CommandExecution WHERE NodeID='".$node."' ORDER BY Start DESC");		
+			$query = $this->db->query("SELECT * FROM CommandExecution WHERE NodeID='".$node."' ORDER BY Start DESC");		
 		} else {
-			$query = $this->db->query("SELECT rowid, * FROM CommandExecution ORDER BY Start DESC");
+			$query = $this->db->query("SELECT * FROM CommandExecution ORDER BY Start DESC");
 		}
 		
 		$data = array();
 
 		foreach ($query as $row) {
-			$id = $row['rowid'];
+			$id = $row['TaskID'];
 			$node = $row['NodeID'];
 			$command = $row['CommandID'];
 			$params = $row['Params'];
@@ -49,7 +49,7 @@ class SkyConsoleAPI {
         	"node" => $node,
            	"command" => $command,
            	"params" => $params,
-           	"index" => $index,
+           	"stepindex" => $index,
            	"status" => $status,
            	"user" => $user,
            	"start" => $start,
@@ -58,7 +58,7 @@ class SkyConsoleAPI {
 		}
 
         $result = array(
-            "tasks" => $data,
+            "task" => $data,
         );
         sendResponse(200, json_encode($result));
         return true;
