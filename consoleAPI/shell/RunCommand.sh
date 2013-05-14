@@ -1,28 +1,41 @@
 #!/bin/bash
+#
+# This script is called by the SCDS API to run jobs within the systems under control.
+#
+# Parameters passed are:
+# $1 The ID of the job that is to be run
+# $2 A comma separated list of steps (each being a script)
+# $3 The hostname for the API
+# $4 Parameters to be passed on to step scripts
+#
+taskid=$1
+steps=$2
+hostname=$3
+params=${$4//|/ }
+#
+# Function to call the API
+# Parameters: Hostname for API location, method, URI, query string
+#
+function callapi () {
+	local RFCDATE=`date -R`
+	local URI=$(echo -n $3 | sed 's;/*\(.*\)/*;\1;')
+	local APIKEY="1f8d9e040e65d7b105538b1ed0231770"
+	local MD5CHK=$(echo -n "$URI$APIKEY$RFCDATE" | md5sum | awk '{ print $1 }')
+	httpcode=`curl -s -o /dev/null -w "%{http_code}" --request $2 -H "Date:$RFCDATE" -H "Authorization:api-auth-1-$MD5CHK" -H "Accept:application/json" --data "$4" http://$1/$URI`
+}
 
-# script takes TaskID as parameter and runs the steps that comprise the command in question
-steps=$(echo "SELECT Steps FROM Commands, CommandExecution WHERE CommandExecution.TaskID = "$1" AND Commands.CommandID = CommandExecution.CommandID;" | sqlite3 $2)
-echo 'stepIDs: '$steps
+# Report to the API that the job is running ?
+# echo 'UPDATE CommandExecution SET State = 2 WHERE TaskID = '$1';' | sqlite3 $2
 
-# set command state to "Running"
-echo 'UPDATE CommandExecution SET State = 2 WHERE TaskID = '$1';' | sqlite3 $2
-
-# get parameters to pass to step scripts
-params=$(echo 'SELECT SystemID, NodeID, UserID, Params FROM CommandExecution WHERE CommandExecution.TaskID = '$1';' | sqlite3 $2)
-params=${params//|/ }
-
-# loop through stepIDs comprising the command
+status=1
 index=1
-for stepID in ${steps//,/ }
+for stepscript in ${steps//,/ }
 do
 	# update CommandExecution to the current step, so the UI can advance the progress bar
-	echo 'UPDATE CommandExecution SET StepIndex = '$index' WHERE TaskID = '$1';' | sqlite3 $2
+	callapi "$hostname" "PUT" "task/$taskid" "stepindex=$index"
 	
-	# get the name of the step script to run next
-	script=`echo 'SELECT Script FROM Step WHERE StepID ='$stepID';' | sqlite3 $2`'.sh'
-
 	# run the script and exit if an error occurs
-	fullpath=`dirname $0`"/steps/$script $params"
+	fullpath=`dirname $0`"/steps/$stepscript $params"
 	echo 'running: '$fullpath
 	sh $fullpath		>> /var/log/SDS.log 2>&1
 	status=$?
@@ -43,5 +56,4 @@ echo 'final state: '$cmdstate
 
 # set command state to "Done" or "Error" and set completion time stamp
 time=$(date +"%Y-%m-%d %H:%M:%S")
-echo "UPDATE CommandExecution SET Completed = '"$time"', State = '"$cmdstate"' WHERE TaskID = '$1';" | sqlite3 $2
-
+callapi "$hostname" "PUT" "task/$taskid" "Completed=$time,state=$cmdstate"

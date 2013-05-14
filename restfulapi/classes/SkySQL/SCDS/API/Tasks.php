@@ -32,8 +32,13 @@ use PDO;
 
 class Tasks extends ImplementAPI {
 	protected static $base = 'SELECT CE.TaskID AS id, CE.NodeID AS node, CE.CommandID AS command, 
-			CE.Params AS params, CE.StepIndex AS stepindex, CE.State AS status, CE.UserID AS user, CE.Start AS start, 
-			CE.Completed AS end FROM CommandExecution AS CE';
+		CE.Params AS params, CE.StepIndex AS stepindex, CE.State AS status, CE.UserID AS user, CE.Start AS start, 
+		CE.Completed AS end FROM CommandExecution AS CE';
+	protected static $fields = array(
+		'completed' => array('sqlname' => 'Completed', 'default' => ''),
+		'stepindex' => array('sqlname' => 'StepIndex', 'default' => 0),
+		'state' => array('sqlname' => 'State', 'default' => 0)
+	);
 	
 	public function getOneOrMoreTasks ($uriparts) {
 		$sql = self::$base;
@@ -62,6 +67,18 @@ class Tasks extends ImplementAPI {
 	
 	public function updateTask ($uriparts) {
 		$taskid = (int) $uriparts[1];
+		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
+		$bind[':taskid'] = $taskid;
+		if (!empty($setter)) {
+			$update = $this->db->prepare('UPDATE CommandExecution SET '.implode(', ',$setter).
+				' WHERE TaskID = :taskid');
+			$update->execute($bind);
+			$counter = $update->fetch(PDO::FETCH_COLUMN);
+		}
+		else $counter = 0;
+		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
+
+		
 		$state = (int) $this->getParam('PUT', 'state', 0);
 		if ($state) {
 			$update = $this->db->prepare('UPDATE CommandExecution SET State = :state WHERE TaskID = :taskid');
@@ -80,7 +97,7 @@ class Tasks extends ImplementAPI {
 	
 	public function runCommand ($uriparts) {
 		$command = urldecode($uriparts[1]);
-		$commandid = $this->getCommandID($command);
+		list($commandid,$steps) = $this->getCommand($command);
 		$systemid = $this->getParam('POST', 'systemid', 0);
 		$nodeid = $this->getParam('POST', 'nodeid', 0);
 		$userid = $this->getUserID();
@@ -96,26 +113,26 @@ class Tasks extends ImplementAPI {
 				':params' => $params,
 				':completed' => null,
 				':stepindex' => 0,
-				':state' => 0,
+				':state' => 2,
 				':userid' => $userid
 			));
-        	$rowID = $this->db->lastInsertId();
+        	$TaskID = $this->db->lastInsertId();
 			$runfile = rtrim($this->config['shell']['path'],'/\\').'/RunCommand.sh';
 			if (!file_exists($runfile)) $this->sendErrorResponse("Script for run command $runfile does not exist", 500);
 			if (!is_executable($runfile)) $this->sendErrorResponse("Script for run command $runfile exists but is not executable", 500);
-			$cmd = "$runfile $rowID \"{$this->config['database']['path']}\" > /dev/null 2>&1 &";
+			$cmd = "$runfile $TaskID \"$steps\" \"{$this->config['shell']['hostname']}\" \"$params\" > /dev/null 2>&1 &";
         	exec($cmd);
-        	$this->getOneOrMoreTasks(array(1 => $rowID));
+        	$this->getOneOrMoreTasks(array(1 => $TaskID));
 		}
 		else $this->sendErrorResponse('Must supply valid system ID and username to run command');
 	}
 	
-	protected function getCommandID ($command) {
-		$getter = $this->db->prepare('SELECT CommandID FROM Commands WHERE Name LIKE :command');
+	protected function getCommand ($command) {
+		$getter = $this->db->prepare('SELECT CommandID, Steps FROM Commands WHERE Name LIKE :command');
 		$getter->execute(array(':command' => $command));
-		$id = $getter->fetch(PDO::FETCH_COLUMN);
-		if (!$id) $this->sendErrorResponse("Apparently valid command $command not found in Commands table", 500);
-		return $id;
+		$comdata = $getter->fetch();
+		if (!$comdata->CommandID) $this->sendErrorResponse("Apparently valid command $command not found in Commands table", 500);
+		return array($comdata->CommandID,$comdata->Steps);
 	}
 	
 	protected function getUserID () {
