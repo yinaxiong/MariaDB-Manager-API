@@ -32,7 +32,8 @@ chown apache:apache /usr/local/skysql/log
 chown -R apache:apache /var/www
 sudo ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
 sudo sed -i "s/;date.timezone =/date.timezone = Europe\/London/" /etc/php.ini
-
+touch /var/log/SDS.log
+chown apache:apache /var/log/SDS.log
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
