@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -31,7 +31,7 @@
  */
 
 namespace SkySQL\COMMON;
-use SkySQL\SCDS\API\api;
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 
 use SkySQL\COMMON\AdminDatabase;
@@ -106,7 +106,7 @@ final class ErrorRecorder  {
 		$findid = $database->prepare('UPDATE ErrorLog SET timestamp = :timestamp, ip = :ip, referer = :referer, get = :get, post = :post, trace = :trace WHERE errorkey = :errorkey');
 		$findid->execute(array(
 			':timestamp' => date ('Y-m-d H:i:s'),
-			':ip' => api::getIP(),
+			':ip' => API::getIP(),
 			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
 			':get' => @$_SERVER['REQUEST_URI'],
 			':post' => base64_encode(serialize($_POST)),
@@ -120,7 +120,7 @@ final class ErrorRecorder  {
 			:trace, :sql, :dberror, :dbmessage, :dbcall, :dbtrace, :errorkey);');
 		$insert->execute(array(
 			':timestamp' => date ('Y-m-d H:i:s'),
-			':ip' => api::getIP(),
+			':ip' => API::getIP(),
 			':smessage' => substr($smessage, 0, 250),
 			':lmessage' => ($lmessage ? $lmessage : $smessage),
 			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -24,9 +24,10 @@
  * 
  */
 
-namespace SkySQL\SCDS\API;
+namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\COMMON\AdminDatabase;
+use stdClass;
 
 abstract class ImplementAPI {
 	protected $db = null;
@@ -74,10 +75,9 @@ abstract class ImplementAPI {
 	}
 	
 	protected function filterResults ($results) {
-		$filter = $this->getParam('GET', 'fields');
 		if (count($this->fieldnames)) {
 			foreach ($results as $key=>$value) {
-				$filtered[$key] = $this->filterWords($value);
+				$filtered[$key] = is_array($value) ? $this->filterWordsArray($value) : $this->filterWordsObject($value);
 			}
 			return $filtered;
 		}
@@ -88,11 +88,21 @@ abstract class ImplementAPI {
 		return empty($this->fieldnames) OR in_array($word, $this->fieldnames);
 	}
 	
-	protected function filterWords ($value) {
+	protected function filterWordsArray ($value) {
 		foreach ($this->fieldnames as $word) if (isset($value[$word])) {
 			$hits[$word] = $value[$word];
 		}
 		return empty($hits) ? null : (1 == count($hits)) ? $hits[$word] : $hits;
+	}
+	
+	protected function filterWordsObject ($value) {
+		$selected = 0;
+		foreach ($this->fieldnames as $word) if (isset($value->$word)) {
+			if (empty($hits)) $hits = new stdClass();
+			$hits->$word = $value->$word;
+			$selected++;
+		}
+		return empty($hits) ? null : $hits;
 	}
 	
 	protected function startImmediateTransaction () {

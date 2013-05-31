@@ -1,7 +1,7 @@
 %define _topdir	 	%(echo $PWD)/
 %define name		admin_php
 %define release		3
-%define version 	0.1
+%define version 	0.2
 %define buildroot %{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
 
@@ -14,7 +14,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-Requires:		php
+Requires:		php coreutils
 #BuildRequires:		
 
 %description

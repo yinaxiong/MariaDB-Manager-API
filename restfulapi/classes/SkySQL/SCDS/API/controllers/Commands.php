@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -26,9 +26,10 @@
  * steps or command states.
  */
 
-namespace SkySQL\SCDS\API;
+namespace SkySQL\SCDS\API\controllers;
 
 use \PDO as PDO;
+use SkySQL\SCDS\API\API;
 
 class Commands extends ImplementAPI {
 
@@ -40,11 +41,12 @@ class Commands extends ImplementAPI {
 	}
 	
 	public function getStates () {
-		$states = $this->db->query("SELECT State AS id, Description AS description, Icon AS icon FROM CommandStates");
-        $this->sendResponse(array("commandStates" => $states->fetchAll(PDO::FETCH_ASSOC)));
+        $this->sendResponse(array("commandStates" => API::mergeStates(API::$commandstates)));
 	}
 	
 	public function getSteps () {
+		//$this->sendResponse(array('command_steps' => API::mergeStates(API::$commandsteps)));
+		
 		$stepstatement = $this->db->query('SELECT StepID AS id, Script AS script, 
 			Icon AS icon, Description AS description FROM Step');
 		$steps = $this->filterResults($stepstatement->fetchAll(PDO::FETCH_ASSOC));

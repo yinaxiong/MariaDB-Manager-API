@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -27,7 +27,7 @@
  * Obtain a monitor with GET request to /system/{id}/node/{id}/monitor/{id}
  */
 
-namespace SkySQL\SCDS\API;
+namespace SkySQL\SCDS\API\controllers;
 
 use \PDO as PDO;
 

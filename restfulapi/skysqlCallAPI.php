@@ -39,7 +39,7 @@ use SkySQL\COMMON\EAC_HTTP\HttpRequest;
  * The following symbol definitions must be reviewed and given values before use
  * of the SkyksqlCallAPI class.
  * 
- * The location of the API means the URI that points to where the SCDS API
+ * The location of the API means the URI that points to where the SkySQL Manager API
  * has been implemented.
  * 
  * The authorization ID is the ID number that corresponds to the API Key used

@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -26,8 +26,9 @@
  * 
  */
 
-namespace SkySQL\SCDS\API;
+namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\managers\MonitorManager;
 use \PDO;
 
 final class Monitors extends ImplementAPI {
@@ -38,95 +39,40 @@ final class Monitors extends ImplementAPI {
 	protected $rawvalues = array();
 	protected $rawrepeats = array();
 	
-	protected static $fields = array(
-		'description' => array('sqlname' => 'Description', 'default' => ''),
-		'type' => array('sqlname' => 'ChartType', 'default' => ''),
-		'delta' => array('sqlname' => 'delta', 'default' => 0),
-		'monitortype' => array('sqlname' => 'MonitorType', 'default' => ''),
-		'systemaverage' => array('sqlname' => 'SystemAverage', 'default' => ''),
-		'interval' => array('sqlname' => 'Interval', 'default' => ''),
-		'unit' => array('sqlname' => 'Unit', 'default' => '')		
-	);
-	
 	public function getMonitorClasses ($uriparts) {
-		if (!empty($uriparts[1])) {
-			if (preg_match('/[0-9]+/', $uriparts[1])) {
-				$where[] = 'MonitorID = :monitorid';
-				$bind = array(':monitorid' => $uriparts[1]);
-			}
-			else {
-				$where[] = 'Name LIKE :name';
-				$bind = array(':name' => $uriparts[1].'%');
-			}
+		$manager = MonitorManager::getInstance();
+		if (empty($uriparts[1])) $monitors = $manager->getAll();
+		else {
+			// URI will be analysed by the manager
+			$monitor = 	preg_match('/[0-9]+/', $uriparts[1]) ? $manager->getByID((int) $uriparts[1]) : $manager->getByName(urldecode($uriparts[1]));
+			$monitors = $monitor ? array($monitor) : array();
 		}
-		else $bind = array();
-		$sql = "SELECT MonitorID AS id, Name AS name, SQL AS sql,
-			Description AS description, ChartType AS type, 
-			delta, MonitorType AS monitortype, SystemAverage AS systemaverage,
-			Interval AS interval, Unit AS unit FROM Monitors";
-		if (!empty($where)) $sql .= ' WHERE '.implode(' AND ', $where);
-		$query = $this->db->prepare($sql);
-		$query->execute($bind);
-		$types = $this->filterResults($query->fetchAll(PDO::FETCH_ASSOC));
-        $this->sendResponse(array('monitorclasses' => $types));
+        $this->sendResponse(array('monitorclasses' => $this->filterResults((array) $monitors)));
 	}
 	
 	public function createMonitorClass () {
-		//$this->log(print_r($_POST,true))."\n";
-		$query = $this->db->prepare("INSERT INTO Monitors (Name, SQL, Description,
-			ChartType, delta, MonitorType, SystemAverage, Interval, Unit)
-			VALUES (:name, :sql, :description, :type,
-			:delta, :monitortype, :systemaverage, :interval, :unit)");
-		$query->execute($this->monitorBind());
-		$this->sendResponse(array('updatecount' => 0, 'insertkey' => $this->db->lastInsertId()));
+		MonitorManager::getInstance()->createMonitor();
 	}
 	
 	public function updateMonitorClass ($uriparts) {
-		$this->monitorid = $uriparts[1];
-		list($insname, $insvalue, $setter, $bind) = $this->settersAndBinds('PUT', self::$fields);
-		$bind[':monitorid'] = $this->monitorid;
-		if (!empty($setter)) {
-			$update = $this->db->prepare('UPDATE Monitors SET '.implode(', ',$setter).
-				' WHERE MonitorID = :monitorid');
-			$update->execute($bind);
-			$counter = $update->fetch(PDO::FETCH_COLUMN);
-		}
-		else $counter = 0;
-		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
+		MonitorManager::getInstance()->updateMonitor((int) $uriparts[1]);
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
-		$this->monitorid = $uriparts[1];
-		$delete = $this->db->prepare('DELETE FROM Monitors WHERE MonitorID = :monitorid');
-		$delete->execute(array(':monitorid' => $this->monitorid));
-		$counter = $delete->rowCount();
-		if ($counter) $this->sendResponse(array('deletecount' => $counter));
-		else $this->sendErrorResponse('Delete monitor class did not match any monitor class', 404);
-	}
-	
-	protected function monitorBind ($monitorid=0) {
-		$bind = array(
-			':name' => $this->getParam($this->requestmethod,'name'), 
-			':sql' => $this->getParam($this->requestmethod,'sql'), 
-			':description' => $this->getParam($this->requestmethod,'description'), 
-			':type' => $this->getParam($this->requestmethod,'type'), 
-			':delta' => $this->getParam($this->requestmethod,'delta'), 
-			':monitortype' => $this->getParam($this->requestmethod,'monitortype'), 
-			':systemaverage' => $this->getParam($this->requestmethod,'systemaverage'), 
-			':interval' => $this->getParam($this->requestmethod,'interval'), 
-			':unit' => $this->getParam($this->requestmethod,'unit')
-		);
-		if ($monitorid) $bind[':monitorid'] = $monitorid;
-		return $bind;
+		MonitorManager::getInstance()->deleteMonitor((int) $uriparts[1]);
 	}
 	
 	public function storeMonitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts);
+		$monitor = MonitorManager::getInstance()->getByID($this->monitorid);
 		if ($this->paramEmpty('POST', 'value')) $this->sendErrorResponse('Updating monitor data but no value supplied', 400);
 		$value = $this->getParam('POST', 'value');
 		$stamp = $this->getParam('POST', 'timestamp', time());
 		if ('null' == $value) $value = null;
-		
+		else {
+			$scale = isset($monitor->scale) ? $monitor->scale : 0;
+			$value =  $scale ? (int) round($value * pow(10,$scale)) : (int) $value;
+		}
 		$this->db->query('BEGIN EXCLUSIVE TRANSACTION');
 		$check = $this->db->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
 			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
@@ -156,7 +102,7 @@ final class Monitors extends ImplementAPI {
 				':repeats' => ((is_object($lastrecord) AND $lastrecord->Value == $value) ? 1 : 0)
 			));
 		}
-		$this->db->query('COMMIT TRANSACTION');
+		$this->db->commitTransaction();
 		$this->sendResponse();
 	}
 	

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SCDS API</title>
+    <title>Manipulate Users via SkySQL Manager API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
 		  <div id="logo">
-			<h1><a href="#">SCDS API</a></h1>
+			<h1><a href="#">SkySQL Manager API</a></h1>
 			<p><span>SkySQL Cloud Data Suite API</span></p>
 		  </div>
 		  <div id="menu">
@@ -24,7 +24,7 @@
 	  </div>	
 	<div id="page">
 	<div id="content">
-      <h2>Job Management via SCDS API</h2>
+      <h2>Job Management via SkySQL Manager API</h2>
 	  <div class="section">
 	  <h3>Get all Commands</h3>
 	  <form action="" method="post" id="getcommands" target="apiresults" onsubmit="return(setFields(this.id,'command'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
@@ -91,7 +91,7 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /command/{commandname} <br />
-			Parameters: systemid, nodeid, username, parameters (command dependent) <br />
+			Parameters: system, node, username, parameters (command dependent) <br />
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
@@ -106,9 +106,9 @@
 				<option value="promote">Promote</option>
 			</select><br />
 			<label for="systemc">System ID</label>
-			<input type="text" name="systemid" id="systemc" /><br />
+			<input type="text" name="system" id="systemc" /><br />
 			<label for="nodec">Node ID</label>
-			<input type="text" name="nodeid" id="nodec" /><br />
+			<input type="text" name="node" id="nodec" /><br />
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="level">Level (backup)</label>
@@ -137,10 +137,6 @@
 		<p class="formfields">
 			<label for="task">Task ID</label>
 			<input type="text" name="taskid" id="taskid" /><br />
-			<label for="statej">State ID</label>
-			<input type="text" id="statej" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
-			<label for="nodej">Node ID</label>
-			<input type="text" id="nodej" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Get Job" />
@@ -164,7 +160,7 @@
 			<label for="statejm">State ID</label>
 			<input type="text" id="statejm" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="nodejs">Node ID</label>
-			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
+			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'node');" /><br />
 			<label for="fieldsm">Fields to return</label>
 			<input type="text" name="fields" id="fieldsm" /><br />
 			<input type="submit" class="submit" value="Get Jobs" />
@@ -188,7 +184,11 @@
 			<label for="tasku">Task ID</label>
 			<input type="text" name="taskid" id="taskidu" /><br />
 			<label for="stateju">State ID</label>
-			<input type="text" name="state" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="stateju">Step index</label>
+			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stepindex');" /><br />
+			<label for="stateju">Completed</label>
+			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'completed');" /><br />
 			<input type="submit" class="submit" value="Update Job" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This script is called by the SCDS API to run jobs within the systems under control.
+# This script is called by the SkySQL Manager API to run jobs within the systems under control.
 #
 # Parameters passed are:
 # $1 The ID of the job that is to be run
@@ -11,7 +11,7 @@
 taskid=$1
 steps=$2
 hostname=$3
-params=${$4//|/ }
+params=${4//|/ }
 #
 # Function to call the API
 # Parameters: Hostname for API location, method, URI, query string
@@ -35,7 +35,7 @@ do
 	callapi "$hostname" "PUT" "task/$taskid" "stepindex=$index"
 	
 	# run the script and exit if an error occurs
-	fullpath=`dirname $0`"/steps/$stepscript $params"
+	fullpath=`dirname $0`"/steps/$stepscript.sh $params"
 	echo 'running: '$fullpath
 	sh $fullpath		>> /var/log/SDS.log 2>&1
 	status=$?
@@ -56,4 +56,4 @@ echo 'final state: '$cmdstate
 
 # set command state to "Done" or "Error" and set completion time stamp
 time=$(date +"%Y-%m-%d %H:%M:%S")
-callapi "$hostname" "PUT" "task/$taskid" "Completed=$time,state=$cmdstate"
+callapi "$hostname" "PUT" "task/$taskid" "completed=$time&state=$cmdstate"

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SCDS API</title>
+    <title>Manipulate Users via SkySQL Manager API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
 		  <div id="logo">
-			<h1><a href="#">SCDS API</a></h1>
+			<h1><a href="#">SkySQL Manager API</a></h1>
 			<p><span>SkySQL Cloud Data Suite API</span></p>
 		  </div>
 		  <div id="menu">
@@ -24,7 +24,7 @@
 	  </div>	
 	<div id="page">
 	<div id="content">
-      <h2>Backup Management via SCDS API</h2>
+      <h2>Backup Management via SkySQL Manager API</h2>
 	  <div class="section">
 	  <h3>Get all Backup States</h3>
 	  <form action="" method="post" id="getbackupstates" target="apiresults" onsubmit="return(setFields(this.id,'backupstate'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
@@ -135,7 +135,7 @@
 			<label for="systemidc">System ID</label>
 			<input type="text" name="systemid" id="systemidc" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" /><br />
+			<input type="text" name="node" id="nodeid" /><br />
 			<label for="level">Level ID</label>
 			<input type="text" name="level" id="level" /><br />
 			<input type="submit" class="submit" value="Create Backup" />

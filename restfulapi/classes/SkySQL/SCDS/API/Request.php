@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -68,12 +68,13 @@ class aliroProfiler {
 }
 
 abstract class Request {
+	private static $instance = null;
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
-		array('class' => 'Application', 'method' => 'getApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
-		array('class' => 'Application', 'method' => 'setApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
-		array('class' => 'Application', 'method' => 'deleteApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
+		array('class' => 'Applications', 'method' => 'getApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
+		array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
+		array('class' => 'Applications', 'method' => 'deleteApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
 		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
 		array('class' => 'Systems', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
@@ -112,9 +113,9 @@ abstract class Request {
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/(start|stop|restart|isolate|recover|promote|backup|restore)', 'http' => 'POST'),
-		array('class' => 'Tasks', 'method' => 'getOneOrMoreTasks', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'Tasks', 'method' => 'getOneOrMoreTasks', 'uri' => 'task', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
@@ -200,6 +201,9 @@ abstract class Request {
 			self::$uriTablePrepared = true;
 		}
         $this->config = parse_ini_file($this->inifile, true);
+		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim($this->config['cache']['directory'],'/').'/');
+		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
+		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->getHeaders();
 		$this->uri = $this->getURI();
 		$this->getSuffix();
@@ -235,7 +239,11 @@ abstract class Request {
 		}
 	}
 	
-	public static function getInstance() {
+	public static function getInstance () {
+		return self::$instance instanceof self ? self::$instance : self::$instance = self::makeAppropriateInstance();
+	}
+	
+	private static function makeAppropriateInstance() {
 		global $argv;
 		if (empty($argv)) {
 			$class = ('POST' == @$_SERVER['REQUEST_METHOD'] AND isset($_POST['_method'])) ? 'TunnelRequest' : 'StandardRequest';
@@ -250,11 +258,16 @@ abstract class Request {
 
 	public function doControl () {
 		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
-		//if ('api' != $this->uri) $this->checkSecurity();
+		if ('yes' == @$this->config['logging']['verbose']) {
+			if (count($_POST)) $this->log(print_r($_POST,true));
+			if (count($_GET)) $this->log(print_r($_GET,true));
+			if (!empty($this->putdata)) $this->log(print_r($this->putdata,true));
+		}
+		if ('apilist' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
-			$class = __NAMESPACE__.'\\'.$link['class'];
+			$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
 			if (!class_exists($class)) {
 				$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
 			}
@@ -328,14 +341,22 @@ abstract class Request {
 	public function getConfig () {
 		return $this->config;
 	}
+	
+	public function getAllParamNames ($arrname) {
+		return array_diff(array_keys($this->getArrayFromName($arrname)),
+			array('fields','limit','offset','_method', '_accept', '_rfcdate', '_authorization'));
+	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
 		$arr = $this->getArrayFromName($arrname);
+		/*
 		if (!is_array($arr)) return $def;
 		if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
 			if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
 			else return $def;
 		}
+		 * 
+		 */
 		
 	    if (isset($arr[$name])) {
 	        if (is_array($arr[$name])) foreach (array_keys($arr[$name]) as $key) {
@@ -364,11 +385,13 @@ abstract class Request {
 		elseif ($this->requestviapost) $arr =& $_POST;
 		elseif ('GET' == $arrname) $arr =& $_GET;
 		elseif ('POST' == $arrname) $arr =& $_POST;
-		elseif ('PUT' == $arrname) {
-			if (!is_array($this->putdata)) return $this->putdata;
-			$arr =& $this->putdata;
+		elseif ('PUT' == $arrname) $arr =& $this->putdata;
+		if (is_array(@$arr)) {
+			if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
+				if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
+			}
 		}
-		return isset($arr) ? $arr : null;
+		return isset($arr) ? $arr : array();
 	}
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON

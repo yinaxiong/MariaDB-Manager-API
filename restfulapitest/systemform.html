@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SCDS API</title>
+    <title>Manipulate Users via SkySQL Manager API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
 		  <div id="logo">
-			<h1><a href="#">SCDS API</a></h1>
+			<h1><a href="#">SkySQL Manager API</a></h1>
 			<p><span>SkySQL Cloud Data Suite API</span></p>
 		  </div>
 		  <div id="menu">
@@ -24,7 +24,7 @@
 	  </div>	
 	<div id="page">
 	<div id="content">
-	<h2>System Management via SCDS API</h2>
+	<h2>System Management via SkySQL Manager API</h2>
 	<div class="section">
 	  <h3>Get all Systems</h3>
 	  <form action="" method="post" id="getsystem" target="apiresults" onsubmit="return(setFields(this.id,'system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
@@ -56,7 +56,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System</h3>
-	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -76,7 +76,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" /><br />
+			<input type="text" name="system" id="systemid" /><br />
 			<label for="name">System Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State ID</label>
@@ -91,7 +91,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System</h3>
-	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -100,7 +100,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidd">System ID</label>
-			<input type="text" name="systemid" id="systemidd" /><br />
+			<input type="text" name="system" id="systemidd" /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -111,7 +111,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Information</h3>
-	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -128,7 +128,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
-			<input type="text" name="systemid" id="systemidx" /><br />
+			<input type="text" name="system" id="systemidx" /><br />
 			<label for="fieldssi">Fields to return</label>
 			<input type="text" name="fields" id="fieldssi" /><br />
 			<input type="submit" class="submit" value="Information" />
@@ -141,7 +141,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Property</h3>
-	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','system','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -150,7 +150,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidpg">System ID</label>
-			<input type="text" name="systemid" id="systemidpg" /><br />
+			<input type="text" name="system" id="systemidpg" /><br />
 			<label for="propertynameg">Property Name</label>
 			<input type="text" name="propertyname" id="propertynameg" /><br />
 			<input type="submit" class="submit" value="Get Property" />
@@ -163,7 +163,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System Property</h3>
-	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','system','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -178,7 +178,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidp">System ID</label>
-			<input type="text" name="systemid" id="systemidp" /><br />
+			<input type="text" name="system" id="systemidp" /><br />
 			<label for="propertyname">Property Name</label>
 			<input type="text" name="propertyname" id="propertyname" /><br />
 			<label for="value">Value</label>
@@ -193,7 +193,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System Property</h3>
-	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','system','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -202,7 +202,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemiddp">System ID</label>
-			<input type="text" name="systemid" id="systemiddp" /><br />
+			<input type="text" name="system" id="systemiddp" /><br />
 			<label for="propertynamed">Property Name</label>
 			<input type="text" name="propertyname" id="propertynamed" /><br />
 			<input type="submit" class="submit" value="Delete Property" />

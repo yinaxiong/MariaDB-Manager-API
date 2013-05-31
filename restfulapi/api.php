@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Part of the SCDS API.
+ ** Part of the SkySQL Manager API.
  * 
  * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -23,7 +23,7 @@
  * Date: February 2013
  * 
  * The API class is the starting point, called by the very brief index.php which is the sole
- * entry point for the SCDS API.  Its constructor sets up some standard symbols.  It starts 
+ * entry point for the SkySQL Manager API.  Its constructor sets up some standard symbols.  It starts 
  * buffering of output, primarily to be able to control diagnostics, and sets up a simple 
  * autoloader.
  * 
@@ -45,9 +45,75 @@ use SkySQL\COMMON\ErrorRecorder;
 
 if (!function_exists('apache_request_headers')) require ('apache_request_headers.php');
 
+// Translation function - yet to be implemented
+function T_ ($string) {
+	return $string;
+}
+
 class API {
 	private static $instance = null;
 	protected static $ipaddress = '';
+	
+	/*
+	public static $backupstates = array(
+		1 => array('description' => 'Scheduled', 'icon' => 'scheduled'),
+		2 => array('description' => 'Running', 'icon' => 'running'),
+		3 => array('description' => 'Paused', 'icon' => 'paused'),
+		4 => array('description' => 'Stopped', 'icon' => 'stopped'),
+		5 => array('description' => 'Done', 'icon' => 'done'),
+		6 => array('description' => 'Error', 'icon' => 'error')
+	);
+	*/
+	
+	public static $backupstates = array(
+		1 => array('description' => 'Scheduled'),
+		2 => array('description' => 'Running'),
+		3 => array('description' => 'Paused'),
+		4 => array('description' => 'Stopped'),
+		5 => array('description' => 'Done'),
+		6 => array('description' => 'Error')
+	);
+	
+	public static $commandstates = array(
+		1 => array('description' => 'Scheduled', 'icon' => 'scheduled'),
+		2 => array('description' => 'Running', 'icon' => 'running'),
+		3 => array('description' => 'Paused', 'icon' => 'paused'),
+		4 => array('description' => 'Stopped', 'icon' => 'stopped'),
+		5 => array('description' => 'Done', 'icon' => 'done'),
+		6 => array('description' => 'Error', 'icon' => 'error')
+	);
+	
+	public static $nodestates = array(
+		1 => array('description' => 'Master', 'icon' => 'master'),
+		2 => array('description' => 'Slave Online', 'icon' => 'slave'),
+		3 => array('description' => 'Slave Offline', 'icon' => 'offline'),
+		4 => array('description' => 'Slave Stopping', 'icon' => 'stopping'),
+		5 => array('description' => 'Slave Stopped', 'icon' => 'stopped'),
+		6 => array('description' => 'Slave Isolating', 'icon' => 'isolating'),
+		7 => array('description' => 'Slave Recovering', 'icon' => 'recovering'),
+		8 => array('description' => 'Slave Restoring Backup', 'icon' => 'restoring'),
+		9 => array('description' => 'Slave Backing Up', 'icon' => 'backingup'),
+		10 => array('description' => 'Slave Starting', 'icon' => 'starting'),
+		11 => array('description' => 'Slave Promoting', 'icon' => 'promoting'),
+		12 => array('description' => 'Slave Synchronizing', 'icon' => 'synchronizing'),
+		13 => array('description' => 'Slave Error', 'icon' => 'error'),
+		14 => array('description' => 'System Running', 'icon' => 'system'),
+		15 => array('description' => 'System Stopping', 'icon' => 'sys_stopping'),
+		16 => array('description' => 'System Stopped', 'icon' => 'sys_stopped'),
+		17 => array('description' => 'System Starting', 'icon' => 'sys_starting'),
+		18 => array('description' => 'Standalone Database', 'icon' => 'node')
+	);
+	
+	public static $commandsteps = array(
+		'start' => array('icon' => 'starting', 'description' => 'Start node up, start replication'),
+		'stop' => array('icon' => 'stopping', 'description' => 'Stop replication, shut node down'),
+		'isolate' => array('icon' => 'isolating', 'description' => 'Take node out of replication'),
+		'recover' => array('icon' => 'recovering', 'description' => 'Put node back into replication'),
+		'promote' => array('icon' => 'promoting', 'description' => 'Promote a slave to master'),
+		'synchronize' => array('icon' => 'synchronizing', 'description' => 'Synchronize a node'),
+		'backup' => array('icon' => 'backingup', 'description' => 'Backup a node'),
+		'restore' => array('icon' => 'restoring', 'description' => 'Restore a node')
+	);
 	
 	public static function getInstance () {
 	    return (self::$instance instanceof self) ? self::$instance : (self::$instance = new self());
@@ -114,11 +180,19 @@ class API {
 		}
 		// The request handling code should catch all exceptions
 		catch (PDOException $pe) {
-			echo 'Unhandled database error: '.$pe->getMessage().api::trace();
+			echo 'Unhandled database error: '.$pe->getMessage().API::trace();
 		}
 		catch (Exception $e) {
-			echo 'Unhandled general error: '.$e->getMessage().api::trace();
+			echo 'Unhandled general error: '.$e->getMessage().API::trace();
 		}
+	}
+
+	public static function merger ($data, $key) {
+		return array_merge(array('state' => (string) $key), $data);
+	}
+	
+	public static function mergeStates ($states) {
+		return array_map(array(__CLASS__,'merger'), $states, array_keys($states));
 	}
 
 	public static function simpleAutoload ($classname) {

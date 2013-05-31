@@ -22,13 +22,16 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * Definitions required for PHP code in the SkySQL Cloud Data Suite.
+ * The EntityManager class provides common resources for managers of the
+ * collectives of entities managed by the API.
+ * 
  */
 
-namespace SkySQL\SCDS;
+namespace SkySQL\SCDS\API\managers;
 
-// Can be used with the getParam method of Request class
-define( '_MOS_NOTRIM', 0x0001 );  		// prevent getParam trimming input
-define( '_MOS_ALLOWHTML', 0x0002 );		// cause getParam to allow HTML - purified on user side
-define( '_MOS_ALLOWRAW', 0x0004 );		// suppresses forcing of integer if default is numeric
-define( '_MOS_NOSTRIP', 0x0008 );		// suppress stripping of magic quotes
+use SkySQL\COMMON\CACHE\CachedSingleton;
+
+
+abstract class EntityManager extends CachedSingleton {
+	
+}
