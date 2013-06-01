@@ -82,7 +82,7 @@ abstract class PropertyManager extends EntityManager {
 		foreach ((array) @$this->properties[$id] as $property=>$value) {
 			$results[$property] = $value;
 		}
-		return isset($results) ? $results : array();
+		return isset($results) ? $results : null;
 	}
 	
 	public function deleteAllProperties ($id) {

@@ -57,7 +57,7 @@ class UserManager extends EntityManager {
 	public function getAllPublic () {
 		$users = array_values($this->users);
 		foreach ($users as $user) $results[] = $user->publicCopy();
-		return $results;
+		return (array) @$results;
 	}
 	
 	public function createUser ($username) {
