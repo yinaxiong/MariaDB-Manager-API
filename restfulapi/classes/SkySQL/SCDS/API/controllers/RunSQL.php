@@ -28,8 +28,9 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use \PDO;
-use \PDOException;
+use PDO;
+use PDOException;
+use stdClass;
 
 class RunSQL extends ImplementAPI {
     protected $subjectdb = null;
@@ -41,20 +42,39 @@ class RunSQL extends ImplementAPI {
             if (strcasecmp('SELECT ', substr($query,0,7)) AND strcasecmp('SHOW ', substr($query,0,5))) {
 				throw new PDOException('Query is not a SELECT or SHOW statement');
 			}
-            $hostdata = $this->getHostData();
-            $this->subjectdb = new PDO("mysql:host=$hostdata->Hostname;dbname=information_schema", $hostdata->Username, $hostdata->passwd);
+			$hostdata = $this->getHostData();
+            $hostparts = explode(':', $hostdata->Hostname);
+			$connection = "mysql:host={$hostparts[0]};dbname=information_schema";
+			if (count($hostparts) > 1) $connection .= ";port={$hostparts[1]}";
+            $this->subjectdb = new PDO($connection, $hostdata->Username, $hostdata->passwd);
             $this->subjectdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->subjectdb->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-            $statement = $this->subjectdb->prepare($query);
+			$this->subjectdb->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+			$statement = $this->subjectdb->prepare($query);
             $statement->execute();
-            $this->sendResponse(array("result" => $statement->fetchAll(PDO::FETCH_ASSOC)));
+			$results = $statement->fetchAll();
+			$aspairs = $this->getParam('POST', 'aspairs');
+			if ($results AND !empty($aspairs)) {
+				$fields = array_keys(get_object_vars($results[0]));
+				if (2 == count($fields)) {
+					$fielda = $fields[0];
+					$fieldb = $fields[1];
+					$pairs = new stdClass();
+					foreach ($results as &$result) {
+						$property = $result->$fielda;
+						$pairs->$property = $result->$fieldb;
+					}
+					$this->sendResponse(array("result" => $this->filterSingleResult($pairs)));
+				}
+			}
+            $this->sendResponse(array("results" => $this->filterResults($results)));
         }
         catch (PDOException $pe) {
             $this->sendErrorResponse($pe->getMessage(), 400);
             exit;
         }
     }
-
+	
 	protected function getHostData () {
 		$systemid = $this->getParam('GET', 'systemid', 0);
 		$nodeid = $this->getParam('GET', 'nodeid', 0);

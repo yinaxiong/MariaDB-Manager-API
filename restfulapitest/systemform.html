@@ -8,7 +8,7 @@
 	  <div id="header">
 		  <div id="logo">
 			<h1><a href="#">Manager API</a></h1>
-			<p><span>About the SkySQL Manager API</span></p>
+			<p><span>Read about it and try it out</span></p>
 		  </div>
 		  <div id="menu">
 			<ul>
@@ -18,7 +18,7 @@
 			  <li><a href="userform.html">User</a></li>
 			  <li><a href="backupform.html">Backup</a></li>
 			  <li><a href="monitorform.html">Monitor</a></li>
-			  <li><a href="jobform.html">Job</a></li>
+			  <li><a href="jobform.html">Task</a></li>
 			</ul>
 		  </div>
 	  </div>	
@@ -56,7 +56,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System</h3>
-	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -76,10 +76,10 @@
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="system" id="systemid" /><br />
+			<input type="text" name="systemid" id="systemid" /><br />
 			<label for="name">System Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
-			<label for="state">State ID</label>
+			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
@@ -91,7 +91,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System</h3>
-	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -100,7 +100,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidd">System ID</label>
-			<input type="text" name="system" id="systemidd" /><br />
+			<input type="text" name="systemid" id="systemidd" /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -111,7 +111,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Information</h3>
-	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -128,7 +128,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
-			<input type="text" name="system" id="systemidx" /><br />
+			<input type="text" name="systemid" id="systemidx" /><br />
 			<label for="fieldssi">Fields to return</label>
 			<input type="text" name="fields" id="fieldssi" /><br />
 			<input type="submit" class="submit" value="Information" />
@@ -141,7 +141,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Property</h3>
-	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','system','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -150,9 +150,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidpg">System ID</label>
-			<input type="text" name="system" id="systemidpg" /><br />
+			<input type="text" name="systemid" id="systemidpg" /><br />
 			<label for="propertynameg">Property Name</label>
-			<input type="text" name="propertyname" id="propertynameg" /><br />
+			<input type="text" name="property" id="propertynameg" /><br />
 			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -163,7 +163,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System Property</h3>
-	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','system','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -178,9 +178,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidp">System ID</label>
-			<input type="text" name="system" id="systemidp" /><br />
+			<input type="text" name="systemid" id="systemidp" /><br />
 			<label for="propertyname">Property Name</label>
-			<input type="text" name="propertyname" id="propertyname" /><br />
+			<input type="text" name="property" id="propertyname" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
@@ -193,7 +193,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System Property</h3>
-	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','system','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -202,9 +202,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemiddp">System ID</label>
-			<input type="text" name="system" id="systemiddp" /><br />
+			<input type="text" name="systemid" id="systemiddp" /><br />
 			<label for="propertynamed">Property Name</label>
-			<input type="text" name="propertyname" id="propertynamed" /><br />
+			<input type="text" name="property" id="propertynamed" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -215,7 +215,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Application Property</h3>
-	  <form action="" method="post" id="getapplicprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getapplicprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -226,7 +226,7 @@
 			<label for="appidpg">Application ID</label>
 			<input type="text" name="appid" id="appidpg" /><br />
 			<label for="propertynameag">Property Name</label>
-			<input type="text" name="propertyname" id="propertynameag" /><br />
+			<input type="text" name="property" id="propertynameag" /><br />
 			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -237,7 +237,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update an Application Property</h3>
-	  <form action="" method="post" id="putappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -254,7 +254,7 @@
 			<label for="appidp">ApplicationID</label>
 			<input type="text" name="appid" id="appdp" /><br />
 			<label for="propertynamea">Property Name</label>
-			<input type="text" name="propertyname" id="propertynamea" /><br />
+			<input type="text" name="property" id="propertynamea" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
@@ -267,7 +267,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete an Application Property</h3>
-	  <form action="" method="post" id="delappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','propertyname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -278,7 +278,7 @@
 			<label for="appiddp">Application ID</label>
 			<input type="text" name="appid" id="appiddp" /><br />
 			<label for="propertynamed">Property Name</label>
-			<input type="text" name="propertyname" id="propertynamed" /><br />
+			<input type="text" name="property" id="propertynamed" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -343,9 +343,7 @@
 		</p>
 		<p>
 			Where parameters are submitted with an HTTP PUT request, there is a single string passed
-			with the request.  The string must be JSON.  It is formed by creating an associative
-			array with keys that are the names of the parameters.  As you might expect, the corresponding
-			values are the values to be submitted.  The array is then JSON encoded.
+			with the request.  The string should be a query string, similar to that provided for GET.
 		</p>
 		<p>
 			Where parameters are submitted with an HTTP POST request, the usual conventions for POST

@@ -48,7 +48,7 @@ class SystemBackups extends ImplementAPI {
 			exit;
 		}
 		list($total, $backups) = Backup::getSelectedBackups($systemid, $fromdate, $todate, $limit, $offset);
-        $this->sendResponse(array('result' => array('total' => $total, 'backups' => $this->filterResults($backups))));
+        $this->sendResponse(array('total' => $total, 'backups' => $this->filterResults($backups)));
 	}
 	
 	protected function getDate ($datename) {

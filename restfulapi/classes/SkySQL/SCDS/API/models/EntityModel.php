@@ -31,9 +31,17 @@ namespace SkySQL\SCDS\API\models;
 
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\NodeStateManager;
 use PDO;
 
 abstract class EntityModel {
+	
+	protected static $validationerrors = array();
+	
+	protected $bind = array();
+	protected $setter = array();
+	protected $insname = array();
+	protected $insvalue = array();
 	
 	public static function getAll () {
 		$getall = AdminDatabase::getInstance()->prepare(sprintf(static::$selectAllSQL, self::getSelects(), ''));
@@ -45,12 +53,14 @@ abstract class EntityModel {
 		$request = Request::getInstance();
 		if (count($keyvalues) != count(static::$keys)) $request->sendErrorResponse('Number of values given does not match number of keys', 500);
 		$select = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
-		foreach (static::$keys as $name=>$sqlname) {
-			if (empty($keyvalues[$name])) $request->sendErrorResponse("No key value given for $sqlname as key to select items");
+		foreach (static::$keys as $name=>$about) {
+			if (empty($keyvalues[$name])) $request->sendErrorResponse("No key value given for {$about['sqlname']} as key to select items", 400);
 			$bind[":$name"] = $keyvalues[$name];
 		}
 		$select->execute($bind);
-		return $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		// ->fetchObject has problems, inadvisable to use
+		$results = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		return count($results) ? $results[0] : null;
 	}
 	
 	public static function select () {
@@ -69,14 +79,15 @@ abstract class EntityModel {
 	}
 	
 	public function update ($alwaysrespond=true) {
-		list( , , $setter, $bind) = $this->settersAndBinds(__FUNCTION__);
-		if (!empty($setter)) {
-			$this->validateUpdate($bind, $setter);
-			$sql = sprintf(static::$updateSQL, implode(', ', $setter));
+		$this->settersAndBinds(__FUNCTION__);
+		if (!empty($this->setter)) {
+			$this->validateUpdate();
+			$sql = sprintf(static::$updateSQL, implode(', ', $this->setter));
 			$database = AdminDatabase::getInstance();
 			$update = $database->prepare($sql);
-			$update->execute($bind);
+			$update->execute($this->bind);
 			$database->commitTransaction();
+			$this->clearCache(true);
 			$counter = $update->rowCount();
 			if ($counter OR $alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
 			return 0;
@@ -84,16 +95,17 @@ abstract class EntityModel {
 	}
 	
 	public function insert ($alwaysrespond=true) {
-		list($insname, $insvalue, , $bind) = $this->settersAndBinds(__FUNCTION__);
-		if (!$this->keyComplete()) $this->makeNewKey($bind);
-		$this->setDefaults($bind, $insname, $insvalue);
-		$this->validateInsert($bind, $insname, $insvalue);
-		$fields = implode(',',$insname);
-		$values = implode(',',$insvalue);
+		$this->settersAndBinds(__FUNCTION__);
+		if (!$this->keyComplete()) $this->makeNewKey();
+		$this->setDefaults();
+		$this->validateInsert();
+		$fields = implode(',',$this->insname);
+		$values = implode(',',$this->insvalue);
 		$database = AdminDatabase::getInstance();
 		$insert = $database->prepare(sprintf(static::$insertSQL, $fields, $values));
-		$insert->execute($bind);
+		$insert->execute($this->bind);
 		$database->commitTransaction();
+		$this->clearCache(true);
 		if ($alwaysrespond) Request::getInstance()->sendResponse(
 			array('updatecount' => 0,  'insertkey' => $this->insertedKey($database->lastInsertId()))
 		);
@@ -101,53 +113,79 @@ abstract class EntityModel {
 	}
 	
 	public function save () {
-		list( ,  , $setter, $bind) = $this->settersAndBinds(__FUNCTION__);
+		$this->settersAndBinds(__FUNCTION__);
 		$database = AdminDatabase::getInstance();
 		$database->startImmediateTransaction();
 		if ($this->keyComplete()) {
-			if (!empty($setter)) $counter = $this->update(false);
+			if (!empty($this->setter)) $counter = $this->update(false);
 			else {
 				$update = $database->prepare(static::$countSQL);
-				$update->execute($bind);
+				$update->execute($this->bind);
 				$counter = $update->fetch(PDO::FETCH_COLUMN);
 			}
 		}
 		if (empty($counter)) $this->insert();
-		else Request::getInstance()->sendResponse(array('updatecount' => (empty($setter) ? 0: $counter), 'insertkey' => 0));
+		else Request::getInstance()->sendResponse(array('updatecount' => (empty($this->setter) ? 0: $counter), 'insertkey' => null));
 	}
 	
 	public function delete () {
-		list ( , , , $bind) = $this->settersAndBinds(__FUNCTION__);
+		$this->settersAndBinds(__FUNCTION__);
 		$delete = AdminDatabase::getInstance()->prepare(static::$deleteSQL);
-		$delete->execute($bind);
+		$delete->execute($this->bind);
+		$this->clearCache(true);
 		$counter = $delete->rowCount();
 		$request = Request::getInstance();
 		if ($counter) $request->sendResponse(array('deletecount' => $counter));
 		else $request->sendErrorResponse("Delete $this->ordinaryname did not match any $this->ordinaryname", 404);
 	}
 	
+	protected function clearCache ($immediate=false) {
+		if (isset(static::$managerclass)) {
+			$manager = call_user_func(array(static::$managerclass,'getInstance'));
+			$manager->clearCache($immediate);
+		}
+	}
+	
+	protected function setDefaultDate ($name) {
+		if (empty($this->bind[":$name"])) {
+			$this->setInsertValue($name, date('Y-m-d H:i:s'));
+		}
+	}
+	
+	protected function setCorrectFormatDate ($name) {
+		$bindname = ":$name";
+		if ($this->bind[$bindname]) {
+			$unixtime = strtotime($this->bind[$bindname]);
+			$this->bind[$bindname] = $unixtime ? date('Y-m-d H:i:s',$unixtime) : date('Y-m-d H:i:s');
+		}
+	}
+	
+	protected function setCorrectFormatDateWithDefault ($name) {
+		$this->setCorrectFormatDate($name);
+		$this->setDefaultDate($name);
+	}
+	
 	protected function keyComplete () {
 		return true;
 	}
 	
-	protected function makeNewKey (&$bind) {}
+	protected function makeNewKey () {}
 	
-	protected function setDefaults (&$bind, &$insname, &$insvalue) {}
+	protected function setDefaults () {}
 	
 	protected function insertedKey ($insertid) {
 		return $insertid;
 	}
 	
-	protected function validateInsert (&$bind, &$insname, &$insvalue) {}
+	protected function validateInsert () {}
 	
-	protected function validateUpdate (&$bind, &$setters) {}
+	protected function validateUpdate () {}
 	
-	protected static function checkLegalFields () {
-		// Block check until more work can be done
-		return;
-		$legals = array_merge(array_keys(static::$fields),array_keys(static::$keys));
+	public static function checkLegal ($extras=array()) {
 		$request = Request::getInstance();
-		$illegals = array_diff($request->getAllParamNames($request->getMethod()),$legals);
+		$method = $request->getMethod();
+		$fields = array_merge(array_keys(static::$fields), array_keys(static::$keys), $extras);
+		$illegals = array_diff($request->getAllParamNames($method),$fields);
 		if (count($illegals)) {
 			$illegalist = implode (', ', $illegals);
 			$request->sendErrorResponse("Parameter(s) $illegalist not recognised",400);
@@ -155,59 +193,186 @@ abstract class EntityModel {
 	}
 	
 	protected function settersAndBinds ($caller) {
-		self::checkLegalFields();
-		$bind = $setter = $insname = $insvalue = array();
 		$request = Request::getInstance();
 		// Source for data is always provided except for deletes
 		if ('delete' != $caller) {
 			$source = $request->getMethod();
 			foreach (static::$fields as $name=>$about) {
-				$insname[] = $about['sqlname'];
+				$this->insname[] = $about['sqlname'];
 				$bindname = ":$name";
-				$insvalue[] = $bindname;
+				$this->insvalue[] = $bindname;
 				if ('insert' == $caller OR empty($about['insertonly'])) {
-					if (!$request->paramEmpty($source, $name) AND empty($about['internal'])) {
-						$bind[$bindname] = $request->getParam($source, $name, $about['default']);
-						$setter[] = $about['sqlname'].' = '.$bindname;
-						$this->$name = $bind[$bindname];
+					if ('insert' == $caller OR !$request->paramEmpty($source, $name)) {
+						$this->bind[$bindname] = self::getParam($source, $name, $about);
+						$this->setter[] = $about['sqlname'].' = '.$bindname;
+						$this->$name = $this->bind[$bindname];
 					}
 				}
 			}
+			if (count(self::$validationerrors)) $request->sendErrorResponse(self::$validationerrors, 400);
 		}
-		if (!isset(static::$setkeyvalues)) trigger_error('All entity classes must set the static variable $setkeyvalues');
-		if (static::$setkeyvalues OR 'insert' != $caller) foreach (static::$keys as $name=>$sqlname) {
-			$insname[] = $sqlname;
+		if (!isset(static::$setkeyvalues)) $request->sendErrorResponse('All entity classes must set the static variable $setkeyvalues',500);
+		if (static::$setkeyvalues OR 'insert' != $caller) foreach (static::$keys as $name=>$about) {
+			$this->insname[] = $about['sqlname'];
 			$bindname = ":$name";
-			$insvalue[] = $bindname;
-			if (isset($this->$name)) $bind[$bindname] = $this->$name;
+			$this->insvalue[] = $bindname;
+			if (isset($this->$name)) $this->bind[$bindname] = $this->$name;
 		}
-		return array($insname, $insvalue, $setter, $bind);
+	}
+	
+	protected function setInsertValue ($name, $value) {
+		$bindname = ":$name";
+		$this->bind[$bindname] = $value;
+		$this->insname[] = static::$fields[$name]['sqlname'];
+		$this->insvalue[] = $bindname;
 	}
 	
 	protected static function wheresAndBinds () {
-		self::checkLegalFields();
 		$bind = $where = array();
 		$request = Request::getInstance();
 		$source = $request->getMethod();
 		foreach (static::$fields as $name=>$about) {
 			$bindname = ":$name";
-			if (!$request->paramEmpty($source, $name) AND empty($about['internal'])) {
-				$bind[$bindname] = $request->getParam($source, $name, $about['default']);
+			if (!$request->paramEmpty($source, $name)) {
+				$bind[$bindname] = self::getParam($source, $name, $about);
 				$where[] = $about['sqlname'].' = '.$bindname;
 			}
 		}
+		if (count(self::$validationerrors)) $request->sendErrorResponse(self::$validationerrors, 400);
 		return array($where, $bind);
+	}
+	
+	protected static function getParam ($source, $name, $about) {
+		$data = Request::getInstance()->getParam($source, $name, $about['default']);
+		if (@$about['validate']) {
+			$method = $about['validate'];
+			if (!self::$method($data)) self::$validationerrors[] = "Field $name with value $data failed validation";
+		}
+		return $data;
+	}
+	
+	// Validation method for IP address
+	protected static function ipaddress ($data) {
+		return filter_var($data, FILTER_VALIDATE_IP);
+	}
+	
+	// Validation method for node state
+	protected static function nodestate ($data) {
+		return NodeStateManager::getInstance()->getByState($data) ? true : false;
+	}
+	
+	// Validation method for date/time
+	protected static function datetime ($data) {
+		return empty($data) OR (strtotime($data) ? true : false);
 	}
 
 	protected static function getSelects ($selects=array()) {
 		foreach (static::$fields as $name=>$about) $selects[] = $about['sqlname'].' AS '.$name;
-		foreach (static::$keys as $name=>$sqlname) $selects[] = "$sqlname AS $name";
+		foreach (static::$keys as $name=>$about) $selects[] = "{$about['sqlname']} AS $name";
 		return implode(',', $selects);
 	}
 
+	// Not currently used
 	protected function makeRandomString ($length=8) {
 		$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!%,-:;@_{}~";
 		for ($i = 0, $makepass = '', $len = strlen($chars); $i < $length; $i++) $makepass .= $chars[mt_rand(0, $len-1)];
 		return $makepass;
+	}
+	
+	public static function setMetadataFromDB ($fields) {
+		foreach ($fields as $field) $bysqlname[$field->name] = $field;
+		foreach (static::$keys as &$key) {
+			if (isset($bysqlname[$key['sqlname']])) $key['type'] = $bysqlname[$key['sqlname']]->type;
+		}
+		foreach (static::$fields as &$field) {
+			if (isset($bysqlname[$field['sqlname']])) $field['type'] = $bysqlname[$field['sqlname']]->type;
+		}
+	}
+	
+	public static function getMetadataJSON () {
+		return array('keys' => static::$keys, 'fields' => static::$fields);
+	}
+	
+	public static function getMetadataHTML () {
+		$entityname = static::$headername;
+		$keyrows = $datarows = $extrarows = $extrahtml = '';
+		foreach (static::$keys as $name=>$key) {
+			$description = @$key['desc'];
+			$keyrows .= <<<KEYROW
+		<tr>
+			<td>$name</td>
+			<td>{$key['type']}</td>
+			<td>$description</td>
+		</tr>
+				
+KEYROW;
+			
+		}
+		foreach (static::$fields as $name=>$field) {
+			$description = @$field['desc'];
+			$datarows .= <<<DATAROW
+		<tr>
+			<td>$name</td>
+			<td>{$field['type']}</td>
+			<td>$description</td>
+		</tr>
+				
+DATAROW;
+			
+		}
+		if (!empty(static::$derived)) foreach (static::$derived as $name=>$field) {
+			$description = @$field['desc'];
+			$extrarows .= <<<EXTRAROW
+		<tr>
+			<td>$name</td>
+			<td>{$field['type']}</td>
+			<td>$description</td>
+		</tr>
+				
+EXTRAROW;
+			
+		}
+		if ($extrarows) $extrahtml = <<<EXTRA
+				
+  <tbody>
+    <tr>
+      <th class="subhead" scope="rowgroup" colspan="3">Derived information</th>
+    </tr>
+    $extrarows
+   </tbody>
+				
+EXTRA;
+
+		echo <<<ENTITY
+		
+<div id="popup">
+<h3>$entityname</h3>
+<table>
+  <thead>
+    <tr>
+      <th scope="col">Field Name</th>
+      <th scope="col">Type</th>
+      <th scope="col">Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th class="subhead" scope="rowgroup" colspan="3">Key fields</th>
+    </tr>
+    $keyrows
+  </tbody>
+  <tbody>
+    <tr>
+      <th class="subhead" scope="rowgroup" colspan="3">Data fields</th>
+    </tr>
+    $datarows
+   </tbody>
+   $extrahtml
+</table>
+</div>
+		
+ENTITY;
+				
+		exit;
 	}
 }

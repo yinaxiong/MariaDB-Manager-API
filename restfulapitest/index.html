@@ -5,13 +5,14 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
+	<link href="jquery.qtip.min.css" rel="stylesheet" type="text/css" />
 	<link href="default.css" rel="stylesheet" type="text/css" />
-  </head>
+ </head>
   <body>
 	  <div id="header">
 		  <div id="logo">
 			<h1><a href="#">Manager API</a></h1>
-			<p><span>About the SkySQL Manager API</span></p>
+			<p><span>Read about it and try it out</span></p>
 		  </div>
 		  <div id="menu">
 			<ul>
@@ -21,13 +22,13 @@
 			  <li><a href="userform.html">User</a></li>
 			  <li><a href="backupform.html">Backup</a></li>
 			  <li><a href="monitorform.html">Monitor</a></li>
-			  <li><a href="jobform.html">Job</a></li>
+			  <li><a href="jobform.html">Task</a></li>
 			</ul>
 		  </div>
 	  </div>	
 	<div id="page">
 	  <div class="section">
-	  <h2>About the API for the SkySQL Cloud Data Suite</h2>
+	  <h2>About the API for the SkySQL Data Suite</h2>
 	  <p>
 		  The API is a RESTful web service, allowing control of one or more SkySQL
 		  Cloud Systems.  A truly RESTful interface relies on a Resource Oriented
@@ -43,13 +44,15 @@
 	  </ul>
 	  <p>
 		  The main resources handled by the SkySQL Manager API are Systems, Nodes, Users, Backups,
-		  Monitors, Commands/Jobs.  Each has a page where you can run the various API requests.
+		  Monitors, Commands/Tasks.  Each has a page where you can run the various API requests.
 	  </p>
 	  <p>
 		  Because the API is potentially open to the public internet and is managing critical
 		  resources, it is secured to limit acccess.  Please read the security section
 		  below before attempting to use the API independently of this front end.
 	  </p>
+	  </div>
+	  <div class="section">
 	  <h3>Resources Managed by the API</h3>
 	  <p>
 		  Up to now, the main resources that are understood by the API are:
@@ -62,7 +65,7 @@
 		  <li>Monitor Classes</li>
 		  <li>Monitor Instances (which have sets of data associated with them)</li>
 		  <li>Commands</li>
-		  <li>Jobs</li>
+		  <li>Tasks</li>
 	  </ul>
 	  <p>
 		  Subsidiary resources are really just lookups for short codes, and they
@@ -80,15 +83,22 @@
 		  bucket<br /><br />
 		  There is also an API call on the Commands page to run SQL (limited to 
 		  SELECT or SHOW) on the database. Details of the main resources follow.
-		  All the main resources can be created, updated or deleted through the API.
+		  Almost all the main resources can be created, updated or deleted through the API.
 	  </p>
 	  <h4>Systems</h4>
 	  <p>
 		  A system is a group of nodes that run database servers in a linked way
 		  so as to produce a single integrated database service.  The use of
-		  multiple nodes is aimed at solving problems of scaling and load handling.
+		  multiple nodes is aimed at solving problems of availability, scaling and load handling.
 		  Connected resources are system properties, which are name-value pairs
-		  associated with a particular system.  
+		  associated with a particular system. For details of 
+		  <a href="http://manager.skysql.com/system" rel="/metadata/entity/system.html">
+			system data
+		  </a> click on the link.  Note that this includes derived
+		  information - only the basic system information can be directly modified
+		  through the API.  System properties can be modified through the API, but
+		  require a different URI from updates to the basic system fields - see the
+		  system page for details.
 	  </p>
 	  <h4>Nodes</h4>
 	  <p>
@@ -97,30 +107,60 @@
 		  the use of cloud services.  Nodes can typically be started and stopped
 		  (either deliberately or by accident) without bringing down the system.
 		  One node is the master database, but not necessarily always the same
-		  node.  Another node (never the master) runs this API.
+		  node.  Another node (never the master) or a server outside the system
+		  runs this API. For details of 
+		  <a href="http://manager.skysql.com/node" rel="/metadata/entity/node.html">
+			node data
+		  </a> click on the link. Note that this includes derived
+		  information - only the basic node information can be directly modified
+		  through the API.
 	  </p>
 	  <h4>Users</h4>
 	  <p>
 		  The API allows users to control the system, and provides user
-		  authentication.
+		  authentication.  For details of 
+		  <a href="http://manager.skysql.com/user" rel="/metadata/entity/user.html">
+			user data
+		  </a> click on the link.  Note that there are two related but 
+		  separate API interfaces for updating this data - one for the basic user 
+		  data and one for the user properties.  See the user page for details.
 	  </p>
 	  <h4>Backups</h4>
 	  <p>
 		  Access to currently existing backups of system and nodes is available
-		  through the API.
+		  through the API. For details of 
+		  <a href="http://manager.skysql.com/backup" rel="/metadata/entity/backup.html">
+			backup data
+		  </a> click on the link.
 	  </p>
 	  <h4>Monitors</h4>
 	  <p>
-		  
+		  Many different kinds of monitor are possible. The API maintains a list of them.
+		  For details of 
+		  <a href="http://manager.skysql.com/monitor" rel="/metadata/entity/monitor.html">
+			monitor data
+		  </a> click on the link.
 	  </p>
 	  <h4>Commands</h4>
 	  <p>
-		  
+		  Running a command creates a task.  The Task page provides a list of the
+		  available commands with their descriptions.  When a command is issued, a 
+		  number of parameters can be supplied.  Details of the 
+		  <a href="http://manager.skysql.com/monitor" rel="/metadata/entity/command.html">
+			command data to submit
+		  </a> click on the link.
 	  </p>
-	  <h4>Jobs</h4>
+	  <h4>Tasks</h4>
 	  <p>
 		  
+		  For details of 
+		  <a href="http://manager.skysql.com/job" rel="/metadata/entity/task.html">
+			task data
+		  </a> click on the link.
+
 	  </p>
+	  </div>
+	  <div class="section">
 	  <h3>Configuring the API</h3>
 	  <p>
 		  There is a configuration file that provides some basic information
@@ -139,8 +179,6 @@
 ; not currently used, and are included only in case a different
 ; database might be used in future.
 [database]
-; path should become obsolete when all DB access is via the API
-path = "/usr/local/skysql/SQLite/AdminConsole/admin"
 pdoconnect = "sqlite:/usr/local/skysql/SQLite/AdminConsole/admin"
 user = ""
 password = ""
@@ -154,16 +192,21 @@ password = ""
 ; that runs the API scripts and needs to write the log depends on
 ; the configuration of Apache).
 ; The error email address, if specified, will be used to notify errors.
+; More information will be logged if verbose is set to yes.
 [logging]
 directory = "/usr/local/skysql/log"
 erroremail = "someone@example.com"
+verbose = "no"
 ;
 ; The shell section configures how shell commands will run. It contains
 ; a path, which indicates the location of the RunCommand.sh script that
-; runs the various commands that can be executed through the API.
+; runs the various commands that can be executed through the API.  It also
+; contains a hostname, which is used by the scripts to make calls to the
+; API.
 ;
 [shell]
-path = "shell/"
+path = "/usr/local/skysql/scripts/api/"
+hostname = "localhost"
 ;
 ; Monitor defaults determines how many readings and what intervals the
 ; API will return to a request for Monitor data, if no such parameters
@@ -173,6 +216,16 @@ path = "shell/"
 [monitor-defaults]
 interval = 1800
 count = 15
+;
+; The cache section provides configuration details for data caching
+;
+; Directory must point to a writeable directory for storing cached data.
+; Timelimit is the number of seconds for which a data item in cache remains valid.
+; Sizelimit is the maximum number of bytes for a cached item.
+[cache]
+directory = "/usr/local/skysql/cache/api";
+timelimit = 3600
+sizelimit = 500000
 ;
 ; The API keys section provides security for the API
 ;
@@ -195,9 +248,11 @@ count = 15
 		  address is provided in erroremail, the errors will be mailed to that address.
 		  The shell path defines how system calls will be handled by the API.
 	  </p>
+	  </div>
+	  <div class="section">
 	  <h3>Securing the API</h3>
 	  <p>
-		  The API is running on a server that is open to the world.  It is therefore
+		  The API is running on a server that may be open to the world.  It is therefore
 		  undesirable for just anyone to be able to use the API.  To constrain use of
 		  the API, some additional headers need to be sent with each request.  The 
 		  headers used are the standard HTTP headers Date and Authorization.
@@ -248,6 +303,8 @@ count = 15
 		  The full header will then be something like:<br />
 		  Authorization: api-auth-1-38ef94d18a0680c227a1f48d4072e9f9
 	  </p>
+	  </div>
+	  <div class="section">
 	  <h3>Installation</h3>
 	  <p>
 		  The code can be extracted from the SkySQL repository.  Currently it is found at
@@ -265,12 +322,14 @@ count = 15
 	  <p>
 		  One element of api.ini is the directory given in the logging section.  Provided
 		  this points to a directory that can be written by the web server, the API will
-		  log some of its actions to a file called api.log.
+		  log some of its actions to a file called api.log.  Please note that the ability
+		  to write may require not only correct permissions, but also correct SELinux
+		  settings.
 	  </p>
 	  <p>
 		  Another critical aspect to installing the API code is setting up Apache 
 		  mod_rewrite (or its equivalent).  Any URI that does not correspond to an actual
-		  file or directory should be rewritten to point to the index.php file in the root
+		  file or directory should be rewritten to point to the api.php file in the root
 		  of the API directory structure.  Typical rewriting rules for Apache are:
 	  </p>
 	  <pre>
@@ -292,5 +351,49 @@ RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
 	  </p>
 	  </div>
 	</div>
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
+<script type="text/javascript" src="jquery.qtip.min.js"></script>
+<script type="text/javascript">
+// Create the tooltips only on document load
+$(document).ready(function()
+{
+	// Make sure to only match links to wikipedia with a rel tag
+	$('a[href*="manager.skysql.com/"][rel]').each(function()
+	{
+		// We make use of the .each() loop to gain access to each element via the "this" keyword...
+		$(this).qtip(
+		{
+			content: {
+				// Set the text to an image HTML string with the correct src URL to the loading image you want to use
+				text: '<img class="throbber" src="images/busy.gif" alt="Loading..." />',
+				ajax: {
+					url: $(this).attr('rel') // Use the rel attribute of each element for the url to load
+				},
+				title: {
+					text: 'SkySQL Manager - ' + $(this).text(), // Give the tooltip a title using each elements text
+					button: true
+				}
+			},
+			position: {
+				at: 'bottom center', // Position the tooltip above the link
+				my: 'top center',
+				viewport: $(window), // Keep the tooltip on-screen at all times
+				effect: false // Disable positioning animation
+			},
+			show: {
+				event: 'click',
+				solo: true // Only show one tooltip at a time
+			},
+			hide: 'unfocus',
+			style: {
+				classes: 'qtip-wiki qtip-light qtip-shadow'
+			}
+		})
+	})
+ 
+	// Make sure it doesn't follow the link when we click it
+	.click(function(event) { event.preventDefault(); });
+});
+</script>
     </body>
 </html>

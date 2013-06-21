@@ -31,42 +31,44 @@ namespace SkySQL\SCDS\API\models;
 use \PDO as PDO;
 
 class Monitor extends EntityModel {
-	protected static $setkeyvalues = false;
+	protected static $setkeyvalues = true;
 	
 	protected static $classname = __CLASS__;
+	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\MonitorManager';
 
 	protected $ordinaryname = 'monitor';
+	protected static $headername = 'Monitor';
 	
-	protected static $updateSQL = 'UPDATE Monitors SET %s WHERE MonitorID = :id';
-	protected static $countSQL = 'SELECT COUNT(*) FROM Monitors WHERE MonitorID = :id';
-	protected static $insertSQL = 'INSERT INTO Monitors (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM Monitors WHERE MonitorID = :id';
-	protected static $selectSQL = 'SELECT %s FROM Monitors WHERE MonitorID = :id';
-	protected static $selectAllSQL = 'SELECT %s FROM Monitors %s';
+	protected static $updateSQL = 'UPDATE Monitor SET %s WHERE Monitor = :monitor';
+	protected static $countSQL = 'SELECT COUNT(*) FROM Monitor WHERE Monitor = :monitor';
+	protected static $insertSQL = 'INSERT INTO Monitor (%s) VALUES (%s)';
+	protected static $deleteSQL = 'DELETE FROM Monitor WHERE Monitor = :monitor';
+	protected static $selectSQL = 'SELECT %s FROM Monitor WHERE Monitor = :monitor';
+	protected static $selectAllSQL = 'SELECT %s FROM Monitor %s';
 	
-	protected static $getAllCTO = array('id');
+	protected static $getAllCTO = array('monitor');
 	
 	protected static $keys = array(
-		'id' => 'MonitorID'
+		'monitor' => array('sqlname' => 'Monitor')
 	);
 
 	protected static $fields = array(
 		'name' => array('sqlname' => 'Name', 'default' => ''),
 		'sql' => array('sqlname' => 'SQL', 'default' => ''),
 		'description' => array('sqlname' => 'Description', 'default' => ''),
-		'type' => array('sqlname' => 'ChartType', 'default' => ''),
+		'charttype' => array('sqlname' => 'ChartType', 'default' => ''),
 		'delta' => array('sqlname' => 'delta', 'default' => 0),
 		'monitortype' => array('sqlname' => 'MonitorType', 'default' => ''),
-		'systemaverage' => array('sqlname' => 'SystemAverage', 'default' => ''),
-		'interval' => array('sqlname' => 'Interval', 'default' => ''),
+		'systemaverage' => array('sqlname' => 'SystemAverage', 'default' => 0),
+		'interval' => array('sqlname' => 'Interval', 'default' => 0),
 		'unit' => array('sqlname' => 'Unit', 'default' => '')		
 	);
 	
-	public function __construct ($monitorid=0) {
-		$this->id = $monitorid;
+	public function __construct ($monitor='') {
+		$this->monitor = $monitor;
 	}
 	
-	protected function validateInsert (&$bind, &$insname, &$insvalue) {
-		
+	protected function insertedKey ($insertid) {
+		return $this->monitor;
 	}
 }

@@ -20,43 +20,36 @@
  * Copyright 2013 (c) SkySQL Ab
  * 
  * Author: Martin Brampton
- * Date: May 2013
+ * Date: June 2013
  * 
- * The NodeStatesManager class caches all Node States and manipulates them
+ * The NodeStateManager class caches all Node States and manipulates them
  * 
  */
 
 namespace SkySQL\SCDS\API\managers;
 
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\models\NodeState;
 
-class NodeStatesManager extends EntityManager {
+class NodeStateManager {
 	protected static $instance = null;
-	protected $nodestates = array();
-	
-	protected function __construct () {
-		foreach (NodeState::getAll() as $nodestate) {
-			$this->nodestates[$nodestate->state] = $nodestate;
-		}
-	}
 	
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
 	}
 	
 	public function getAll () {
-		return array_values($this->nodestates);
+		return API::mergeStates(API::$nodestates);
 	}
 	
 	public function getByState ($state) {
-		return isset($this->nodestates[$state]) ? $this->nodestates[$state] : null;
+		return isset(API::$nodestates[$state]) ? API::$nodestates[$state] : null;
 	}
 	
 	public function getAllLike ($selector) {
-		foreach ($this->nodestates as $nodestate) {
-			if (0 == strncasecmp($selector, $nodestate->description, strlen($selector))) $results[] = $nodestate;
+		foreach (API::$nodestates as $state=>$nodestate) {
+			if (0 == strncasecmp($selector, $nodestate['description'], strlen($selector))) $results[$state] = $nodestate;
 		}
-		return isset($results) ? $results : array();
+		return API::mergeStates((array) @$results);
 	}
-	
 }

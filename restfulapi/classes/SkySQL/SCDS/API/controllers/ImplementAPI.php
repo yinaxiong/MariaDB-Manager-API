@@ -35,12 +35,14 @@ abstract class ImplementAPI {
 	protected $config = array();
 	protected $fieldnames = array();
 	protected $requestmethod = '';
+	protected $accept = '';
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
 		$this->requestor = $requestor;
 		$this->config = $requestor->getConfig();
 		$this->requestmethod = $requestor->getMethod();
+		$this->accept = $requestor->getAccept();
 		$filter = $this->getParam('GET', 'fields');
 		if ($filter) $this->fieldnames = array_map('trim', explode(',', $filter));
 	}
@@ -53,35 +55,18 @@ abstract class ImplementAPI {
 		return $this->requestor->paramEmpty($arrname, $name);
 	}
 	
-	protected function settersAndBinds ($source, $fields) {
-		$bind = $setter = $insname = $insvalue = array();
-		foreach ($fields as $name=>$about) {
-			if ($source AND !$this->paramEmpty($source, $name)) {
-				$input = $this->getParam($source, $name, $about['default']);
-				$insname[] = $about['sqlname'];
-				$insvalue[] = ':'.$name;
-				$bind[':'.$name] = $input;
-				$setter[] = $about['sqlname'].' = :'.$name;
-			}
-		}
-		return array($insname, $insvalue, $setter, $bind);
-	}
-	
-	protected function getSelects ($fields, $selects=array()) {
-		foreach ($fields as $name=>$about) {
-			$selects[] = $about['sqlname'].' AS '.$name;
-		}
-		return implode(',', $selects);
-	}
-	
 	protected function filterResults ($results) {
-		if (count($this->fieldnames)) {
-			foreach ($results as $key=>$value) {
-				$filtered[$key] = is_array($value) ? $this->filterWordsArray($value) : $this->filterWordsObject($value);
-			}
-			return $filtered;
+		foreach ($results as $key=>$value) {
+			$filtered[$key] = $this->filterSingleResult($value);
 		}
-		else return $results;
+		return (array) @$filtered;
+	}
+	
+	protected function filterSingleResult ($result) {
+		if (count($this->fieldnames)) {
+			return is_array($result) ? $this->filterWordsArray($result) : $this->filterWordsObject($result);
+		}
+		else return $result;
 	}
 	
 	protected function isFilterWord ($word) {
@@ -92,17 +77,15 @@ abstract class ImplementAPI {
 		foreach ($this->fieldnames as $word) if (isset($value[$word])) {
 			$hits[$word] = $value[$word];
 		}
-		return empty($hits) ? null : (1 == count($hits)) ? $hits[$word] : $hits;
+		return empty($hits) ? null : $hits;
 	}
 	
 	protected function filterWordsObject ($value) {
-		$selected = 0;
+		$hits = new stdClass();
 		foreach ($this->fieldnames as $word) if (isset($value->$word)) {
-			if (empty($hits)) $hits = new stdClass();
 			$hits->$word = $value->$word;
-			$selected++;
 		}
-		return empty($hits) ? null : $hits;
+		return $hits;
 	}
 	
 	protected function startImmediateTransaction () {

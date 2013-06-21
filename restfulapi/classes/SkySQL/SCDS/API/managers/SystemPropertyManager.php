@@ -31,26 +31,19 @@ namespace SkySQL\SCDS\API\managers;
 use SkySQL\COMMON\AdminDatabase;
 
 class SystemPropertyManager extends PropertyManager {
+	
 	protected $name = 'system';
-	protected $updateSQL = 'UPDATE SystemProperties SET Value = :value WHERE SystemID = :id AND Property = :property';
-	protected $insertSQL = 'INSERT INTO SystemProperties (SystemID, Property, Value) VALUES (:id, :property, :value)';
-	protected $deleteSQL = 'DELETE FROM SystemProperties WHERE SystemID = :id AND Property = :property';
-	protected $deleteAllSQL = 'DELETE FROM SystemProperties WHERE SystemID = :id';
-	protected $selectSQL = 'SELECT Value FROM SystemProperties WHERE SystemID = :id AND Property = :property';
-	protected $selectAllSQL = 'SELECT Property, Value FROM SystemProperties WHERE SystemID = $this->id';
+	
+	protected $updateSQL = 'UPDATE SystemProperties SET Value = :value WHERE SystemID = :key AND Property = :property';
+	protected $insertSQL = 'INSERT INTO SystemProperties (SystemID, Property, Value) VALUES (:key, :property, :value)';
+	protected $deleteSQL = 'DELETE FROM SystemProperties WHERE SystemID = :key AND Property = :property';
+	protected $deleteAllSQL = 'DELETE FROM SystemProperties WHERE SystemID = :key';
+	protected $selectSQL = 'SELECT Value FROM SystemProperties WHERE SystemID = :key AND Property = :property';
+	protected $selectAllSQL = 'SELECT SystemID AS key, Property AS property, Value AS value FROM SystemProperties';
 	
 	protected static $instance = null;
-	protected $properties = array();
-	
-	protected function __construct () {
-		$selectall = AdminDatabase::getInstance()->prepare('SELECT SystemID AS id, Property AS property, Value AS value FROM SystemProperties');
-		$selectall->execute();
-		foreach ($selectall->fetchALL() as $property) {
-			$this->properties[$property->id][$property->property] = $property->value;
-		}
-	}
 	
 	public static function getInstance () {
-		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
+		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 }

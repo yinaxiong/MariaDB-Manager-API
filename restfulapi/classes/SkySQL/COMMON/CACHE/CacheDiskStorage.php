@@ -89,14 +89,15 @@ class CacheDiskStorage extends aliroCacheStorage {
 	}
 
 	public function storeData ($id, $data, $reportSizeError=true) {
+		if (!_SKYSQL_API_CACHE_DIRECTORY) return false;
 		$dir = dirname($id);
 		clearstatcache();
-		if (!file_exists($dir)) mkdir($dir, 0777, true);
+		if (!file_exists($dir)) @mkdir($dir, 0777, true);
 		return $this->checkSize($data, $id, $reportSizeError) AND is_writeable(dirname($id)) ? @file_put_contents($id.'.php', _BLOCK_PHP_EXECUTION_HEADER.$data, LOCK_EX) : false;
 	}
 
 	public function getData ($id, $time_limit=0) {
-		if (file_exists($id.'.php') AND ($string = @file_get_contents($id.'.php'))) {
+		if (_SKYSQL_API_CACHE_DIRECTORY AND file_exists($id.'.php') AND ($string = @file_get_contents($id.'.php'))) {
 			$dataparts = explode(_BLOCK_PHP_EXECUTION_HEADER, $string);
 			return $this->extractObject (end($dataparts), $time_limit);
 		}
@@ -104,7 +105,7 @@ class CacheDiskStorage extends aliroCacheStorage {
 	}
 
 	public function delete ($id) {
-		@unlink($id.'.php');
+		if (_SKYSQL_API_CACHE_DIRECTORY) @unlink($id.'.php');
 	}
 
 	public function deleteAll () {

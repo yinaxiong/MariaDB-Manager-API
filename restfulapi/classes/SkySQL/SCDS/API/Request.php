@@ -20,7 +20,7 @@
  * Copyright 2013 (c) SkySQL Ab
  * 
  * Author: Martin Brampton
- * Date: February 2013
+ * Date: June 2013
  * 
  * The Request class is the main controller for the API.  It is an abstract
  * class, and has one final subclass for each method of calling the API.
@@ -44,6 +44,7 @@ namespace SkySQL\SCDS\API;
 use \PDOException;
 use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
+use SkySQL\SCDS\API\controllers\Metadata;
 
 class aliroProfiler {
     private $start=0;
@@ -70,18 +71,20 @@ class aliroProfiler {
 abstract class Request {
 	private static $instance = null;
 	
+	public $warnings = array();
+	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
 		array('class' => 'Applications', 'method' => 'getApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
 		array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
 		array('class' => 'Applications', 'method' => 'deleteApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
-		array('class' => 'Systems', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
-		array('class' => 'Systems', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
-		array('class' => 'Systems', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
+		array('class' => 'SystemProperties', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
+		array('class' => 'SystemProperties', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
+		array('class' => 'SystemProperties', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
 		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
-		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => '/backupstate', 'http' => 'GET'),
+		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => 'backupstate', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/latest', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
@@ -97,8 +100,8 @@ abstract class Request {
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
-		array('class' => 'SystemUsers', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT'),
-		array('class' => 'SystemUsers', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE'),
+		array('class' => 'UserProperties', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT'),
+		array('class' => 'UserProperties', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/.*', 'http' => 'GET'),
 		array('class' => 'SystemUsers', 'method' => 'putUser', 'uri' => 'user/.*', 'http' => 'PUT'),
 		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
@@ -112,18 +115,18 @@ abstract class Request {
 		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/(start|stop|restart|isolate|recover|promote|backup|restore)', 'http' => 'POST'),
+		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/.+', 'http' => 'POST'),
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'updateMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'Monitors', 'method' => 'createMonitorClass', 'uri' => 'monitorclass', 'http' => 'POST'),
-		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'apilist', 'http' => 'GET'),
-		
+		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/.+', 'http' => 'PUT'),
+		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+', 'http' => 'DELETE'),
+		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET'),
+		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/[A-Za-z]+', 'http' => 'GET'),
+		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET'),
 	);
 	
 	protected static $uriTablePrepared = false;
@@ -200,15 +203,30 @@ abstract class Request {
 			$this->apibase = array_keys($this->apibase);
 			self::$uriTablePrepared = true;
 		}
-        $this->config = parse_ini_file($this->inifile, true);
-		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim($this->config['cache']['directory'],'/').'/');
-		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
-		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
+        $this->config = $this->readAndCheckConfig();
+		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
+		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', @$this->config['cache']['timelimit']);
+		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', @$this->config['cache']['sizelimit']);
 		$this->getHeaders();
 		$this->uri = $this->getURI();
 		$this->getSuffix();
 		$this->handleAccept();
 		if ('true' == $this->getParam($this->requestmethod, 'suppress_response_codes')) $this->suppress = true;
+	}
+	
+	protected function readAndCheckConfig () {
+		if (!is_readable(_API_INI_FILE_LOCATION)) {
+			$error = sprintf('No readable API configuration file at %s', _API_INI_FILE_LOCATION);
+			$this->sendErrorResponse($error,500);
+		}
+        $config = parse_ini_file($this->inifile, true);
+		if (empty($config['logging']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a logging directory',_API_INI_FILE_LOCATION);
+		elseif (!is_writeable($config['logging']['directory'])) $this->warnings[] = sprintf('Logging directory %s is not writeable, cannot write log, please check existence, permissions, SELinux',$config['logging']['directory']);
+		if (empty($config['cache']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a caching directory',_API_INI_FILE_LOCATION);
+		elseif (!is_writeable($config['cache']['directory'])) $this->warnings[] = sprintf('Caching directory %s is not writeable, cannot write cache, please check existence, permissions, SELinux',$config['cache']['directory']);
+		if (empty($config['cache']['timelimit'])) $config['cache']['timelimit'] = 3600;
+		if (empty($config['cache']['sizelimit'])) $config['cache']['sizelimit'] = 500000;
+		return $config;
 	}
 	
 	protected function getURI () {
@@ -255,6 +273,10 @@ abstract class Request {
 	public function getMethod () {
 		return $this->requestmethod;
 	}
+	
+	public function getAccept () {
+		return $this->accept;
+	}
 
 	public function doControl () {
 		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
@@ -263,15 +285,18 @@ abstract class Request {
 			if (count($_GET)) $this->log(print_r($_GET,true));
 			if (!empty($this->putdata)) $this->log(print_r($this->putdata,true));
 		}
-		if ('apilist' != $this->uri) $this->checkSecurity();
 		$uriparts = explode('/', $this->uri);
+		if ('metadata' != $uriparts[0]) $this->checkSecurity();
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
-			$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
-			if (!class_exists($class)) {
-				$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
+			if ('Request' == $link['class']) $object = $this;
+			else {
+				$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
+				if (!class_exists($class)) {
+					$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
+				}
+				$object = new $class($this);
 			}
-			$object = 'Request' == $link['class'] ? $this : new $class($this);
 			$method = $link['method'];
 			if (!method_exists($object, $method)) {
 				$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 404);
@@ -288,14 +313,8 @@ abstract class Request {
 	}
 	
 	protected function listAPI () {
-		foreach (self::$uriTable as $entry) {
-			$result[] = array (
-				'http' => $entry['http'],
-				'uri' => $entry['uri'],
-				'method' => $entry['method']
-			);
-		}
-		$this->sendResponse($result);
+		$controller = new Metadata($this);
+		$controller->listAPI(self::$uriTable);
 	}
 	
 	protected function checkSecurity () {
@@ -344,7 +363,7 @@ abstract class Request {
 	
 	public function getAllParamNames ($arrname) {
 		return array_diff(array_keys($this->getArrayFromName($arrname)),
-			array('fields','limit','offset','_method', '_accept', '_rfcdate', '_authorization'));
+			array('fields','limit','offset','suppress_response_codes','_method', '_accept', '_rfcdate', '_authorization'));
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -385,7 +404,7 @@ abstract class Request {
 		elseif ($this->requestviapost) $arr =& $_POST;
 		elseif ('GET' == $arrname) $arr =& $_GET;
 		elseif ('POST' == $arrname) $arr =& $_POST;
-		elseif ('PUT' == $arrname) $arr =& $this->putdata;
+		elseif ('PUT' == $arrname OR 'DELETE' == $arrname) $arr =& $this->putdata;
 		if (is_array(@$arr)) {
 			if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
 				if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
@@ -397,6 +416,10 @@ abstract class Request {
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
 		if ($this->suppress) $body['httpcode'] = $status;
+		if (count((array) $this->warnings)) {
+			$body['warnings'] = (array) $this->warnings;
+			foreach ((array) $this->warnings as $warning) $this->log($warning."\n");
+		}
 		$this->sendHeaders($status);
 		echo 'application/json' == $this->accept ? json_encode($body) : print_r($body, true);
 		exit;
@@ -410,28 +433,37 @@ abstract class Request {
 			$errortext = implode('<br />', (array) $errors);
 			if (empty($errortext)) $errortext = '*none*';
 			$text = "<p>Error(s) accompanying return code $status $statusname:<br />$errortext</p>";
+			if (count((array) $this->warnings)) {
+				$text .= '<p>Warning(s) noted:<br />'.implode('<br />', (array) $this->warnings);
+				foreach ((array) $this->warnings as $warning) $this->log($warning."\n");
+			}
 		}
 		$recorder = ErrorRecorder::getInstance();
 		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
 		if ('application/json' == $this->accept) {
 			$body['errors'] = (array) $errors;
 			if ($this->suppress) $body['httpcode'] = $status;
+			if (count($this->warnings)) {
+				$body['warnings'] = (array) $this->warnings;
+				foreach ((array) $this->warnings as $warning) $this->log($warning."\n");
+			}
 			echo json_encode($body);
 		}
 		else echo $text;
 		exit;
 	}
 	
-	protected function sendHeaders ($status) {
+	public function sendHeaders ($status) {
 		$this->log("Time to handle request {$this->timer->mark('seconds')}\n");
 		$this->log("HTTP Response: $status\n");
 		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '')));
 		header('Content-type: '.$this->accept);
 		header('Cache-Control: no-store');
+		header('X-SkySQL-API-Version: '._API_VERSION_NUMBER);
 	}
 	
 	public function log ($data) {
-		if (is_writeable($this->config['logging']['directory'])) {
+		if (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) {
 			//$phpuser = posix_getpwuid(posix_geteuid());
 			//$phpusername = isset($phpuser['name']) ? '.'.$phpuser['name'] : '';
 			$logfile = $this->config['logging']['directory']."/api.log";

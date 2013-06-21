@@ -22,8 +22,7 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * The Systems class within the API implements calls to get system data or
- * system properties.
+ * The Systems class within the API implements calls to handle system data
  * 
  */
 
@@ -37,37 +36,30 @@ use SkySQL\SCDS\API\models\System;
 class Systems extends SystemNodeCommon {
 	protected $backups_query = null;
 	
-	protected static $fields = array(
-		'name' => array('sqlname' => 'SystemName', 'default' => ''),
-		'startDate' => array('sqlname' => 'InitialStart', 'default' => ''),
-		'lastAccess' => array('sqlname' => 'LastAccess', 'default' => ''),
-		'state' => array('sqlname' => 'State', 'default' => 0)
-	);
-
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		$this->backups_query = $this->db->prepare('SELECT MAX(Started) FROM Backup WHERE SystemID = :systemid');
+		System::checkLegal();
 	}
 	
 	public function getAllData () {
 		foreach (SystemManager::getInstance()->getAll() as $system) {
 			$results[] = $this->retrieveOneSystem($system);
 		}
-        $this->sendResponse(array("system" => $this->filterResults((array) @$results)));
+        $this->sendResponse(array("systems" => $this->filterResults((array) @$results)));
 	}
 
 	public function getSystemData ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$data = SystemManager::getInstance()->getByID($this->systemid);
-		if ($data) $this->sendResponse(array('system' => $this->filterResults(array($this->retrieveOneSystem($data)))));
+		if ($data) $this->sendResponse(array('system' => $this->filterSingleResult($this->retrieveOneSystem($data))));
 		else $this->sendErrorResponse("No system with ID of $this->systemid was found", 404);
 	}
 	
 	public function putSystem ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		if (!$this->systemid) $this->sendErrorResponse('Creating a system with ID of zero is not permitted', 400);
-		$system = new System($this->systemid);
-		$system->save();
+		SystemManager::getInstance()->putSystem($this->systemid);
 	}
 	
 	public function deleteSystem ($uriparts) {
@@ -75,34 +67,14 @@ class Systems extends SystemNodeCommon {
 		SystemManager::getInstance()->deleteSystem($this->systemid);
 	}
 	
-	public function setSystemProperty ($uriparts) {
-		$this->systemid = (int) $uriparts[1];
-		$property = $uriparts[3];
-		$value = $this->getParam('PUT', 'value');
-		SystemPropertyManager::getInstance()->setProperty($this->systemid, $property, $value);
-	}
-	
-	public function deleteSystemProperty ($uriparts) {
-		$this->systemid = (int) $uriparts[1];
-		$property = urldecode($uriparts[3]);
-		SystemPropertyManager::getInstance()->deleteProperty($this->systemid, $property);
-	}
-	
-	public function getSystemProperty ($uriparts) {
-		$this->systemid = (int) $uriparts[1];
-		$property = urldecode($uriparts[3]);
-		return SystemPropertyManager::getInstance()->getProperty($this->systemid, $property);
-	}
-	
 	protected function retrieveOneSystem ($system) {
-		$this->systemid = (int) $system->system;
+		$this->systemid = (int) $system->systemid;
 		$system->nodes = NodeManager::getInstance()->getAllIDsForSystem($this->systemid);
-		$system->lastBackup = $this->isFilterWord('lastBackup') ? $this->retrieveLastBackup() : null;
-		$system->properties = $this->isFilterWord('properties') ? $this->retrieveProperties($this->systemid) : null;
-		$system->commands = ($this->isFilterWord('commands') AND $system->state) ? $this->getCommands($system->state) : null;
-		$system->connections = $this->isFilterWord('connections') ? $this->getConnections(0) : null;
-		$system->packets = $this->isFilterWord('packets') ? $this->getPackets(0) : null;
-		$system->health = $this->isFilterWord('health') ? $this->getHealth(0) : null;
+		$system->lastbackup = $this->isFilterWord('lastBackup') ? $this->retrieveLastBackup() : null;
+		$system->properties = $this->isFilterWord('properties') ? SystemPropertyManager::getInstance()->getAllProperties($this->systemid) : null;
+		// Not sure if there are any system commands
+		// $system->commands = ($this->isFilterWord('commands') AND $system->state) ? $this->getCommands($system->state) : null;
+		$system->monitorlatest = $this->getMonitorData(0);
 		return $system;
 	}
 	
@@ -110,9 +82,5 @@ class Systems extends SystemNodeCommon {
 		// Can only be exactly one result for the latest backup
 		$this->backups_query->execute(array(':systemid' => $this->systemid));
 		return $this->backups_query->fetchColumn();
-	}
-	
-	protected function retrieveProperties () {
-		return SystemPropertyManager::getInstance()->getAllProperties($this->systemid);
 	}
 }

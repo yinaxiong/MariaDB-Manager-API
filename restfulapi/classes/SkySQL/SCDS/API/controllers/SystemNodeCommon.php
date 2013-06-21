@@ -29,7 +29,9 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use \PDO as PDO;
+use PDO;
+use stdClass;
+use SkySQL\SCDS\API\managers\MonitorManager;
 
 abstract class SystemNodeCommon extends ImplementAPI {
 	protected $monitorquery = null;
@@ -37,32 +39,25 @@ abstract class SystemNodeCommon extends ImplementAPI {
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
-		$this->monitorquery = $this->db->prepare('SELECT Value, MAX(Stamp) FROM MonitorData 
-			WHERE SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid');
+		$this->monitorquery = $this->db->prepare('SELECT Monitor AS monitor, Value AS value, MAX(Stamp) FROM MonitorData 
+			WHERE SystemID = :systemid AND NodeID = :nodeid GROUP BY Monitor');
 	}
 
-	protected function getConnections ($nodeid) {
-		return $this->getMonitorData($nodeid, 1);
-	}
-	
-	protected function getPackets ($nodeid) {
-		return $this->getMonitorData($nodeid, 2);
-	}
-	
-	protected function getHealth ($nodeid) {
-		return $this->getMonitorData($nodeid, 3);
-	}
-	
-	protected function getMonitorData ($nodeid, $monitorid) {
+	protected function getMonitorData ($nodeid) {
+		$monitors = MonitorManager::getInstance()->getAll();
+		$monitorlatest = new stdClass;
+		foreach ($monitors as $monitor) {
+			$property = $monitor->monitor;
+			$monitorlatest->$property = null;
+		}
 		$this->monitorquery->execute(
-			array(':systemid' => $this->systemid, ':monitorid' => $monitorid, ':nodeid' => $nodeid)
+			array(':systemid' => $this->systemid, ':nodeid' => $nodeid)
 		);
-		return $this->monitorquery->fetchAll(PDO::FETCH_COLUMN);
-	}
-	
-	protected function getCommands ($state) {
-		$query = $this->db->prepare('SELECT CommandID FROM ValidCommands WHERE State = :state');
-		$query->execute(array(':state' => $state));
-		return $query->fetchAll(PDO::FETCH_COLUMN);
+		$latest = $this->monitorquery->fetchAll();
+		foreach ($latest as $data) {
+			$property = $data->monitor;
+			$monitorlatest->$property = $data->value;
+		}
+		return $monitorlatest;
 	}
 }

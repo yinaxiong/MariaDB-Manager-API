@@ -43,6 +43,9 @@ use \PDOException;
 use \Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
+define ('_API_VERSION_NUMBER','0.8');
+define ('_API_INI_FILE_LOCATION', '/etc/scdsapi/api.ini');
+
 if (!function_exists('apache_request_headers')) require ('apache_request_headers.php');
 
 // Translation function - yet to be implemented
@@ -56,54 +59,57 @@ class API {
 	
 	/*
 	public static $backupstates = array(
-		1 => array('description' => 'Scheduled', 'icon' => 'scheduled'),
-		2 => array('description' => 'Running', 'icon' => 'running'),
-		3 => array('description' => 'Paused', 'icon' => 'paused'),
-		4 => array('description' => 'Stopped', 'icon' => 'stopped'),
-		5 => array('description' => 'Done', 'icon' => 'done'),
-		6 => array('description' => 'Error', 'icon' => 'error')
+		'scheduled' => array('description' => 'Scheduled', 'icon' => 'scheduled'),
+		'running' => array('description' => 'Running', 'icon' => 'running'),
+		'paused' => array('description' => 'Paused', 'icon' => 'paused'),
+		'stopped' => array('description' => 'Stopped', 'icon' => 'stopped'),
+		'done' => array('description' => 'Done', 'icon' => 'done'),
+		'error' => array('description' => 'Error', 'icon' => 'error')
 	);
 	*/
 	
 	public static $backupstates = array(
-		1 => array('description' => 'Scheduled'),
-		2 => array('description' => 'Running'),
-		3 => array('description' => 'Paused'),
-		4 => array('description' => 'Stopped'),
-		5 => array('description' => 'Done'),
-		6 => array('description' => 'Error')
+		'scheduled' => array('description' => 'Scheduled'),
+		'running' => array('description' => 'Running'),
+		'paused' => array('description' => 'Paused'),
+		'stopped' => array('description' => 'Stopped'),
+		'done' => array('description' => 'Done'),
+		'error' => array('description' => 'Error')
 	);
 	
 	public static $commandstates = array(
-		1 => array('description' => 'Scheduled', 'icon' => 'scheduled'),
-		2 => array('description' => 'Running', 'icon' => 'running'),
-		3 => array('description' => 'Paused', 'icon' => 'paused'),
-		4 => array('description' => 'Stopped', 'icon' => 'stopped'),
-		5 => array('description' => 'Done', 'icon' => 'done'),
-		6 => array('description' => 'Error', 'icon' => 'error')
+		'scheduled' => array('description' => 'Scheduled', 'icon' => 'scheduled'),
+		'running' => array('description' => 'Running', 'icon' => 'running'),
+		'paused' => array('description' => 'Paused', 'icon' => 'paused'),
+		'stopped' => array('description' => 'Stopped', 'icon' => 'stopped'),
+		'done' => array('description' => 'Done', 'icon' => 'done'),
+		'error' => array('description' => 'Error', 'icon' => 'error')
 	);
 	
 	public static $nodestates = array(
-		1 => array('description' => 'Master', 'icon' => 'master'),
-		2 => array('description' => 'Slave Online', 'icon' => 'slave'),
-		3 => array('description' => 'Slave Offline', 'icon' => 'offline'),
-		4 => array('description' => 'Slave Stopping', 'icon' => 'stopping'),
-		5 => array('description' => 'Slave Stopped', 'icon' => 'stopped'),
-		6 => array('description' => 'Slave Isolating', 'icon' => 'isolating'),
-		7 => array('description' => 'Slave Recovering', 'icon' => 'recovering'),
-		8 => array('description' => 'Slave Restoring Backup', 'icon' => 'restoring'),
-		9 => array('description' => 'Slave Backing Up', 'icon' => 'backingup'),
-		10 => array('description' => 'Slave Starting', 'icon' => 'starting'),
-		11 => array('description' => 'Slave Promoting', 'icon' => 'promoting'),
-		12 => array('description' => 'Slave Synchronizing', 'icon' => 'synchronizing'),
-		13 => array('description' => 'Slave Error', 'icon' => 'error'),
-		14 => array('description' => 'System Running', 'icon' => 'system'),
-		15 => array('description' => 'System Stopping', 'icon' => 'sys_stopping'),
-		16 => array('description' => 'System Stopped', 'icon' => 'sys_stopped'),
-		17 => array('description' => 'System Starting', 'icon' => 'sys_starting'),
-		18 => array('description' => 'Standalone Database', 'icon' => 'node')
+		'master' => array('stateid' => 1, 'description' => 'Master', 'icon' => 'master'),
+		'slave' => array('stateid' => 2, 'description' => 'Slave Online', 'icon' => 'slave'),
+		'offline' => array('stateid' => 3, 'description' => 'Slave Offline', 'icon' => 'offline'),
+		'stopping' => array('stateid' => 4, 'description' => 'Slave Stopping', 'icon' => 'stopping'),
+		'stopped' => array('stateid' => 5, 'description' => 'Slave Stopped', 'icon' => 'stopped'),
+		'isolating' => array('stateid' => 6, 'description' => 'Slave Isolating', 'icon' => 'isolating'),
+		'recovering' => array('stateid' => 7, 'description' => 'Slave Recovering', 'icon' => 'recovering'),
+		'restoring' => array('stateid' => 8, 'description' => 'Slave Restoring Backup', 'icon' => 'restoring'),
+		'backingup' => array('stateid' => 9, 'description' => 'Slave Backing Up', 'icon' => 'backingup'),
+		'starting' => array('stateid' => 10, 'description' => 'Slave Starting', 'icon' => 'starting'),
+		'promoting' => array('stateid' => 11, 'description' => 'Slave Promoting', 'icon' => 'promoting'),
+		'synchronizing' => array('stateid' => 12, 'description' => 'Slave Synchronizing', 'icon' => 'synchronizing'),
+		'error' => array('stateid' => 13, 'description' => 'Slave Error', 'icon' => 'error'),
+		'standalone' => array('stateid' => 18, 'description' => 'Standalone Database', 'icon' => 'node')
 	);
-	
+
+	public static $systemstates = array(
+		'running' => array('description' => 'System Running', 'icon' => 'system'),
+		'stopping' => array('description' => 'System Stopping', 'icon' => 'sys_stopping'),
+		'stopped' => array('description' => 'System Stopped', 'icon' => 'sys_stopped'),
+		'starting' => array('description' => 'System Starting', 'icon' => 'sys_starting')
+	);
+
 	public static $commandsteps = array(
 		'start' => array('icon' => 'starting', 'description' => 'Start node up, start replication'),
 		'stop' => array('icon' => 'stopping', 'description' => 'Stop replication, shut node down'),
@@ -246,3 +252,9 @@ class API {
 		return $html;
 	}
 }
+
+// Remove error settings after testing
+ini_set('display_errors', 1);
+error_reporting(-1);
+
+API::getInstance()->startup(true);

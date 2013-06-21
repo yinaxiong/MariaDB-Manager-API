@@ -31,11 +31,22 @@ namespace SkySQL\SCDS\API\managers;
 
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\Request;
+use stdClass;
 
 abstract class PropertyManager extends EntityManager {
+	
+	protected $properties = array();
 
-	public function setProperty ($id, $property, $value) {
-		$bind = $this->makeBind($id, $property);
+	protected function __construct () {
+		$selectall = AdminDatabase::getInstance()->prepare($this->selectAllSQL);
+		$selectall->execute();
+		foreach ($selectall->fetchALL() as $property) {
+			$this->properties[$property->key][$property->property] = $property->value;
+		}
+	}
+	
+	public function setProperty ($key, $property, $value) {
+		$bind = $this->makeBind($key, $property);
 		$bind[':value'] = $value;
 		$database = AdminDatabase::getInstance();
 		$database->startImmediateTransaction();
@@ -55,44 +66,46 @@ abstract class PropertyManager extends EntityManager {
 	
 	protected function finalise () {
 		AdminDatabase::getInstance()->commitTransaction();
-		$this->clearCache();
+		$this->clearCache(true);
 	}
 	
-	public function deleteProperty ($id, $property) {
+	public function deleteProperty ($key, $property) {
 		$delete = AdminDatabase::getInstance()->prepare($this->deleteSQL);
-		$delete->execute($this->makeBind($id, $property));
+		$delete->execute($this->makeBind($key, $property));
 		$counter = $delete->rowCount();
 		$request = Request::getInstance();
 		if ($counter) {
-			$this->clearCache();
+			$this->clearCache(true);
 			$request->sendResponse(array('deletecount' => $counter));
 		}
 		else $request->sendErrorResponse("Delete $this->name property did not match any $this->name property", 404);
 	}
 	
-	public function getProperty ($id, $property) {
+	public function getProperty ($key, $property) {
 		$request = Request::getInstance();
-		if (isset($this->properties[$id][$property])) {
-			$request->sendResponse(array("{$this->name}property" => array($property => $this->properties[$id][$property])));
+		if (isset($this->properties[$key][$property])) {
+			$request->sendResponse(array("{$this->name}property" => array($property => $this->properties[$key][$property])));
 		}
-		else $request->sendErrorResponse("Unable to find $this->name property called $property for $this->name $id", 404);
+		else $request->sendErrorResponse("Unable to find $this->name property called $property for $this->name $key", 404);
 	}
 	
-	public function getAllProperties ($id) {
-		foreach ((array) @$this->properties[$id] as $property=>$value) {
-			$results[$property] = $value;
+	public function getAllProperties ($key) {
+		$result = new stdClass;
+		foreach ((array) @$this->properties[$key] as $property=>$value) {
+			$result->$property = $value;
 		}
-		return isset($results) ? $results : null;
+		return $result;
 	}
 	
-	public function deleteAllProperties ($id) {
+	public function deleteAllProperties ($key) {
 		$delete = AdminDatabase::getInstance()->prepare($this->deleteAllSQL);
-		$delete->execute(array(':id' => $id));
+		$delete->execute(array(':key' => $key));
+		$this->clearCache(true);
 	}
 	
-	protected function makeBind ($id, $property) {
+	protected function makeBind ($key, $property) {
 		return array(
-			':id' => $id,
+			':key' => $key,
 			':property' => $property
 		);
 	}

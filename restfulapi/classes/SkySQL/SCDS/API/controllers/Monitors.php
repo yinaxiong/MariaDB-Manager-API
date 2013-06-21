@@ -29,6 +29,7 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\managers\MonitorManager;
+use SkySQL\SCDS\API\models\Monitor;
 use \PDO;
 
 final class Monitors extends ImplementAPI {
@@ -41,25 +42,23 @@ final class Monitors extends ImplementAPI {
 	
 	public function getMonitorClasses ($uriparts) {
 		$manager = MonitorManager::getInstance();
-		if (empty($uriparts[1])) $monitors = $manager->getAll();
-		else {
-			// URI will be analysed by the manager
-			$monitor = 	preg_match('/[0-9]+/', $uriparts[1]) ? $manager->getByID((int) $uriparts[1]) : $manager->getByName(urldecode($uriparts[1]));
-			$monitors = $monitor ? array($monitor) : array();
+		if (empty($uriparts[1])) {
+			$monitors = $manager->getAll();
+			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
 		}
-        $this->sendResponse(array('monitorclasses' => $this->filterResults((array) $monitors)));
-	}
+		else {
+			$monitorkey = urldecode($uriparts[1]);
+			$monitor = 	$manager->getByID($monitorkey);
+			$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
+		}
+    }
 	
-	public function createMonitorClass () {
-		MonitorManager::getInstance()->createMonitor();
-	}
-	
-	public function updateMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->updateMonitor((int) $uriparts[1]);
+	public function putMonitorClass ($uriparts) {
+		MonitorManager::getInstance()->putMonitor(urldecode($uriparts[1]));
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->deleteMonitor((int) $uriparts[1]);
+		MonitorManager::getInstance()->deleteMonitor(urldecode($uriparts[1]));
 	}
 	
 	public function storeMonitorData ($uriparts) {

@@ -36,12 +36,12 @@ class NodeManager extends EntityManager {
 	
 	protected function __construct () {
 		foreach (Node::getAll() as $node) {
-			$this->nodes[$node->system][$node->id] = $node;
+			$this->nodes[$node->systemid][$node->nodeid] = $node;
 		}
 	}
 	
 	public static function getInstance () {
-		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
+		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
 	public function getByID ($system, $id) {
@@ -52,8 +52,15 @@ class NodeManager extends EntityManager {
 		return array_values($this->nodes);
 	}
 	
-	public function getAllForSystem ($system) {
-		return isset($this->nodes[$system]) ? array_values($this->nodes[$system]) : array();
+	public function getAllForSystem ($system, $state=0) {
+		if (isset($this->nodes[$system])) {
+			if ($state) {
+				foreach ($this->nodes[$system] as $node) if ($state == $node->state) $results[] = $node;
+				if (isset($results)) return $results;
+			}
+			else return array_values($this->nodes[$system]);
+		}
+		return array();
 	}
 	
 	public function getAllIDsForSystem ($system) {
@@ -62,23 +69,20 @@ class NodeManager extends EntityManager {
 	}
 	
 	protected function extractID ($node) {
-		return $node->id;
+		return $node->nodeid;
 	}
 	
 	public function createNode () {
-		$this->clearCache();
 		$node = new Node(null);
 		$node->insert();
 	}
 	
 	public function updateNode ($system, $id) {
-		$this->clearCache();
 		$node = new Node($system,$id);
 		$node->update();
 	}
 	
 	public function saveNode ($system, $id) {
-		$this->clearCache();
 		$node = new Node($system,$id);
 		$node->save();
 	}
@@ -86,7 +90,6 @@ class NodeManager extends EntityManager {
 	public function deleteNode ($system, $id) {
 		$node = new Node($system,$id);
 		if (isset($this->nodes[$system][$id])) unset($this->nodes[$system][$id]);
-		$this->clearCache();
 		$node->delete();
 	}
 }

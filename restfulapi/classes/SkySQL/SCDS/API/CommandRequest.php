@@ -70,7 +70,7 @@ final class CommandRequest extends Request {
 		// Do nothing when called from command line or script
 	}
 
-	protected function sendHeaders ($status) {
+	public function sendHeaders ($status) {
 		// Send no headers when called from command line or script
 		return HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 	}

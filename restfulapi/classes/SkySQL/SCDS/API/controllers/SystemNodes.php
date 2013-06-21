@@ -29,9 +29,10 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use PDO;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemManager;
-use SkySQL\SCDS\API\managers\NodeStatesManager;
+use SkySQL\SCDS\API\managers\NodeStateManager;
 use SkySQL\SCDS\API\models\Node;
 
 class SystemNodes extends SystemNodeCommon {
@@ -43,23 +44,27 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	public function nodeStates ($uriparts) {
-		$manager = NodeStatesManager::getInstance();
-		if (empty($uriparts[1])) $nodestates = $manager->getAll();
-		else {
-			if (preg_match('/[0-9]+/', $uriparts[1])) {
-				$nodestate = $manager->getByState((int) $uriparts[1]);
-				$nodestates = $nodestate ? array($nodestate) : array();
-			}
-			else $nodestates = $manager->getAllLike(urldecode($uriparts[1]));
+		$manager = NodeStateManager::getInstance();
+		if (empty($uriparts[1])) {
+			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAll())));
 		}
-		$this->sendResponse(array('nodestates' => $this->filterResults($nodestates)));
+		else {
+			$state = urldecode($uriparts[1]);
+			$nodestate = $manager->getByState($state);
+			if ($nodestate) {
+				$nodestate = array_merge(array('state' => $state), $nodestate);
+				$this->sendResponse(array('nodestate' => $this->filterSingleResult($nodestate)));
+			}
+			else $this->sendErrorResponse("No node state $state", 404);
+		}
 	}
 	
 	public function getSystemAllNodes ($uriparts) {
 		$this->systemid = $uriparts[1];
-		$nodes = NodeManager::getInstance()->getAllForSystem($this->systemid);
-		$this->extraNodeData($nodes);
-		$this->sendResponse(array('node' => $this->filterResults($nodes)));
+		if (!$this->validateSystem()) $this->sendErrorResponse("No system with ID $this->systemid", 404);
+		$nodes = NodeManager::getInstance()->getAllForSystem($this->systemid, $this->getParam('GET', 'state'));
+		foreach ($nodes as $node) $this->extraNodeData($node);
+		$this->sendResponse(array('nodes' => $this->filterResults($nodes)));
 	}
 	
 	public function getSystemNode ($uriparts) {
@@ -67,23 +72,18 @@ class SystemNodes extends SystemNodeCommon {
 		$this->nodeid = $uriparts[3];
 		$node = NodeManager::getInstance()->getByID($this->systemid, $this->nodeid);
 		if ($node) {
-			$nodes = array($node);
-			$this->extraNodeData($nodes);
-			$this->sendResponse(array('node' => $this->filterResults($nodes)));
+			$this->extraNodeData($node);
+			$this->sendResponse(array('node' => $this->filterSingleResult($node)));
 		}
-		else $this->sendErrorResponse('No matching nodes', 404);
+		else $this->sendErrorResponse("No matching node for system ID $this->systemid and node ID $this->nodeid", 404);
 	}
 	
-	protected function extraNodeData (&$nodes) {
-		foreach ($nodes as &$node) {
-			$node->commands = ($this->isFilterWord('commands') AND $node->state) ? $this->getCommands($node->state) : null;
-			$node->connections = $this->isFilterWord('connections') ? $this->getConnections($node->id) : null;
-			$node->packets = $this->isFilterWord('packets') ? $this->getPackets($node->id) : null;
-			$node->health = $this->isFilterWord('health') ? $this->getHealth($node->id) : null;
-			list($node->task, $node->command) = $this->getCommand($node->id);
-		}
+	protected function extraNodeData (&$node) {
+		$node->commands = ($this->isFilterWord('commands') AND $node->state) ? $this->getCommands($node->state) : null;
+		$node->monitorlatest = $this->getMonitorData($node->nodeid);
+		list($node->taskid, $node->command) = $this->getCommand($node->nodeid);
 	}
-	
+
 	public function putSystemNode ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) @$uriparts[3];
@@ -103,10 +103,16 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function getCommand ($nodeid) {
-		$query = $this->db->prepare('SELECT TaskID, CommandID FROM CommandExecution 
+		$query = $this->db->prepare('SELECT TaskID, Command FROM Task 
 			WHERE SystemID = :systemid AND NodeID = :nodeid AND State = 2');
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $nodeid));
 		$row = $query->fetch();
-		return $row ? array($row->TaskID, $row->CommandID) : array(null, null);
+		return $row ? array($row->TaskID, $row->Command) : array(null, null);
+	}
+	
+	protected function getCommands ($state) {
+		$query = $this->db->prepare('SELECT Command FROM NodeCommands WHERE State = :state');
+		$query->execute(array(':state' => $state));
+		return $query->fetchAll(PDO::FETCH_COLUMN);
 	}
 }

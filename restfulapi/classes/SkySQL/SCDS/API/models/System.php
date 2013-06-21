@@ -28,61 +28,65 @@
 
 namespace SkySQL\SCDS\API\models;
 
+use SkySQL\SCDS\API\managers\SystemManager;
+
 class System extends EntityModel {
 	protected static $setkeyvalues = true;
 	
 	protected static $classname = __CLASS__;
+	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\SystemManager';
 
 	protected $ordinaryname = 'system';
+	protected static $headername = 'System';
 	
-	protected static $updateSQL = 'UPDATE System SET %s WHERE SystemID = :system';
-	protected static $countSQL = 'SELECT COUNT(*) FROM System WHERE SystemID = :system';
+	protected static $updateSQL = 'UPDATE System SET %s WHERE SystemID = :systemid';
+	protected static $countSQL = 'SELECT COUNT(*) FROM System WHERE SystemID = :systemid';
 	protected static $insertSQL = 'INSERT INTO System (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM System WHERE SystemID = :system';
-	protected static $selectSQL = 'SELECT %s FROM System WHERE SystemID = :system';
+	protected static $deleteSQL = 'DELETE FROM System WHERE SystemID = :systemid';
+	protected static $selectSQL = 'SELECT %s FROM System WHERE SystemID = :systemid';
 	protected static $selectAllSQL = 'SELECT %s FROM System %s';
 	
-	protected static $getAllCTO = array('system');
+	protected static $getAllCTO = array('systemid');
 	
 	protected static $keys = array(
-		'system' => 'SystemID'
+		'systemid' => array('sqlname' => 'SystemID', 'type' => 'int')
 	);
 
 	protected static $fields = array(
-		'name' => array('sqlname' => 'SystemName', 'default' => ''),
-		'startDate' => array('sqlname' => 'InitialStart', 'default' => ''),
-		'lastAccess' => array('sqlname' => 'LastAccess', 'default' => ''),
-		'state' => array('sqlname' => 'State', 'default' => '')
+		'name' => array('sqlname' => 'SystemName', 'desc' => 'Name of the system', 'default' => ''),
+		'started' => array('sqlname' => 'InitialStart', 'desc' => 'Date the manager system was set up', 'default' => '', 'validate' => 'datetime'),
+		'lastaccess' => array('sqlname' => 'LastAccess', 'desc' => 'Last date the manager system was accessed by a user', 'default' => '', 'validate' => 'datetime'),
+		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'running')
+	);
+	
+	protected static $derived = array(
+		'nodes' => array('type' => 'array', 'desc' => 'ID numbers of nodes belonging to this system'),
+		'lastbackup' => array('type' => 'datetime', 'desc' => 'Date and time of last backup'),
+		'properties' => array('type' => 'object', 'desc' => 'System properties'),
+		'monitorlatest' => array('type' => 'object', 'desc' => 'Latest value for system for each monitor')
 	);
 	
 	public function __construct ($systemid) {
-		$this->system = $systemid;
+		$this->systemid = $systemid;
 	}
 	
-	protected function validateInsert (&$bind, &$insname, &$insvalue) {
-		if (empty($bind[':name'])) {
-			$bind[':name'] = 'System '.sprintf('%06d', $this->system);
-			$insname[] = 'SystemName';
-			$insvalue[] = ':name';
-		}
-		if (empty($bind[':startDate'])) {
-			$bind[':startDate'] = date('Y-m-d H:i:s');
-			$insname[] = 'InitialStart';
-			$insvalue[] = ':startDate';
-		}
-		if (empty($bind[':lastAccess'])) {
-			$bind[':lastAccess'] = date('Y-m-d H:i:s');
-			$insname[] = 'LastAccess';
-			$insvalue[] = ':lastAccess';
+	protected function setDefaults () {
+		if (empty($this->bind[':name'])) {
+			$this->setInsertValue('name', 'System '.sprintf('%06d', $this->systemid));
 		}
 	}
+
+	protected function validateInsert () {
+		$this->setCorrectFormatDateWithDefault('started');
+		$this->setCorrectFormatDateWithDefault('lastaccess');
+	}
 	
-	protected function validateUpdate (&$bind, &$setters) {
-		if (isset($bind[':startDate'])) $bind[':startDate'] = date('Y-m-d H:i:s', strtotime($bind[':startDate']));
-		if (isset($bind[':lastAccess'])) $bind[':lastAccess'] = date('Y-m-d H:i:s', strtotime($bind[':lastAccess']));
+	protected function validateUpdate () {
+		$this->setCorrectFormatDate('started');
+		$this->setCorrectFormatDate('lastaccess');
 	}
 
 	protected function insertedKey ($insertid) {
-		return $this->system;
+		return $this->systemid;
 	}
 }

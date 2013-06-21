@@ -8,7 +8,7 @@ Released for free under a Creative Commons Attribution 2.5 License
 body {
 	margin: 0px;
 	padding: 0px;
-	background: #FFFFFF url(images/img01.gif) repeat-x;
+	background: #FFF url(images/img01.gif) repeat-x;
 	font: 13px "Trebuchet MS", Arial, Helvetica, sans-serif;
 	color: #333333;
 }
@@ -110,7 +110,7 @@ label {
 
 #logo p {
 	margin: -5px 0 0 0;
-	text-transform: uppercase;
+	text-transform: lowercase;
 	font-size: 1.22em;
 	letter-spacing: -1px;
 }
@@ -218,7 +218,33 @@ label {
 	background-color: #FFCCFF;
 }
 
-/* Tooltips */
+/* Tooltips for entities */
+
+div.qtip {
+	background: #F8F8F8;
+}
+
+table {
+	border-collapse: collapse;
+	text-align: left;
+	margin-bottom: 30px;
+}
+
+caption {
+	padding: 5px;
+}
+
+td, th {
+	padding: 5px;
+	border: 1px solid;
+}
+
+th {
+	background: #E0E0E0;
+	font-weight: bold;
+}
+
+/* Tooltips for parameters */
 
 .tooltip {
 	border-bottom: 1px dotted #000000; color: #000000; outline: none;

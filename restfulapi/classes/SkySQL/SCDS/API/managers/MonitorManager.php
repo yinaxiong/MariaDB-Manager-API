@@ -36,19 +36,12 @@ class MonitorManager extends EntityManager {
 	
 	protected function __construct () {
 		foreach (Monitor::getAll() as $monitor) {
-			$this->monitors[$monitor->id] = $monitor;
+			$this->monitors[$monitor->monitor] = $monitor;
 		}
 	}
 	
 	public static function getInstance () {
-		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
-	}
-	
-	public function getByName ($name) {
-		foreach ($this->monitors as $monitor) {
-			if (0 == strcasecmp(substr($monitor->name,0,strlen($name)), $name)) return $monitor;
-		}
-		return null;
+		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
 	public function getByID ($id) {
@@ -59,22 +52,14 @@ class MonitorManager extends EntityManager {
 		return array_values($this->monitors);
 	}
 	
-	public function createMonitor () {
-		$this->clearCache();
-		$monitor = new Monitor(null);
-		$monitor->insert();
-	}
-	
-	public function updateMonitor ($id) {
-		$this->clearCache();
-		$monitor = new Monitor($id);
-		$monitor->update();
+	public function putMonitor ($key) {
+		$monitor = new Monitor($key);
+		$monitor->save();
 	}
 	
 	public function deleteMonitor ($id) {
 		$monitor = new Monitor($id);
 		if (isset($this->monitors[$id])) unset($this->monitors[$id]);
-		$this->clearCache();
 		$monitor->delete();
 	}
 }

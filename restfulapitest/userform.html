@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SkySQL Manager API</title>
+    <title>Manipulate User Data via SkySQL Manager API</title>
 	<link href="default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
 		  <div id="logo">
 			<h1><a href="#">Manager API</a></h1>
-			<p><span>About the SkySQL Manager API</span></p>
+			<p><span>Read about it and try it out</span></p>
 		  </div>
 		  <div id="menu">
 			<ul>
@@ -18,7 +18,7 @@
 			  <li class="active"><a href="userform.html">User</a></li>
 			  <li><a href="backupform.html">Backup</a></li>
 			  <li><a href="monitorform.html">Monitor</a></li>
-			  <li><a href="jobform.html">Job</a></li>
+			  <li><a href="jobform.html">Task</a></li>
 			</ul>
 		  </div>
 	  </div>	
@@ -160,7 +160,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Add or Update a User Property</h3>
-	  <form action="" method="post" id="putuserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','propname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putuserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -177,7 +177,7 @@
 			<label for="usernamepp">Username</label>
 			<input type="text" name="username" id="usernamepp" /><br />
 			<label for="propname">Property Name</label>
-			<input type="text" name="propname" id="propname" /><br />
+			<input type="text" name="property" id="propname" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Add or Update Property" />
@@ -190,7 +190,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a User Property</h3>
-	  <form action="" method="post" id="deluserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','propname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="deluserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -201,7 +201,7 @@
 			<label for="usernamepd">Username</label>
 			<input type="text" name="username" id="usernamepd" /><br />
 			<label for="propnamde">Property Name</label>
-			<input type="text" name="propname" id="propnamed" /><br />
+			<input type="text" name="property" id="propnamed" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

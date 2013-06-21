@@ -32,6 +32,11 @@ use SkySQL\SCDS\API\models\User;
 
 class SystemUsers extends ImplementAPI {
 	
+	public function __construct ($controller) {
+		parent::__construct($controller);
+		User::checkLegal();
+	}
+
 	public function getUsers () {
 		$users = UserManager::getInstance()->getAllPublic();
 		foreach ($users as &$user) $user->properties = UserPropertyManager::getInstance()->getAllProperties($user->username);
@@ -41,8 +46,11 @@ class SystemUsers extends ImplementAPI {
 	public function getUserInfo ($uriparts) {
 		$username = @urldecode($uriparts[1]);
 		$user = UserManager::getInstance()->getByName($username);
-		if ($user) $this->sendResponse(array ('username' => $username, 'name' => $user->name, 
-			'properties' => UserPropertyManager::getInstance()->getAllProperties($username)));
+		if ($user) {
+			$user = $user->publicCopy();
+			$user->properties = UserPropertyManager::getInstance()->getAllProperties($username);
+			$this->sendResponse(array ('user' => $user));
+		}
 		else $this->sendErrorResponse('No user found with username '.$username, 404);
 	}
 	
@@ -59,27 +67,13 @@ class SystemUsers extends ImplementAPI {
 		$username = urldecode($uriparts[1]);
 		UserManager::getInstance()->deleteUser($username);
 	}
-	
-	public function putUserProperty ($uriparts) {
-		$username = urldecode($uriparts[1]);
-		$property = urldecode($uriparts[3]);
-		$value = $this->getParam('PUT', 'value');
-		UserPropertyManager::getInstance()->setProperty($username, $property, $value);
-	}
-	
-	public function deleteUserProperty ($uriparts) {
-		$username = urldecode($uriparts[1]);
-		$property = urldecode($uriparts[3]);
-		UserPropertyManager::getInstance()->deleteProperty($username, $property);
-	}
-	
+
 	public function loginUser ($uriparts) {
 		$username = urldecode($uriparts[1]);
 		$password = $this->getParam('POST', 'password');
 		$manager = UserManager::getInstance();
 		if ($manager->authenticate($username,$password)) {
-			$user = $manager->getByName($username);
-			$this->sendResponse(array('username' => $user->username, 'name' => $user->name));
+			$this->getUserInfo ($uriparts);
 		}
 		$this->sendErrorResponse('Login failed', 409);
 	}

@@ -29,41 +29,38 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\models\Task;
+use SkySQL\SCDS\API\models\Command;
 
 class Tasks extends ImplementAPI {
+	
 	public function getMultipleTasks () {
+		Task::checkLegal();
 		$tasks = Task::select();
-		$this->sendResponse(array('task' => $this->filterResults($tasks)));
+		$this->sendResponse(array('tasks' => $this->filterResults($tasks)));
 	}
 	
 	public function getOneTask ($uriparts) {
-		$tasks = Task::getByID(array('id' => (int) $uriparts[1]));
-		$this->sendResponse(array('task' => $this->filterResults($tasks)));
+		Task::checkLegal();
+		$task = Task::getByID(array('taskid' => (int) $uriparts[1]));
+		$this->sendResponse(array('task' => $this->filterSingleResult($task)));
 	}
 	
 	public function updateTask ($uriparts) {
+		Task::checkLegal();
 		$task = new Task((int) $uriparts[1]);
 		$task->update();
 	}
 	
 	public function runCommand ($uriparts) {
+		Command::checkLegal();
 		$command = urldecode($uriparts[1]);
-		list($commandid,$steps) = $this->getCommand($command);
 		$task = new Task;
-		list($TaskID, $params) = $task->insertOnCommand($commandid);
+		list($TaskID, $params, $node, $steps) = $task->insertOnCommand($command);
 		$runfile = rtrim($this->config['shell']['path'],'/\\').'/RunCommand.sh';
 		if (!file_exists($runfile)) $this->sendErrorResponse("Script for run command $runfile does not exist", 500);
 		if (!is_executable($runfile)) $this->sendErrorResponse("Script for run command $runfile exists but is not executable", 500);
-		$cmd = "$runfile $TaskID \"$steps\" \"{$this->config['shell']['hostname']}\" \"$params\" > /dev/null 2>&1 &";
+		$cmd = "$runfile $TaskID \"$steps\" \"{$this->config['shell']['hostname']}\" \"$params\" \"$node->privateip\" > /dev/null 2>&1 &";
        	exec($cmd);
-       	$this->getOneTask(array(1 => $TaskID));
-	}
-	
-	protected function getCommand ($command) {
-		$getter = $this->db->prepare('SELECT CommandID, Steps FROM Commands WHERE Name LIKE :command');
-		$getter->execute(array(':command' => $command));
-		$comdata = $getter->fetch();
-		if (!$comdata->CommandID) $this->sendErrorResponse("Apparently valid command $command not found in Commands table", 500);
-		return array($comdata->CommandID,$comdata->Steps);
+		$this->sendResponse(array('task' => Task::getByID(array('taskid' => $TaskID))));
 	}
 }

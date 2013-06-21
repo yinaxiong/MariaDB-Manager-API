@@ -28,15 +28,21 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use \PDO as PDO;
+use PDO;
 use SkySQL\SCDS\API\API;
+use SkySQL\SCDS\API\models\Command;
 
 class Commands extends ImplementAPI {
 
+	public function __construct ($requestor) {
+		parent::__construct($requestor);
+		Command::checkLegal();
+	}
+
 	public function getCommands () {
-		$commands = $this->db->query("SELECT CommandID AS id, Name AS name, Description AS description, Icon AS icon, Steps AS steps FROM Commands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
+		$commands = $this->db->query("SELECT Command AS command, Description AS description, Icon AS icon, Steps AS steps FROM NodeCommands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
 		$results = $this->filterResults($commands->fetchAll(PDO::FETCH_ASSOC));
-		if (count($results)) $this->sendResponse(array('commands' => $results));
+		if (count($results)) $this->sendResponse(array('node_commands' => $results));
 		else $this->sendErrorResponse('', 404);
 	}
 	
@@ -45,7 +51,7 @@ class Commands extends ImplementAPI {
 	}
 	
 	public function getSteps () {
-		//$this->sendResponse(array('command_steps' => API::mergeStates(API::$commandsteps)));
+		$this->sendResponse(array('command_steps' => API::mergeStates(API::$commandsteps)));
 		
 		$stepstatement = $this->db->query('SELECT StepID AS id, Script AS script, 
 			Icon AS icon, Description AS description FROM Step');

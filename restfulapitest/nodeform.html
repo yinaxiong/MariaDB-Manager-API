@@ -8,7 +8,7 @@
 	  <div id="header">
 		  <div id="logo">
 			<h1><a href="#">Manager API</a></h1>
-			<p><span>About the SkySQL Manager API</span></p>
+			<p><span>Read about it and try it out</span></p>
 		  </div>
 		  <div id="menu">
 			<ul>
@@ -18,7 +18,7 @@
 			  <li><a href="userform.html">User</a></li>
 			  <li><a href="backupform.html">Backup</a></li>
 			  <li><a href="monitorform.html">Monitor</a></li>
-			  <li><a href="jobform.html">Job</a></li>
+			  <li><a href="jobform.html">Task</a></li>
 			</ul>
 		  </div>
 	  </div>	
@@ -26,7 +26,7 @@
 	<div id="content">
 	  <h2>Node Management via SkySQL Manager API</h2>
 	  <div class="section">
-	  <h3>Get all Node States</h3>
+	  <h3>Get All Node States</h3>
 	  <form action="" method="post" id="getnodestates" target="apiresults" onsubmit="return(setFields(this.id,'nodestate'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -54,12 +54,12 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Get Selected Node State(s)</h3>
+	  <h3>Get One Node State</h3>
 	  <form action="" method="post" id="getnodestate" target="apiresults" onsubmit="return(setFields(this.id,'nodestate','stateid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /nodestate/{idordescription} <br />
+			URI will be /nodestate/{state} <br />
 			Parameters:
 			<a class="tooltip" href="#">fields 
 			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -71,7 +71,7 @@
 			Default: All fields <br />
 		</p>
 		<p class="formfields">
-			<label for="stateid">State ID or Desc</label>
+			<label for="stateid">State</label>
 			<input type="text" name="stateid" id="stateid" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
@@ -91,6 +91,11 @@
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node <br />
 			Parameters:
+			<a class="tooltip" href="#">state,<span class="custom info"><img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>state</strong><br />
+			Optional - limit results to nodes that are in the specified state.
+			</span>
+			</a>&nbsp;
 			<a class="tooltip" href="#">fields 
 			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
@@ -103,6 +108,8 @@
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
 			<input type="text" name="systemid" id="systemidl" /><br />
+			<label for="statean">Node state</label>
+			<input type="text" name="state" id="statean" /><br />
 			<label for="fieldsan">Fields to return</label>
 			<input type="text" name="fields" id="fieldsan" /><br />
 			<input type="submit" class="submit" value="List" />
@@ -125,7 +132,7 @@
 			<img src="images/Info.png" alt="Name parameter" height="48" width="48" />
 			<strong>name</strong><br />
 			The name you want to give to the node (text).
-			</span></a>&nbsp;
+			</span></a>&nbsp;&nbsp;
 			<a class="tooltip" href="#">state,<span class="custom info">
 			<img src="images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>state</strong><br />
@@ -169,20 +176,20 @@
 			<input type="text" name="nodeid" id="nodeid" /><br />
 			<label for="name">Node Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
-			<label for="state">State ID</label>
+			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="hostname">Hostname</label>
 			<input type="text" id="hostname" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'hostname');" /><br />
 			<label for="publicip">Public IP</label>
-			<input type="text" id="publicip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'publicIP');" /><br />
+			<input type="text" id="publicip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'publicip');" /><br />
 			<label for="privateip">Private IP</label>
-			<input type="text" id="privateip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'privateIP');" /><br />
+			<input type="text" id="privateip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'privateip');" /><br />
 			<label for="instanceid">Instance ID</label>
-			<input type="text" id="instanceid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'instanceID');" /><br />
+			<input type="text" id="instanceid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'instanceid');" /><br />
 			<label for="username">User Name</label>
-			<input type="text" id="username" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'username');" /><br />
+			<input type="text" id="username" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbusername');" /><br />
 			<label for="passwd">Password</label>
-			<input type="text" id="passwd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'passwd');" /><br />
+			<input type="text" id="passwd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbpassword');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

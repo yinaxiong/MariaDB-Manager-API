@@ -20,40 +20,32 @@
  * Copyright 2013 (c) SkySQL Ab
  * 
  * Author: Martin Brampton
- * Date: February 2013
- * 
- * The Application class within the API implements calls to get application properties
+ * Date: June 2013
  * 
  */
 
 namespace SkySQL\SCDS\API\controllers;
 
-use SkySQL\SCDS\API\managers\ApplicationPropertyManager;
+use SkySQL\SCDS\API\managers\UserPropertyManager;
 use SkySQL\SCDS\API\models\Property;
 
-class Applications extends SystemNodeCommon {
-
+class UserProperties extends ImplementAPI {
+	
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		Property::checkLegal();
 	}
 
-	public function setApplicationProperty ($uriparts) {
-		$this->appid = (int) $uriparts[1];
-		$property = $uriparts[3];
+	public function putUserProperty ($uriparts) {
+		$username = urldecode($uriparts[1]);
+		$property = urldecode($uriparts[3]);
 		$value = $this->getParam('PUT', 'value');
-		ApplicationPropertyManager::getInstance()->setProperty($this->appid, $property, $value);
+		UserPropertyManager::getInstance()->setProperty($username, $property, $value);
 	}
 	
-	public function deleteApplicationProperty ($uriparts) {
-		$this->appid = (int) $uriparts[1];
+	public function deleteUserProperty ($uriparts) {
+		$username = urldecode($uriparts[1]);
 		$property = urldecode($uriparts[3]);
-		ApplicationPropertyManager::getInstance()->deleteProperty($this->appid, $property);
-	}
-	
-	public function getApplicationProperty ($uriparts) {
-		$this->appid = (int) $uriparts[1];
-		$property = urldecode($uriparts[3]);
-		return ApplicationPropertyManager::getInstance()->getProperty($this->appid, $property);
+		UserPropertyManager::getInstance()->deleteProperty($username, $property);
 	}
 }

@@ -35,41 +35,43 @@ use SkySQL\SCDS\API\Request;
 
 class Backup extends EntityModel {
 	protected static $setkeyvalues = true;
-	
+
 	protected static $classname = __CLASS__;
+
 	protected $ordinaryname = 'backup';
+	protected static $headername = 'Backup';
 	
-	protected static $updateSQL = 'UPDATE Backup SET %s WHERE SystemID = :system AND BackupID = :id';
-	protected static $countSQL = 'SELECT COUNT(*) FROM Backup WHERE SystemID = :system AND BackupID = :id';
+	protected static $updateSQL = 'UPDATE Backup SET %s WHERE SystemID = :systemid AND BackupID = :backupid';
+	protected static $countSQL = 'SELECT COUNT(*) FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
 	protected static $insertSQL = 'INSERT INTO Backup (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM Backup WHERE SystemID = :system AND BackupID = :id';
-	protected static $selectSQL = 'SELECT %s FROM Backup WHERE SystemID = :system AND BackupID = :id';
-	protected static $selectAllSQL = 'SELECT %s FROM Backup ORDER BY SystemID, BackupID';
+	protected static $deleteSQL = 'DELETE FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
+	protected static $selectSQL = 'SELECT %s FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
+	protected static $selectAllSQL = 'SELECT %s FROM Backup %s ORDER BY SystemID, BackupID';
 	
-	protected static $getAllCTO = array('id');
+	protected static $getAllCTO = array('backupid');
 	
 	protected static $keys = array(
-		'system' => 'SystemID',
-		'id' => 'BackupID'
+		'systemid' => array('sqlname' => 'SystemID', 'desc' => 'ID for the system'),
+		'backupid' => array('sqlname' => 'BackupID', 'desc' => 'ID for the backup')
 	);
 
 	protected static $fields = array(
-		'node' => array('sqlname' => 'NodeID', 'default' => 0),
-		'level' => array('sqlname' => 'BackupLevel', 'default' => 0),
-		'parent' => array('sqlname' => 'ParentID', 'default' => 0),
-		'state' => array('sqlname' => 'State', 'default' => 0),
-		'started' => array('sqlname' => 'Started', 'default' => ''),
-		'updated' => array('sqlname' => 'Updated', 'default' => ''),
-		'restored' => array('sqlname' => 'Restored', 'default' => ''),
-		'size' => array('sqlname' => 'Size', 'default' => 0),
+		'nodeid' => array('sqlname' => 'NodeID', 'desc' => 'ID for the node running the backup', 'default' => 0),
+		'level' => array('sqlname' => 'BackupLevel', 'desc' => 'Backup level, 1 = standard, 2 = incremental', 'default' => 0),
+		'parentid' => array('sqlname' => 'ParentID', 'desc' => 'Base for an incremental backup', 'default' => 0),
+		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the backup', 'default' => 'running'),
+		'started' => array('sqlname' => 'Started', 'desc' => 'Date and time backup started', 'default' => ''),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Date and time backup updated', 'default' => ''),
+		'restored' => array('sqlname' => 'Restored', 'desc' => 'Date and time backup restored', 'default' => ''),
+		'size' => array('sqlname' => 'Size', 'desc' => 'Size of the backup', 'default' => 0),
 		'storage' => array('sqlname' => 'Storage', 'default' => ''),
 		'binlog' => array('sqlname' => 'BinLog', 'default' => ''),
 		'log' => array('sqlname' => 'Log', 'default' => '')
 	);
 	
 	public function __construct ($systemid, $backupid=0) {
-		$this->system = $systemid;
-		$this->id = $backupid;
+		$this->systemid = $systemid;
+		$this->backupid = $backupid;
 	}
 	
 	public static function getBackupStates () {
@@ -77,40 +79,40 @@ class Backup extends EntityModel {
 	}
 
 	protected function keyComplete () {
-		return $this->id ? true : false;
+		return $this->backupid ? true : false;
 	}
 	
-	protected function makeNewKey (&$bind) {
-		$highest = AdminDatabase::getInstance()->prepare('SELECT MAX(BackupID) FROM Backup WHERE SystemID = :system');
-		$highest->execute(array(':system' => $this->system));
-		$this->id = 1 + (int) $highest->fetch(PDO::FETCH_COLUMN);
-		$bind[':id'] = $this->id;
+	protected function makeNewKey () {
+		$highest = AdminDatabase::getInstance()->prepare('SELECT MAX(BackupID) FROM Backup WHERE SystemID = :systemid');
+		$highest->execute(array(':systemid' => $this->systemid));
+		$this->backupid = 1 + (int) $highest->fetch(PDO::FETCH_COLUMN);
+		$this->bind[':backupid'] = $this->backupid;
 	}
 
 	protected function insertedKey ($insertid) {
-		return $this->id;
+		return $this->backupid;
 	}
 
-	protected function validateInsert (&$bind, &$insname, &$insvalue) {
-		if (empty($bind[':node'])) $errors[] = 'No value provided for node when requesting system backup';
-		if (empty($bind[':level'])) $errors[] = 'No value provided for level when requesting system backup';
-		elseif ($bind[':level'] != 1 AND $bind[':level'] != 2) $errors[] = "Level given {$bind[':level']}, must be 1 or 2 (full or incremental)";
+	protected function validateInsert () {
+		if (empty($this->bind[':nodeid'])) $errors[] = 'No value provided for node when requesting system backup';
+		if (empty($this->bind[':level'])) $errors[] = 'No value provided for level when requesting system backup';
+		elseif ($this->bind[':level'] != 1 AND $this->bind[':level'] != 2) $errors[] = "Level given {$this->bind[':level']}, must be 1 or 2 (full or incremental)";
 		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors, 400);
-		if (2 == $bind[':level']) {
-			$getlog = AdminDatabase::getInstance()->prepare('SELECT MAX(Started), BinLog AS binlog FROM Backup 
+		if (2 == $this->bind[':level']) {
+			$getlog = AdminDatabase::getInstance()->prepare('SELECT BinLog, MAX(Started) AS binlog FROM Backup 
 				WHERE SystemID = :systemid AND NodeID = :nodeid AND BackupLevel = 1');
 			$getlog->execute(array(
-			':systemid' => $this->system,
-			':nodeid' => $bind[':node']
+			':systemid' => $this->systemid,
+			':nodeid' => $this->bind[':nodeid']
 			));
-			$bind[':binlog'] = $getlog->fetch(PDO::FETCH_COLUMN);
+			$this->setInsertValue('binlog', $getlog->fetch(PDO::FETCH_COLUMN));
 		}
 	}
 
 	public static function getSelectedBackups ($systemid, $fromdate, $todate, $limit, $offset) {
-		$mainquery = "SELECT rowid AS id, NodeID as node, BackupLevel AS level, State AS status,
+		$mainquery = "SELECT BackupID AS backupid, NodeID as nodeid, BackupLevel AS level, State AS state,
 			Size AS size, Started AS started, Updated AS updated, Restored AS restored,
-			Storage AS storage, Log AS log, ParentID AS parent FROM Backup WHERE ";
+			Storage AS storage, Log AS log, BinLog AS binlog, ParentID AS parentid FROM Backup WHERE ";
 		$where[] = "SystemID = :systemid";
 		$bind[':systemid'] = $systemid;
 		if ($fromdate) {

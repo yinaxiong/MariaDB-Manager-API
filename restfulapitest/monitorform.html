@@ -8,7 +8,7 @@
 	  <div id="header">
 		  <div id="logo">
 			<h1><a href="#">Manager API</a></h1>
-			<p><span>About the SkySQL Manager API</span></p>
+			<p><span>Read about it and try it out</span></p>
 		  </div>
 		  <div id="menu">
 			<ul>
@@ -18,7 +18,7 @@
 			  <li><a href="userform.html">User</a></li>
 			  <li><a href="backupform.html">Backup</a></li>
 			  <li class="active"><a href="monitorform.html">Monitor</a></li>
-			  <li><a href="jobform.html">Job</a></li>
+			  <li><a href="jobform.html">Task</a></li>
 			</ul>
 		  </div>
 	  </div>	
@@ -27,39 +27,25 @@
       <h2>Monitor Management via SkySQL Manager API</h2>
 	  <div class="section">
 	  <h3>Get Monitor Classes</h3>
-	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitorid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /monitorclass <br />
-			or /monitorclass/{idorname}<br />
-			If a Monitor Class ID or Name (partial) is specified, only that class will be returned; otherwise all will be returned.<br />
+			or /monitorclass/{key}<br />
+			If a Monitor Class Key is specified, only that class will be returned; otherwise all will be returned.<br />
 			Parameters:
-			<a class="tooltip" href="#">limit,<span class="custom info">
-			<img src="images/Info.png" alt="Limit parameter" height="48" width="48" />
-			<strong>limit</strong><br />
-			The maximum number of items to return.
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">offset,<span class="custom info">
-			<img src="images/Info.png" alt="Offset parameter" height="48" width="48" />
-			<strong>offset</strong><br />
-			Where to start with the results, relative to the beginning.
-			</span></a>&nbsp;
 			<a class="tooltip" href="#">fields,<span class="custom info">
 			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			A comma separated list of field names to be returned, others will be omitted.
 			</span></a>&nbsp;
 			<br />
-			Defaults: 10, 0, All fields<br />
+			Default: All fields<br />
 	</p>
 		<p class="formfields">
-			<label for="monitorid">Monitor ID or Name</label>
-			<input type="text" name="monitorid" id="monitorid" /><br />
-			<label for="limit">Max items to return</label>
-			<input type="text" name="limit" id="limit" /><br />
-			<label for="offset">Offset into items</label>
-			<input type="text" name="offset" id="offset" /><br />
+			<label for="monitorid">Monitor Key</label>
+			<input type="text" name="monitor" id="monitorid" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="Fetch Classes" />
@@ -71,12 +57,12 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Create a Monitor Class</h3>
-	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <h3>Create or Update a Monitor Class</h3>
+	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
-			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass <br />
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass/{key} <br />
 			Parameters:
 			<a class="tooltip" href="#">name,<span class="custom info">
 			<img src="images/Info.png" alt="Name parameter" height="48" width="48" />
@@ -126,6 +112,8 @@
 			<br />
 	</p>
 		<p class="formfields">
+			<label for="monitoridp">Monitor Key</label>
+			<input type="text" name="monitor" id="monitoridp" /><br />
 			<label for="name">Name</label>
 			<input type="text" name="name" id="name" /><br />
 			<label for="sql">SQL</label>
@@ -153,101 +141,17 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Update a Monitor Class</h3>
-	  <form action="" method="post" id="updatemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitorid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
-		<p class="explain">
-			The HTTP method to be used is: 
-			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass/{monitorclassid} <br />
-			Parameters:
-			<a class="tooltip" href="#">name,<span class="custom info">
-			<img src="images/Info.png" alt="Name parameter" height="48" width="48" />
-			<strong>name</strong><br />
-			The name you want to give to the monitor class (text).
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">sql,<span class="custom info">
-			<img src="images/Info.png" alt="SQL parameter" height="48" width="48" />
-			<strong>sql</strong><br />
-			A SQL statement that is to be used to implement this monitor class.
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">description,<span class="custom info">
-			<img src="images/Info.png" alt="Description parameter" height="48" width="48" />
-			<strong>description</strong><br />
-			A description of the monitor class (text).
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">type,<span class="custom info">
-			<img src="images/Info.png" alt="Chart Type parameter" height="48" width="48" />
-			<strong>type</strong><br />
-			The type of chart e.g. LineChart
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">delta,<span class="custom info">
-			<img src="images/Info.png" alt="Delta parameter" height="48" width="48" />
-			<strong>delta</strong><br />
-			Whether the observations are differences.
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">monitortype,<span class="custom info">
-			<img src="images/Info.png" alt="Monitor type parameter" height="48" width="48" />
-			<strong>monitortype</strong><br />
-			The type of monitor class - choose from SQL, CRM, PING, COMMAND.
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">systemaverage,<span class="custom info">
-			<img src="images/Info.png" alt="System average parameter" height="48" width="48" />
-			<strong>systemaverage</strong><br />
-			Whether the system value for a monitor is an average of the values for all the nodes or a sum of the values.
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">interval,<span class="custom info">
-			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
-			<strong>interval</strong><br />
-			The number of seconds between successive observations.
-			</span></a>
-			<a class="tooltip" href="#">unit<span class="custom info">
-			<img src="images/Info.png" alt="Unit parameter" height="48" width="48" />
-			<strong>unit</strong><br />
-			The name of the units in which observations are measured (text).
-			</span></a>
-			<br />
-	</p>
-		<p class="formfields">
-			<label for="monitoridu">Monitor ID or Name</label>
-			<input type="text" name="monitorid" id="monitoridu" /><br />
-			<label for="nameu">Name</label>
-			<input type="text" id="nameu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
-			<label for="sqlu">SQL</label>
-			<input type="text" id="sqlu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'sql');" /><br />
-			<label for="descriptionu">Description</label>
-			<input type="text" id="descriptionu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'description');" /><br />
-			<label for="typeu">Type</label>
-			<input type="text" id="typeu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'type');" /><br />
-			<label for="deltau">Delta</label>
-			<input type="text" id="deltau" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'delta');" /><br />
-			<label for="monitortypeu">Monitor Type</label>
-			<input type="text" id="monitortypeu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'monitortype');" /><br />
-			<label for="systemaverageu">System Average</label>
-			<input type="text" id="systemaveragu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'systemaverage');" /><br />
-			<label for="intervalu">Interval</label>
-			<input type="text" id="intervalu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'interval');" /><br />
-			<label for="unitu">Unit</label>
-			<input type="text" id="unitu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'unit');" /><br />
-			<input type="submit" class="submit" value="Update Class" />
-			<input type="hidden" name="_accept" value="application/json" />
-			<!-- The following two inputs will be set automatically -->
-			<input type="hidden" name="_rfcdate" /><br />
-			<input type="hidden" name="_authorization" />
-		</p>
-	  </form>
-	  </div>
-	  <div class="section">
 	  <h3>Delete a Monitor Class</h3>
-	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitorid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass/{monitorclassid}<br />
+			URI will be /monitorclass/{key}<br />
 			No parameters<br />
 	</p>
 		<p class="formfields">
-			<label for="monitoridd">Monitor ID or Name</label>
-			<input type="text" name="monitorid" id="monitoridd" /><br />
+			<label for="monitoridd">Monitor Key</label>
+			<input type="text" name="monitor" id="monitoridd" /><br />
 			<input type="submit" class="submit" value="Delete Class" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

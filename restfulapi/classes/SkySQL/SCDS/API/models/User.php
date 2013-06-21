@@ -34,26 +34,27 @@ class User extends EntityModel {
 	protected static $setkeyvalues = true;
 	
 	protected static $classname = __CLASS__;
+	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\UserManager';
 
 	protected $ordinaryname = 'user';
+	protected static $headername = 'User';
 	
-	protected static $updateSQL = 'UPDATE Users SET %s WHERE UserName = :username';
-	protected static $countSQL = 'SELECT COUNT(*) FROM Users WHERE UserName = :username';
-	protected static $insertSQL = 'INSERT INTO Users (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM Users WHERE UserName = :username';
-	protected static $selectSQL = 'SELECT %s FROM Users WHERE UserName = :username';
-	protected static $selectAllSQL = 'SELECT %s FROM Users %s';
+	protected static $updateSQL = 'UPDATE User SET %s WHERE UserName = :username';
+	protected static $countSQL = 'SELECT COUNT(*) FROM User WHERE UserName = :username';
+	protected static $insertSQL = 'INSERT INTO User (%s) VALUES (%s)';
+	protected static $deleteSQL = 'DELETE FROM User WHERE UserName = :username';
+	protected static $selectSQL = 'SELECT %s FROM User WHERE UserName = :username';
+	protected static $selectAllSQL = 'SELECT %s FROM User %s';
 	
 	protected static $getAllCTO = array('id');
 	
 	protected static $keys = array(
-		'username' => 'UserName'
+		'username' => array('sqlname' => 'UserName')
 	);
 
 	protected static $fields = array(
 		'name' => array('sqlname' => 'Name', 'default' => ''),
-		'password' => array('sqlname' => 'Password', 'default' => '', 'secret' => true),
-		'salt' => array('sqlname' => 'Salt', 'default' => '', 'internal' => true)
+		'password' => array('sqlname' => 'Password', 'default' => '', 'secret' => true)
 	);
 	
 	public function __construct ($username) {
@@ -61,39 +62,40 @@ class User extends EntityModel {
 	}
 	
 	public function authenticate ($password) {
-		return $this->password == sha1($this->salt.$password);
+		return $this->password === crypt($password, $this->password);
 	}
 	
 	public function publicCopy () {
 		$copy = new self($this->username);
 		foreach (self::$fields as $name=>$field) {
-			if (empty($field['secret']) AND empty($field['internal'])) $copy->$name = $this->$name;
+			if (empty($field['secret'])) $copy->$name = $this->$name;
 		}
 		return $copy;
 	}
 
-	protected function makeSalt () {
-		return $this->makeRandomString(24);
+	function blowfishSalt ($cost = 13) {
+		if (!is_numeric($cost) OR $cost < 4 OR $cost > 31) $cost = 13;
+		for ($i = 0; $i < 8; $i += 1) $randpart[] = pack('S', mt_rand(0, 0xffff));
+		$randpart[] = substr(microtime(), 2, 6);
+		$rand = sha1(implode('', $randpart), true);
+		return '$2a$' . sprintf('%02d', $cost) . '$' . strtr(substr(base64_encode($rand), 0, 22), array('+' => '.'));
 	}
 
-	protected function validateInsert (&$bind, &$insname, &$insvalue) {
-		$this->fixPasswordAndSalt($bind);
-		if (empty($bind[':password'])) Request::getInstance()->sendErrorResponse('No password provided for create user',400);
+	protected function validateInsert () {
+		$this->fixPasswordAndSalt();
+		if (empty($this->bind[':password'])) Request::getInstance()->sendErrorResponse('No password provided for create user',400);
 	}
 	
-	protected function validateUpdate (&$bind, &$setters) {
-		$this->fixPasswordAndSalt($bind);
-		if (!empty($bind[':password'])) {
-			$setters[] = 'Password = :password';
-			$setters[] = 'Salt = :salt';
-		}
+	protected function validateUpdate () {
+		$this->fixPasswordAndSalt();
+		if (!empty($this->bind[':password'])) $this->setters[] = 'Password = :password';
 	}
 	
-	protected function fixPasswordAndSalt (&$bind) {
-		if (isset($bind[':password'])) {
-			$bind[':salt'] = $this->makeSalt();
-			$bind[':password'] = sha1($bind[':salt'].$bind[':password']);
-		}
-		else unset($bind[':salt']);
+	protected function fixPasswordAndSalt () {
+		if (isset($this->bind[':password'])) $this->bind[':password'] = crypt($this->bind[':password'], $this->blowfishSalt());
+	}
+
+	protected function insertedKey ($insertid) {
+		return $this->username;
 	}
 }

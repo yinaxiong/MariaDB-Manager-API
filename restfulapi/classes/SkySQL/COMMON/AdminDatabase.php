@@ -28,8 +28,10 @@
 
 namespace SkySQL\COMMON;
 
-use \PDO;
+use PDO;
+use PDOException;
 use SkySQL\SCDS\API\Request;
+use SQLite3;
 
 class AdminDatabase {
     protected static $instance = null;
@@ -42,9 +44,33 @@ class AdminDatabase {
     protected function __construct () {
         $config = Request::getInstance()->getConfig();
 		$dbconfig = $config['database'];
-		$this->pdo = new PDO($dbconfig['pdoconnect'], $dbconfig['user'], $dbconfig['password']);
+		$this->pdo = $this->checkAndConnect($dbconfig);
 		$this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		$this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+	}
+	
+	protected function checkAndConnect ($dbconfig) {
+		$dboparts = explode(':', $dbconfig['pdoconnect']);
+		$dbdirectory = dirname(@$dboparts[1]);
+		if ('sqlite' != $dboparts[0] OR 2 > count($dboparts)) {
+			$error = sprintf('Configuration at %s should contain a PDO connection string for a SQLite database',_API_INI_FILE_LOCATION);
+		}
+		elseif (!file_exists($dbdirectory) OR !is_dir($dbdirectory) OR !is_writeable($dbdirectory)) {
+			$error = "Database directory $dbdirectory does not exist or is not writeable - please check existence, permissions and SELinux constraints";
+		}
+		elseif (file_exists($dboparts[1])) {
+			if (!is_writeable($dboparts[1])) $error = 'Database file exists but is not writeable';
+		}
+		else {
+			$sqlfile = dirname(__FILE__).'/AdminDatabase.sql';
+			$nocomment = preg_replace('#/\*.*?\*/#s', '', file_get_contents($sqlfile));
+			$sqldb = new SQLite3($dboparts[1]);
+			$sqldb->exec($nocomment);
+			$sqldb->close();
+		}
+		if (isset($error)) throw new PDOException($error);
+		$pdo = new PDO($dbconfig['pdoconnect'], $dbconfig['user'], $dbconfig['password']);
+		return $pdo;
 	}
 	
 	public function __destruct () {

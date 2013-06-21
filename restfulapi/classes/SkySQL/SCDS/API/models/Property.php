@@ -20,39 +20,31 @@
  * Copyright 2013 (c) SkySQL Ab
  * 
  * Author: Martin Brampton
- * Date: May 2013
+ * Date: June 2013
  * 
- * The NodeState class models a node state, information that is provided by the monitor.
+ * The Property class is only used to validate the fields for properties.
  * 
  */
 
 namespace SkySQL\SCDS\API\models;
 
-class NodeState extends EntityModel {
+abstract class Property extends EntityModel {
 	protected static $setkeyvalues = true;
 	
 	protected static $classname = __CLASS__;
-	protected $ordinaryname = 'node state';
-	
-	protected static $updateSQL = 'UPDATE NodeStates SET %s WHERE State = :state';
-	protected static $countSQL = 'SELECT COUNT(*) FROM NodeStates WHERE State = :state';
-	protected static $insertSQL = 'INSERT INTO NodeStates (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM NodeStates WHERE State = :state';
-	protected static $selectSQL = 'SELECT %s FROM NodeStates WHERE State = :state';
-	protected static $selectAllSQL = 'SELECT %s FROM NodeStates %s ORDER BY State';
-	
-	protected static $getAllCTO = array('state');
+
+	protected $ordinaryname = 'property';
+	protected static $headername = 'Property';
 	
 	protected static $keys = array(
-		'state' => 'State'
+		'systemid' => array('sqlname' => 'SystemID', 'type' => 'int'),
+		'username' => array('sqlname' => 'UserName', 'type' => 'varchar'),
+		'appid' => array('sqlname' => 'ApplicationID', 'type' => 'int'),
+		'property' => array('sqlname' => 'Property', 'type' => 'varchar')
 	);
 
 	protected static $fields = array(
-		'description' => array('sqlname' => 'Description', 'default' => ''),
-		'icon' => array('sqlname' => 'Icon', 'default' => '')
+		'value' => array('sqlname' => 'Value', 'type' => 'text', 'desc' => 'Value of a property', 'default' => '')
 	);
 	
-	public function __construct ($state) {
-		$this->state = $state;
-	}
 }

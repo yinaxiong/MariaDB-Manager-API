@@ -36,13 +36,12 @@ class UserManager extends EntityManager {
 	
 	protected function __construct () {
 		foreach (User::getAll() as $user) {
-			//$this->users[$user->id] = $user;
 			$this->users[$user->username] = $user;
 		}
 	}
 	
 	public static function getInstance () {
-		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
+		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
 	public function getByName ($name) {
@@ -61,28 +60,28 @@ class UserManager extends EntityManager {
 	}
 	
 	public function createUser ($username) {
-		$this->clearCache();
 		$user = new User($username);
 		$user->insert();
+		// Above method does not return - sends a response and exits
 	}
 	
 	public function updateUser ($username) {
-		$this->clearCache();
 		$user = new User($username);
 		$user->update();
+		// Above method does not return - sends a response and exits
 	}
 	
 	public function saveUser ($username) {
-		$this->clearCache();
 		$user = new User($username);
 		$user->save();
+		// Above method does not return - sends a response and exits
 	}
 	
 	public function deleteUser ($username) {
 		$user = new User($username);
 		if (isset($this->users[$username])) unset($this->users[$username]);
-		$this->clearCache();
 		UserPropertyManager::getInstance()->deleteAllProperties($username);
 		$user->delete();
+		// Above method does not return - sends a response and exits
 	}
 }

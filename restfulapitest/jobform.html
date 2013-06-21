@@ -8,7 +8,7 @@
 	  <div id="header">
 		  <div id="logo">
 			<h1><a href="#">Manager API</a></h1>
-			<p><span>About the SkySQL Manager API</span></p>
+			<p><span>Read about it and try it out</span></p>
 		  </div>
 		  <div id="menu">
 			<ul>
@@ -18,15 +18,15 @@
 			  <li><a href="userform.html">User</a></li>
 			  <li><a href="backupform.html">Backup</a></li>
 			  <li><a href="monitorform.html">Monitor</a></li>
-			  <li class="active"><a href="jobform.html">Job</a></li>
+			  <li class="active"><a href="jobform.html">Task</a></li>
 			</ul>
 		  </div>
 	  </div>	
 	<div id="page">
 	<div id="content">
-      <h2>Job Management via SkySQL Manager API</h2>
+      <h2>Task Management via SkySQL Manager API</h2>
 	  <div class="section">
-	  <h3>Get all Commands</h3>
+	  <h3>Get all Node Commands</h3>
 	  <form action="" method="post" id="getcommands" target="apiresults" onsubmit="return(setFields(this.id,'command'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -86,7 +86,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Run a Command</h3>
-	  <form action="" method="post" id="runcommand" target="apiresults" onsubmit="return(setFields(this.id,'command','commandname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="runcommand" target="apiresults" onsubmit="return(setFields(this.id,'command','command'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
@@ -95,7 +95,7 @@
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
-			<select name="commandname" id="commandname">
+			<select name="command" id="commandname">
 				<option value="backup">Backup</option>
 				<option value="restore">Restore</option>
 				<option value="start">Start</option>
@@ -106,9 +106,9 @@
 				<option value="promote">Promote</option>
 			</select><br />
 			<label for="systemc">System ID</label>
-			<input type="text" name="system" id="systemc" /><br />
+			<input type="text" name="systemid" id="systemc" /><br />
 			<label for="nodec">Node ID</label>
-			<input type="text" name="node" id="nodec" /><br />
+			<input type="text" name="nodeid" id="nodec" /><br />
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="level">Level (backup)</label>
@@ -126,7 +126,7 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Get One Job</h3>
+	  <h3>Get One Task</h3>
 	  <form action="" method="post" id="getjob" target="apiresults" onsubmit="return(setFields(this.id,'task','taskid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -139,7 +139,7 @@
 			<input type="text" name="taskid" id="taskid" /><br />
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
-			<input type="submit" class="submit" value="Get Job" />
+			<input type="submit" class="submit" value="Get Task" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -148,7 +148,7 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Get Multiple Jobs</h3>
+	  <h3>Get Multiple Tasks</h3>
 	  <form action="" method="post" id="getjobs" target="apiresults" onsubmit="return(setFields(this.id,'task'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -157,13 +157,13 @@
 			Parameters: state, nodeid, fields <br />
 		</p>
 		<p class="formfields">
-			<label for="statejm">State ID</label>
+			<label for="statejm">State</label>
 			<input type="text" id="statejm" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="nodejs">Node ID</label>
-			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'node');" /><br />
+			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
 			<label for="fieldsm">Fields to return</label>
 			<input type="text" name="fields" id="fieldsm" /><br />
-			<input type="submit" class="submit" value="Get Jobs" />
+			<input type="submit" class="submit" value="Get Tasks" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -172,24 +172,26 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Update a Job</h3>
+	  <h3>Update a Task</h3>
 	  <form action="" method="post" id="putjob" target="apiresults" onsubmit="return(setFields(this.id,'task','taskid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /task/{taskid} <br />
-			Parameters: state<br />
+			Parameters: state, pid, stepindex, completed<br />
 		</p>
 		<p class="formfields">
 			<label for="tasku">Task ID</label>
 			<input type="text" name="taskid" id="taskidu" /><br />
-			<label for="stateju">State ID</label>
+			<label for="stateju">State</label>
 			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="pidju">Process ID (PID)</label>
+			<input type="text" id="pidju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'pid');" /><br />
 			<label for="stateju">Step index</label>
 			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stepindex');" /><br />
 			<label for="stateju">Completed</label>
 			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'completed');" /><br />
-			<input type="submit" class="submit" value="Update Job" />
+			<input type="submit" class="submit" value="Update Task" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -235,6 +237,10 @@
 			<input type="text" name="systemid" id="systemq" /><br />
 			<label for="nodeq">Node ID</label>
 			<input type="text" name="nodeid" id="nodeq" /><br />
+			<label for="aspairs">Results paired</label>
+			<input type="text" name="aspairs" id="aspairs" /><br />
+			<label for="fieldsq">Fields to return</label>
+			<input type="text" name="fields" id="fieldsq" /><br />
 			<input type="submit" class="submit" value="Run SQL" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

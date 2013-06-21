@@ -49,7 +49,7 @@ final class StandardRequest extends Request {
 	}
 	
 	protected function __construct () {
-		if ('PUT' == $_SERVER['REQUEST_METHOD']) {
+		if ('PUT' == $_SERVER['REQUEST_METHOD'] OR 'DELETE' == $_SERVER['REQUEST_METHOD']) {
 			$rawput = file_get_contents("php://input");
 			$dejson = json_decode($rawput, true);
 			if (false === stripos($rawput, '=')) $dequery = $rawput;

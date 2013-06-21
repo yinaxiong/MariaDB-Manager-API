@@ -124,7 +124,7 @@ final class ErrorRecorder  {
 			':smessage' => substr($smessage, 0, 250),
 			':lmessage' => ($lmessage ? $lmessage : $smessage),
 			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
-			':get' => @$_SERVER['REQUEST_URI'],
+			':get' => (string) @$_SERVER['REQUEST_URI'],
 			':post' => base64_encode(serialize($_POST)),
 			':trace' => Diagnostics::trace(),
 			':sql' => $sql,
@@ -136,7 +136,7 @@ final class ErrorRecorder  {
 		));
 		$config = Request::getInstance()->getConfig();
 		if ($config['logging']['erroremail']) {
-			$headers = 'From: SkySQL Cloud Data Suite <no-reply@skysql.com>' . "\r\n";
+			$headers = 'From: SkySQL Manager <no-reply@skysql.com>' . "\r\n";
 			mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
 		}
 		$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");

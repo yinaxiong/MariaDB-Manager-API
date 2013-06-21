@@ -28,83 +28,91 @@
 
 namespace SkySQL\SCDS\API\models;
 
+use PDO;
 use SkySQL\SCDS\API\Request;
+use SkySQL\COMMON\AdminDatabase;
+use SkySQL\SCDS\API\managers\NodeManager;
 
 class Task extends EntityModel {
 	protected static $setkeyvalues = false;
 	
 	protected static $classname = __CLASS__;
+
 	protected $ordinaryname = 'task';
+	protected static $headername = 'Task';
 	
-	protected static $updateSQL = 'UPDATE CommandExecution SET %s WHERE TaskID = :id';
-	protected static $countSQL = 'SELECT COUNT(*) FROM CommandExecution WHERE TaskID = :id';
-	protected static $insertSQL = 'INSERT INTO CommandExecution (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM CommandExecution WHERE TaskID = :id';
-	protected static $selectSQL = 'SELECT %s FROM CommandExecution WHERE TaskID = :id';
-	protected static $selectAllSQL = 'SELECT %s FROM CommandExecution %s ORDER BY TaskID';
+	protected static $updateSQL = 'UPDATE Task SET %s WHERE TaskID = :taskid';
+	protected static $countSQL = 'SELECT COUNT(*) FROM Task WHERE TaskID = :taskid';
+	protected static $insertSQL = 'INSERT INTO Task (%s) VALUES (%s)';
+	protected static $deleteSQL = 'DELETE FROM Task WHERE TaskID = :taskid';
+	protected static $selectSQL = 'SELECT %s FROM Task WHERE TaskID = :taskid';
+	protected static $selectAllSQL = 'SELECT %s FROM Task %s ORDER BY TaskID';
 	
-	protected static $getAllCTO = array('id');
+	protected static $getAllCTO = array('taskid');
 	
 	protected static $keys = array(
-		'id' => 'TaskID'
+		'taskid' => array('sqlname' => 'TaskID', 'type' => 'int')
 	);
 	
-	protected $commandid = 0;
-	protected $params = '';
+	protected $command = '';
+	protected $myparams = '';
+	protected $node = null;
+	protected $steps = '';
 
 	protected static $fields = array(
-		'system' => array('sqlname' => 'SystemID', 'default' => 0, 'insertonly' => true),
-		'node' => array('sqlname' => 'NodeID', 'default' => 0, 'insertonly' => true),
+		'systemid' => array('sqlname' => 'SystemID', 'default' => 0, 'insertonly' => true),
+		'nodeid' => array('sqlname' => 'NodeID', 'default' => 0, 'insertonly' => true),
+		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'insertonly' => true),
 		'username' => array('sqlname' => 'UserName', 'default' => '', 'insertonly' => true),
-		'command' => array('sqlname' => 'CommandID', 'default' => 0, 'insertonly' => true),
+		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
 		'params' => array('sqlname' => 'Params', 'default' => '', 'insertonly' => true),
-		'start' => array('sqlname' => 'Start', 'default' => '', 'insertonly' => true),
-		'completed' => array('sqlname' => 'Completed', 'default' => ''),
+		'started' => array('sqlname' => 'Started', 'default' => '', 'insertonly' => true),
+		'pid' => array('sqlname' => 'PID', 'default' => 0),
+		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime'),
 		'stepindex' => array('sqlname' => 'StepIndex', 'default' => 0),
-		'state' => array('sqlname' => 'State', 'default' => 0)
+		'state' => array('sqlname' => 'State', 'default' => 'running')
 	);
 	
 	public function __construct ($taskid=0) {
-		$this->id = $taskid;
+		$this->taskid = $taskid;
 	}
 	
-	public function insertOnCommand ($commandid) {
-		$this->commandid = $commandid;
-		return array(parent::insert(false), $this->params);
+	public function insertOnCommand ($command) {
+		$this->command = $command;
+		return array(parent::insert(false), $this->myparams, $this->node, $this->steps);
 	}
 	
-	protected function validateInsert (&$bind, &$insname, &$insvalue) {
-		foreach (array('system','node','username') as $name) {
-			if (empty($bind[':'.$name])) $errors = "Value for $name is required to run a command";
+	protected function validateInsert () {
+		$request = Request::getInstance();
+		foreach (array('systemid','nodeid','username') as $name) {
+			if (empty($this->bind[':'.$name])) $errors[] = "Value for $name is required to run a command";
 		}
-		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors, 400);
-		if ($this->commandid) {
-			$bind[':command'] = $this->commandid;
-			$insname[] = self::$fields['command']['sqlname'];
-			$insvalue[] = ':command';
+		if (isset($errors)) $request->sendErrorResponse($errors, 400);
+		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
+		$this->privateip = $this->node->privateip;
+		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
+		$getcmd = AdminDatabase::getInstance()->prepare('SELECT Steps FROM NodeCommands WHERE Command = :command AND State = :state');
+		$getcmd->execute(array(':command' => $this->command, ':state' => $this->node->state));
+		$this->steps = $getcmd->fetchColumn();
+		if (!$this->steps) $request->sendErrorResponse("Command $this->command is not valid for specified node in its current state", 400);
+		foreach (array('command','privateip') as $name) {
+			$this->setInsertValue($name, $this->$name);
 		}
-		if (isset($bind['params'])) $this->params = $bind['params'];
-		if (isset($bind[':completed'])) {
-			$unixtime = strtotime($bind[':completed']);
-			if (!$unixtime) $bind[':completed'] = date('Y-m-d H:i:s');
-			$bind[':stepindex'] = 0;
-		}
-		if (!isset($bind['start'])) {
-			$insname[] = self::$fields['start']['sqlname'];
-			$insvalue[] = ':start';
-			$bind[':start'] = date('Y-m-d H:i:s');
-		}
+		$this->setInsertValue('state', 'running');
+		$this->myparams = isset($this->bind[':params']) ? $this->bind[':params'] : '';
+		$this->setCorrectFormatDate('completed');
+		$this->setCorrectFormatDateWithDefault('started');
 	}
-
-	protected function validateUpdate (&$bind, &$setters) {
-		if (isset($bind[':completed'])) {
-			$unixtime = strtotime($bind[':completed']);
-			if (!$unixtime) $bind[':completed'] = date('Y-m-d H:i:s');
-			if (!isset($bind[':stepindex'])) {
+	
+	protected function validateUpdate () {
+		if (isset($this->bind[':completed'])) {
+			$unixtime = strtotime($this->bind[':completed']);
+			if (!$unixtime) $this->bind[':completed'] = date('Y-m-d H:i:s');
+			if (!isset($this->bind[':stepindex'])) {
 				$sqlname = self::$fields['stepindex']['sqlname'];
-				$setters[] = "$sqlname = :stepindex";
+				$this->setters[] = "$sqlname = :stepindex";
 			}
-			$bind[':stepindex'] = 0;
+			$this->bind[':stepindex'] = 0;
 		}
 	}
 }

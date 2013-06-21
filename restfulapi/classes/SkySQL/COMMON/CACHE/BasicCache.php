@@ -60,7 +60,7 @@ abstract class BasicCache {
 		$s .= md5($s);
 		$result = $this->handler->storeData ($path, $s, $reportSizeError);
 		if (!$result) {
-			trigger_error(sprintf($this->T_('Cache failed on write, report size error %s, class %s, path %s'), (string) $reportSizeError, get_class($object), $path));
+			//trigger_error(sprintf($this->T_('Cache failed on write, report size error %s, class %s, path %s'), (string) $reportSizeError, get_class($object), $path));
 			$this->handler->delete($path);
 		}
 		return $result;

@@ -81,7 +81,7 @@ abstract class CachedSingleton {
 		}
 	}
 	
-	public function cacheNow ($reportSizeError=true) {
-		SingletonObjectCache::getInstance()->store($this, '', $reportSizeError);
+	public function cacheNow () {
+		SingletonObjectCache::getInstance()->store($this);
 	}
 }

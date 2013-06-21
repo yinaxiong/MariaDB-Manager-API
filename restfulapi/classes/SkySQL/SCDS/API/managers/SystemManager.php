@@ -36,12 +36,12 @@ class SystemManager extends EntityManager {
 	
 	protected function __construct () {
 		foreach (System::getAll() as $system) {
-			$this->systems[$system->system] = $system;
+			$this->systems[$system->systemid] = $system;
 		}
 	}
 	
 	public static function getInstance () {
-		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
+		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
 	public function getByID ($id) {
@@ -52,22 +52,15 @@ class SystemManager extends EntityManager {
 		return array_values($this->systems);
 	}
 	
-	public function createSystem ($id) {
-		$this->clearCache();
+	public function putSystem ($id) {
 		$system = new System($id);
-		$system->insert();
-	}
-	
-	public function updateSystem ($id) {
-		$this->clearCache();
-		$system = new System($id);
-		$system->update();
+		$system->save();
+		// Above method does not return - sends a response and exits
 	}
 	
 	public function deleteSystem ($id) {
 		$system = new System($id);
 		if (isset($this->systems[$id])) unset($this->systems[$id]);
-		$this->clearCache();
 		SystemPropertyManager::getInstance()->deleteAllProperties($id);
 		$system->delete();
 		// Above method does not return - sends a response and exits
