@@ -33,6 +33,8 @@ use PDOException;
 use SkySQL\SCDS\API\Request;
 use SQLite3;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 class AdminDatabase {
     protected static $instance = null;
     protected $pdo = null;

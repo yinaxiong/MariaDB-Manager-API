@@ -34,6 +34,8 @@
 
 namespace SkySQL\COMMON\CACHE;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 class SingletonObjectCache extends BasicCache {
 	protected static $instance = null;
 	protected $timeout = _SKYSQL_API_OBJECT_CACHE_TIME_LIMIT;

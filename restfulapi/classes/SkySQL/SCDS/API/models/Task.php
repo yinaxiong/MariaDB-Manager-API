@@ -82,6 +82,13 @@ class Task extends EntityModel {
 		return array(parent::insert(false), $this->myparams, $this->node, $this->steps);
 	}
 	
+	public function updatePID ($pid) {
+		$database = AdminDatabase::getInstance();
+		$update = $database->prepare("UPDATE Task SET PID = :pid WHERE TaskID = :taskid");
+		$update->execute(array(':pid' => $pid, ':taskid' => $this->taskid));
+		$this->pid = $pid;
+	}
+	
 	protected function validateInsert () {
 		$request = Request::getInstance();
 		foreach (array('systemid','nodeid','username') as $name) {

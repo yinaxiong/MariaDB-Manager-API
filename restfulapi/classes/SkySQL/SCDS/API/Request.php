@@ -46,6 +46,8 @@ use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
 use SkySQL\SCDS\API\controllers\Metadata;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 class aliroProfiler {
     private $start=0;
     private $prefix='';
@@ -190,7 +192,6 @@ abstract class Request {
 	protected $accept = '';
 	protected $suffix = '';
 	protected $suppress = false;
-	protected $inifile = '/etc/scdsapi/api.ini';
 	
 	protected function __construct() {
 		$this->timer = new aliroProfiler();
@@ -216,10 +217,10 @@ abstract class Request {
 	
 	protected function readAndCheckConfig () {
 		if (!is_readable(_API_INI_FILE_LOCATION)) {
-			$error = sprintf('No readable API configuration file at %s', _API_INI_FILE_LOCATION);
-			$this->sendErrorResponse($error,500);
+			$this->fatalError(sprintf('No readable API configuration file at %s', _API_INI_FILE_LOCATION));
 		}
-        $config = parse_ini_file($this->inifile, true);
+        $config = parse_ini_file(_API_INI_FILE_LOCATION, true);
+		if (!$config) $this->fatalError(sprintf('Could not parse configuration file at %s', _API_INI_FILE_LOCATION));
 		if (empty($config['logging']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a logging directory',_API_INI_FILE_LOCATION);
 		elseif (!is_writeable($config['logging']['directory'])) $this->warnings[] = sprintf('Logging directory %s is not writeable, cannot write log, please check existence, permissions, SELinux',$config['logging']['directory']);
 		if (empty($config['cache']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a caching directory',_API_INI_FILE_LOCATION);
@@ -227,6 +228,14 @@ abstract class Request {
 		if (empty($config['cache']['timelimit'])) $config['cache']['timelimit'] = 3600;
 		if (empty($config['cache']['sizelimit'])) $config['cache']['sizelimit'] = 500000;
 		return $config;
+	}
+	
+	protected function fatalError ($error, $status=500) {
+			error_log($error);
+			$this->log($error);
+			$this->sendHeaders($status);
+			echo $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '').' - '.$error;
+			exit;
 	}
 	
 	protected function getURI () {

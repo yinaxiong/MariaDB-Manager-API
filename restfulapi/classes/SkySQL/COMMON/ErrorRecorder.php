@@ -37,6 +37,8 @@ use SkySQL\SCDS\API\Request;
 use SkySQL\COMMON\AdminDatabase;
 use \PDOException;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 final class ErrorRecorder  {
     protected static $instance = null;
 	protected $DBclass = 'aliroCoreDatabase';
@@ -87,6 +89,7 @@ final class ErrorRecorder  {
 	}
 
 	public function recordError ($smessage, $errorkey, $lmessage='', $exception=null) {
+		define ('_API_RECORDING_TERMINAL_ERROR', true);
 		error_log($lmessage);
 		try {
 			$database = AdminDatabase::getInstance();

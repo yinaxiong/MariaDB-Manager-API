@@ -1,7 +1,7 @@
 %define _topdir	 	%(echo $PWD)/
 %define name		admin_php
-%define release		3
-%define version 	0.2
+%define release		1
+%define version 	0.3
 %define buildroot %{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
 

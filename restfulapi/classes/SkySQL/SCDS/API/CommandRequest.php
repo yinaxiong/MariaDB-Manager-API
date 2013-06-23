@@ -40,6 +40,8 @@
 
 namespace SkySQL\SCDS\API;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 final class CommandRequest extends Request {
 	protected static $requestclass = __CLASS__;
 	protected static $instance = null;

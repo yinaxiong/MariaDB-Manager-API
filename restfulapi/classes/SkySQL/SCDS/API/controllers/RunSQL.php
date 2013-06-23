@@ -50,9 +50,14 @@ class RunSQL extends ImplementAPI {
             $this->subjectdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             $this->subjectdb->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
 			$this->subjectdb->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-			$statement = $this->subjectdb->prepare($query);
-            $statement->execute();
-			$results = $statement->fetchAll();
+			try {
+				$statement = $this->subjectdb->prepare($query);
+	            $statement->execute();
+				$results = $statement->fetchAll();
+			}
+			catch (PDOException $pe) {
+				$this->sendResponse(array('error' => $pe->getMessage()));
+			}
 			$aspairs = $this->getParam('POST', 'aspairs');
 			if ($results AND !empty($aspairs)) {
 				$fields = array_keys(get_object_vars($results[0]));

@@ -30,6 +30,8 @@
 
 namespace SkySQL\COMMON\CACHE;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 abstract class BasicCache {
 	protected $sizelimit = 0;
 	protected $timeout = 0;

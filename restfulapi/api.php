@@ -43,10 +43,10 @@ use \PDOException;
 use \Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
-define ('_API_VERSION_NUMBER','0.8');
-define ('_API_INI_FILE_LOCATION', '/etc/scdsapi/api.ini');
+define ('_API_VERSION_NUMBER','0.7');
+define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 
-if (!function_exists('apache_request_headers')) require ('apache_request_headers.php');
+if (!function_exists('apache_request_headers')) require ('includes/apache_request_headers.php');
 
 // Translation function - yet to be implemented
 function T_ ($string) {

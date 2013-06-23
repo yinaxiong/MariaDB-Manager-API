@@ -28,6 +28,8 @@
 
 namespace SkySQL\COMMON;
 
+if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
+
 class Profiler {
     private $start=0;
     private $prefix='';

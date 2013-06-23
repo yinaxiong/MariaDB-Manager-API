@@ -56,11 +56,18 @@ class Tasks extends ImplementAPI {
 		$command = urldecode($uriparts[1]);
 		$task = new Task;
 		list($TaskID, $params, $node, $steps) = $task->insertOnCommand($command);
-		$runfile = rtrim($this->config['shell']['path'],'/\\').'/RunCommand.sh';
-		if (!file_exists($runfile)) $this->sendErrorResponse("Script for run command $runfile does not exist", 500);
-		if (!is_executable($runfile)) $this->sendErrorResponse("Script for run command $runfile exists but is not executable", 500);
-		$cmd = "$runfile $TaskID \"$steps\" \"{$this->config['shell']['hostname']}\" \"$params\" \"$node->privateip\" > /dev/null 2>&1 &";
-       	exec($cmd);
-		$this->sendResponse(array('task' => Task::getByID(array('taskid' => $TaskID))));
+		$scriptdir = rtrim($this->config['shell']['path'],'/\\');
+		foreach (array('LaunchCommand','RunCommand') as $script) {
+			if (!is_executable($scriptdir."/$script.sh")) {
+				$this->sendErrorResponse("Script $scriptdir/$script.sh does not exist or is not executable");
+			}
+		}
+		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
+		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $TaskID \"$steps\" \"{$this->config['shell']['hostname']}\" \"$params\" \"$node->privateip\" \"$logfile\"";
+       	$pid = exec($cmd);
+		$this->log("Started command $command with task ID $TaskID on node $node->nodeid with PID $pid\n");
+		$newtask = Task::getByID(array('taskid' => $TaskID));
+		$newtask->updatePID($pid);
+		$this->sendResponse(array('task' => $newtask));
 	}
 }

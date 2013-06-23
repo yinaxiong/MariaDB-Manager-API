@@ -19,23 +19,23 @@ class SkyConsoleAPI {
     function properties() {
 
 		if (isset($_GET["user"])) {
-			$userID = (int) $_GET["user"];
-			$bind[':userid'] = $userID;
+			$username = urldecode($_GET["user"]);
+			$bind[':username'] = $username;
 			if (isset($_GET["property"]) AND isset($_GET["value"])) {
 				$bind['property'] = urldecode($_GET["property"]);
 				$bind['value'] = urldecode($_GET["value"]);
-				$update = $this->db->prepare('UPDATE UserProperties SET Value = :value WHERE Property = :property AND UserID = :userid');
+				$update = $this->db->prepare('UPDATE UserProperties SET Value = :value WHERE Property = :property AND UserName = :username');
 				$update->execute($bind);
 				if (0 == $update->rowCount()) {
-					$insert = $this->db->prepare('INSERT INTO UserProperties (UserID, Property, Value)
-						VALUES (:userid, :property, :value)');
+					$insert = $this->db->prepare('INSERT INTO UserProperties (UserName, Property, Value)
+						VALUES (:username, :property, :value)');
 					$insert->execute($bind);
 				}
        			$result = array(
             		"result" => "ok",
         		);
 			} else {
-				$select = $this->db->prepare('SELECT Property AS property, Value AS value FROM UserProperties WHERE UserID = :userid');
+				$select = $this->db->prepare('SELECT Property AS property, Value AS value FROM UserProperties WHERE UserName = :username');
 				$select->execute($bind);
 				$properties = $select->fetchAll(PDO::FETCH_ASSOC);
        			$result = array(

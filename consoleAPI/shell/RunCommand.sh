@@ -7,6 +7,8 @@
 # $2 A comma separated list of steps (each being a script)
 # $3 The hostname for the API
 # $4 Parameters to be passed on to step scripts
+# $5 IP address for the node
+# $6 Log file
 #
 taskid=$1
 steps=$2
@@ -36,24 +38,21 @@ do
 	
 	# run the script and exit if an error occurs
 	fullpath=`dirname $0`"/steps/$stepscript.sh $params"
-	echo 'running: '$fullpath
-	sh $fullpath		>> /var/log/SDS.log 2>&1
+	sh $fullpath >> $6 2>&1
 	status=$?
+	echo "Status after step $status" >> $6
 	if [ $status -ne 0 ]; then
 		break
 	fi
-
  	let index+=1
 done
 
 if [ $status -eq 0 ]; then
-	cmdstate=5  # Done
+	cmdstate="done"  # Done
 else 
-	cmdstate=6  # Error
+	cmdstate="error"  # Error
 fi
-
-echo 'final state: '$cmdstate
 
 # set command state to "Done" or "Error" and set completion time stamp
 time=$(date +"%Y-%m-%d %H:%M:%S")
-callapi "$hostname" "PUT" "task/$taskid" "completed=$time&state=$cmdstate"
+callapi "$hostname" "PUT" "task/$taskid" "completed=$time&state=$cmdstate&stepindex=0"
