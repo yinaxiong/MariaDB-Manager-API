@@ -251,6 +251,16 @@ abstract class EntityModel {
 		return $data;
 	}
 	
+	// Validation method for System Type
+	protected static function systemtype ($data) {
+		return isset(API::$nodetranslator[$data]);
+	}
+	
+	// Validation method for System State
+	protected static function systemstate ($data) {
+		return isset(API::$systemstates[$data]);
+	}
+	
 	// Validation method for IP address
 	protected static function ipaddress ($data) {
 		return filter_var($data, FILTER_VALIDATE_IP);

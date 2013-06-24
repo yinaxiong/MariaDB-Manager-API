@@ -53,10 +53,11 @@ class System extends EntityModel {
 	);
 
 	protected static $fields = array(
+		'type' => array('sqlname' => 'SystemType', 'desc' => 'Type of the system e.g. aws or galera', 'default' => 'aws', 'validate' => 'systemtype'),
 		'name' => array('sqlname' => 'SystemName', 'desc' => 'Name of the system', 'default' => ''),
 		'started' => array('sqlname' => 'InitialStart', 'desc' => 'Date the manager system was set up', 'default' => '', 'validate' => 'datetime'),
 		'lastaccess' => array('sqlname' => 'LastAccess', 'desc' => 'Last date the manager system was accessed by a user', 'default' => '', 'validate' => 'datetime'),
-		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'running')
+		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'running', 'validate' => 'systemtype')
 	);
 	
 	protected static $derived = array(

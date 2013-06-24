@@ -68,6 +68,15 @@ class API {
 	);
 	*/
 	
+	public static $nodetranslator = array(
+		'aws' => array(
+			'Master' => 'master',
+			'Started' => 'slave',
+			'Slave' => 'slave',
+			'not running' => 'stopped'
+		)
+	);
+	
 	public static $backupstates = array(
 		'scheduled' => array('description' => 'Scheduled'),
 		'running' => array('description' => 'Running'),

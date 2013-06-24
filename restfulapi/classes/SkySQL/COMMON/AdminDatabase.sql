@@ -51,6 +51,7 @@ insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, S
 
 create table System (
 	SystemID		int PRIMARY KEY,				/* SystemID allocated by provisioning */
+	SystemType		varchar(20),					/* Type of system e.g. galera or aws */
 	SystemName		varchar(80),					/* User defined system name */
 	InitialStart	datetime,						/* Time of first system boot */
 	LastAccess		datetime,						/* Last time admin access to system */
