@@ -38,17 +38,23 @@ class SystemBackups extends ImplementAPI {
 	protected $errors = array();
 
 	public function getSystemBackups ($uriparts) {
-		$systemid = (int) $uriparts[1];
-		$limit = $this->getParam('GET', 'limit', 10);
-		$offset = $this->getParam('GET', 'offset', 0);
+		$this->keydata['systemid'] = (int) $uriparts[1];
 		$fromdate = $this->getDate('from');
 		$todate = $this->getDate('to');
 		if (count($this->errors)) {
 			$this->sendErrorResponse($this->errors, 400);
 			exit;
 		}
-		list($total, $backups) = Backup::getSelectedBackups($systemid, $fromdate, $todate, $limit, $offset);
+		list($total, $backups) = Backup::select($this, $fromdate, $todate);
         $this->sendResponse(array('total' => $total, 'backups' => $this->filterResults($backups)));
+	}
+	
+	public function getOneBackup ($uriparts) {
+		$systemid = (int) $uriparts[1];
+		$backupid = (int) $uriparts[3];
+		$backup = new Backup($systemid,$backupid);
+		$backup->loadData();
+		$this->sendResponse(array('backup' => $this->filterSingleResult($backup)));
 	}
 	
 	protected function getDate ($datename) {

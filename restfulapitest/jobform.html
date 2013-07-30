@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
-	<link href="default.css" rel="stylesheet" type="text/css" />
+	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
@@ -91,7 +91,7 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /command/{commandname} <br />
-			Parameters: system, node, username, parameters (command dependent) <br />
+			Parameters: system, node, username, parameters (command dependent), icalentry <br />
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
@@ -116,7 +116,9 @@
 			<label for="parentid">Parent ID (backup)</label>
 			<input type="text" name="parentid" id="parentid" /><br />
 			<label for="params">Parameters</label>
-			<input type="text" name="params" id="params" /><br />
+			<input type="text" name="parameters" id="params" /><br />
+			<label for="ical">iCalEntry</label>
+			<input type="text" name="icalentry" id="ical" /><br />
 			<input type="submit" class="submit" value="Run Command" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -251,7 +253,7 @@
 	  </div>
 	  </div>
 	  </div>
-		<script type="text/javascript" src="md5.js"></script>
-		<script type="text/javascript" src="testapi.js"></script>
+		<script type="text/javascript" src="testresources/js/md5.js"></script>
+		<script type="text/javascript" src="testresources/js/testapi.js"></script>
     </body>
 </html>

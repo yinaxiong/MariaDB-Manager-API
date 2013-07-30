@@ -29,7 +29,8 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\managers\MonitorManager;
-use SkySQL\SCDS\API\models\Monitor;
+use SkySQL\SCDS\API\managers\SystemManager;
+use SkySQL\SCDS\API\managers\NodeManager;
 use \PDO;
 
 final class Monitors extends ImplementAPI {
@@ -46,19 +47,25 @@ final class Monitors extends ImplementAPI {
 			$monitors = $manager->getAll();
 			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
 		}
+		elseif (empty($uriparts[3])) {
+			$systemtype = urldecode($uriparts[1]);
+			$monitors = $manager->getByType($systemtype);
+			$this->sendResponse(array('monitorclass' => $this->filterResults($monitors)));
+		}
 		else {
-			$monitorkey = urldecode($uriparts[1]);
-			$monitor = 	$manager->getByID($monitorkey);
+			$systemtype = urldecode($uriparts[1]);
+			$monitorkey = urldecode($uriparts[3]);
+			$monitor = 	$manager->getByID($systemtype, $monitorkey);
 			$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
 		}
     }
 	
 	public function putMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->putMonitor(urldecode($uriparts[1]));
+		MonitorManager::getInstance()->putMonitor(urldecode($uriparts[1]), urldecode($uriparts[3]));
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->deleteMonitor(urldecode($uriparts[1]));
+		MonitorManager::getInstance()->deleteMonitor(urldecode($uriparts[1]), urldecode($uriparts[3]));
 	}
 	
 	public function storeMonitorData ($uriparts) {
@@ -72,7 +79,7 @@ final class Monitors extends ImplementAPI {
 			$scale = isset($monitor->scale) ? $monitor->scale : 0;
 			$value =  $scale ? (int) round($value * pow(10,$scale)) : (int) $value;
 		}
-		$this->db->query('BEGIN EXCLUSIVE TRANSACTION');
+		$this->beginExclusiveTransaction();
 		$check = $this->db->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
 			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
 			ORDER BY Stamp DESC');
@@ -101,8 +108,73 @@ final class Monitors extends ImplementAPI {
 				':repeats' => ((is_object($lastrecord) AND $lastrecord->Value == $value) ? 1 : 0)
 			));
 		}
+		$this->commitTransaction();
+		$this->sendResponse("Stored Data OK");
+	}
+	
+	public function storeBulkMonitorData () {
+		$monitors = $this->getParam('POST', 'm', array());
+		$systems = $this->getParam('POST', 's', array());
+		$nodes = $this->getParam('POST', 'n', array());
+		$values = $this->getParam('POST', 'v', array());
+		if (1 < count(array_unique(array(count($monitors), count($systems), count($nodes), count($values))))) {
+			$errors[] = 'Bulk data must provide arrays of equal size';
+		}
+		else if (0 == count($monitors)) $errors[] = 'No bulk data provided';
+		$limit = count($monitors);
+		for ($i = 0; $i < $limit; $i++) {
+			if (!$monitors[$i] AND !$systems[$i] AND !$nodes[$i] AND !$values[$i]) {
+				unset($monitors[$i],$systems[$i],$nodes[$i],$values[$i]);
+				continue;
+			}
+			if (!MonitorManager::getInstance()->getByID($monitors[$i])) $errors[] = "No such monitor ID {$monitors[$i]}";
+			if (!SystemManager::getInstance()->getByID($systems[$i])) $errors[] = "No such system ID {$systems[$i]}";
+			if (0 != $nodes[$i] AND !NodeManager::getInstance()->getByID($systems[$i], $nodes[$i])) $errors[] = "No such node as system ID {$systems[$i]}, node ID {$nodes[$i]}";
+		}
+		if (isset($errors)) $this->sendErrorResponse($errors, 400);
+		
+		$this->db->beginExclusiveTransaction();
+		$latest = $this->db->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, rowid, MAX(Stamp) FROM MonitorData GROUP BY SystemID, MonitorID, NodeID ');
+		foreach ($latest->fetchAll() as $instance) {
+			$instances[$instance->MonitorID][$instance->SystemID][$instance->NodeID] = array(
+				'value' => $instance->Value, 'repeats' => $instance->Repeats, 'rowid' => $instance->rowid
+			);
+		}
+		
+		$stamp = $this->getParam('POST', 'timestamp', time());
+		for ($i = 0; $i < count($monitors); $i++) {
+			$previous = isset($instances[$monitors[$i]][$systems[$i]][$nodes[$i]]);
+			if ($previous) $value = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['value'];
+			if ($previous AND $value == $values[$i] AND $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['repeats']) {
+				$updaterows[] = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['rowid'];
+			}
+			else {
+				if (isset($insertrows)) {
+					$insertrows .= "UNION SELECT :monitorid$i, :systemid$i, :nodeid$i, :value$i, :stamp$i, :repeats$i\n";
+				}
+				else {
+					$insertrows = "INSERT INTO MonitorData SELECT";
+					$insertrows .= " :monitorid$i AS MonitorID, :systemid$i AS SystemID, :nodeid$i AS NodeID, :value$i AS Value, :stamp$i AS Stamp, :repeats$i AS Repeats\n";
+				}
+				$bind[":monitorid$i"] = (int) $monitors[$i];
+				$bind[":systemid$i"] = (int) $systems[$i];
+				$bind[":nodeid$i"] = (int) $nodes[$i];
+				$bind[":value$i"] = 'null' == $values[$i] ? null : (int) $values[$i];
+				$bind[":stamp$i"] = $stamp;
+				$bind[":repeats$i"] = ($previous AND $value == $values[$i]) ? 1 : 0;
+			}
+		}		
+		if (isset($updaterows)) {
+			$rowlist = implode(',',$updaterows);
+			$this->db->query("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = '$stamp' WHERE rowid IN ($rowlist)");
+		}
+		if (isset($insertrows)) {
+			$insert = $this->db->prepare($insertrows);
+			$insert->execute($bind);
+		}
+		
 		$this->db->commitTransaction();
-		$this->sendResponse();
+		$this->sendResponse('Data accepted');
 	}
 	
 	public function monitorLatest ($uriparts) {

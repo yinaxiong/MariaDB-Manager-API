@@ -28,36 +28,22 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use PDO;
 use PDOException;
 use stdClass;
 
-class RunSQL extends ImplementAPI {
+class RunSQL extends SystemNodeCommon {
     protected $subjectdb = null;
 
     public function runQuery () {
         try {
+			$this->systemid = $this->getParam('GET', 'systemid', 0);
+			$nodeid = $this->getParam('GET', 'nodeid', 0);
 			$query = $this->getParam('GET', 'sql');
             if (!$query) throw new PDOException('No query provided');
             if (strcasecmp('SELECT ', substr($query,0,7)) AND strcasecmp('SHOW ', substr($query,0,5))) {
 				throw new PDOException('Query is not a SELECT or SHOW statement');
 			}
-			$hostdata = $this->getHostData();
-            $hostparts = explode(':', $hostdata->Hostname);
-			$connection = "mysql:host={$hostparts[0]};dbname=information_schema";
-			if (count($hostparts) > 1) $connection .= ";port={$hostparts[1]}";
-            $this->subjectdb = new PDO($connection, $hostdata->Username, $hostdata->passwd);
-            $this->subjectdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $this->subjectdb->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
-			$this->subjectdb->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
-			try {
-				$statement = $this->subjectdb->prepare($query);
-	            $statement->execute();
-				$results = $statement->fetchAll();
-			}
-			catch (PDOException $pe) {
-				$this->sendResponse(array('error' => $pe->getMessage()));
-			}
+			$results = $this->targetDatabaseQuery($query, $nodeid);
 			$aspairs = $this->getParam('POST', 'aspairs');
 			if ($results AND !empty($aspairs)) {
 				$fields = array_keys(get_object_vars($results[0]));
@@ -73,26 +59,11 @@ class RunSQL extends ImplementAPI {
 				}
 			}
             $this->sendResponse(array("results" => $this->filterResults($results)));
-        }
+		}
         catch (PDOException $pe) {
             $this->sendErrorResponse($pe->getMessage(), 400);
             exit;
         }
     }
 	
-	protected function getHostData () {
-		$systemid = $this->getParam('GET', 'systemid', 0);
-		$nodeid = $this->getParam('GET', 'nodeid', 0);
-		if ($systemid AND $nodeid) {
-			$statement = $this->db->prepare("SELECT Hostname, Username, passwd FROM NodeData 
-				WHERE SystemID = :systemid AND NodeID = :nodeid");
-			$statement->execute(array(
-				':systemid' => $systemid,
-				':nodeid' => $nodeid
-			));
-			$noderecord = $statement->fetch(PDO::FETCH_OBJ);
-			if ($noderecord) return $noderecord;
-		}
-		throw new PDOException ('System ID and Node ID must be provided');
-	}
 }

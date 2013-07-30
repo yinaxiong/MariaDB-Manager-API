@@ -36,6 +36,9 @@ abstract class ImplementAPI {
 	protected $fieldnames = array();
 	protected $requestmethod = '';
 	protected $accept = '';
+	protected $limit = 10;
+	protected $offset = 0;
+	protected $keydata = array();
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
@@ -45,6 +48,7 @@ abstract class ImplementAPI {
 		$this->accept = $requestor->getAccept();
 		$filter = $this->getParam('GET', 'fields');
 		if ($filter) $this->fieldnames = array_map('trim', explode(',', $filter));
+		$this->setLimits();
 	}
 	
 	protected function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -53,6 +57,24 @@ abstract class ImplementAPI {
 	
 	protected function paramEmpty ($arrname, $name) {
 		return $this->requestor->paramEmpty($arrname, $name);
+	}
+	
+	protected function setLimits () {
+		$configlimit = @$this->config['resultset-defaults']['limit'];
+		$this->limit = $this->getParam('GET', 'limit', ($configlimit ? $configlimit : 10));
+		$this->offset = $this->getParam('GET', 'offset', 0);
+	}
+	
+	public function getLimit () {
+		return $this->limit;
+	}
+	
+	public function getOffset () {
+		return $this->offset;
+	}
+	
+	public function getKeyData () {
+		return $this->keydata;
 	}
 	
 	protected function filterResults ($results) {
@@ -88,8 +110,16 @@ abstract class ImplementAPI {
 		return $hits;
 	}
 	
-	protected function startImmediateTransaction () {
-		$this->db->startImmediateTransaction();
+	protected function beginImmediateTransaction () {
+		$this->db->beginImmediateTransaction();
+	}
+	
+	protected function beginExclusiveTransaction () {
+		$this->db->beginExclusiveTransaction();
+	}
+	
+	protected function commitTransaction () {
+		$this->db->commitTransaction();
 	}
 	
 	protected function sendResponse ($body='', $status=200, $content_type='application/json') {

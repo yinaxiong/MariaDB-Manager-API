@@ -5,8 +5,8 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
-	<link href="jquery.qtip.min.css" rel="stylesheet" type="text/css" />
-	<link href="default.css" rel="stylesheet" type="text/css" />
+	<link href="testresources/css/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
+	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
  </head>
   <body>
 	  <div id="header">
@@ -352,7 +352,7 @@ RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
 	  </div>
 	</div>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.4.4/jquery.min.js"></script>
-<script type="text/javascript" src="jquery.qtip.min.js"></script>
+<script type="text/javascript" src="testresources/js/jquery.qtip.min.js"></script>
 <script type="text/javascript">
 // Create the tooltips only on document load
 $(document).ready(function()
@@ -365,7 +365,7 @@ $(document).ready(function()
 		{
 			content: {
 				// Set the text to an image HTML string with the correct src URL to the loading image you want to use
-				text: '<img class="throbber" src="images/busy.gif" alt="Loading..." />',
+				text: '<img class="throbber" src="testresources/images/busy.gif" alt="Loading..." />',
 				ajax: {
 					url: $(this).attr('rel') // Use the rel attribute of each element for the url to load
 				},

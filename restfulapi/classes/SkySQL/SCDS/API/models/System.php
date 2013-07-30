@@ -41,6 +41,7 @@ class System extends EntityModel {
 	
 	protected static $updateSQL = 'UPDATE System SET %s WHERE SystemID = :systemid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM System WHERE SystemID = :systemid';
+	protected static $countAllSQL = 'SELECT COUNT(*) FROM System';
 	protected static $insertSQL = 'INSERT INTO System (%s) VALUES (%s)';
 	protected static $deleteSQL = 'DELETE FROM System WHERE SystemID = :systemid';
 	protected static $selectSQL = 'SELECT %s FROM System WHERE SystemID = :systemid';
@@ -53,11 +54,11 @@ class System extends EntityModel {
 	);
 
 	protected static $fields = array(
-		'type' => array('sqlname' => 'SystemType', 'desc' => 'Type of the system e.g. aws or galera', 'default' => 'aws', 'validate' => 'systemtype'),
+		'systemtype' => array('sqlname' => 'SystemType', 'desc' => 'Type of the system e.g. aws or galera', 'default' => 'aws', 'validate' => 'systemtype'),
 		'name' => array('sqlname' => 'SystemName', 'desc' => 'Name of the system', 'default' => ''),
 		'started' => array('sqlname' => 'InitialStart', 'desc' => 'Date the manager system was set up', 'default' => '', 'validate' => 'datetime'),
 		'lastaccess' => array('sqlname' => 'LastAccess', 'desc' => 'Last date the manager system was accessed by a user', 'default' => '', 'validate' => 'datetime'),
-		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'running', 'validate' => 'systemtype')
+		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'running', 'validate' => 'systemstate')
 	);
 	
 	protected static $derived = array(

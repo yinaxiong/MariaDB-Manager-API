@@ -49,7 +49,7 @@ abstract class Command extends EntityModel {
 		'privateip' => array('sqlname' => 'PrivateIP', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
 		'level' => array('sqlname' => 'Level', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'parentid' => array('sqlname' => 'ParentID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
-		'params' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
+		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
 		'state' => array('sqlname' => 'State', 'type' => 'int', 'default' => 'running'),
 		'step' => array('sqlname' => 'Step', 'type' => 'int', 'default' => 0)
 	);

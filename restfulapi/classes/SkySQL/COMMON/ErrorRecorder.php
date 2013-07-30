@@ -65,7 +65,7 @@ final class ErrorRecorder  {
 		if ($variables) $lmessage .= '; '.$variables;
         $errorkey = "PHP/$errno/$errfile/$errline/$errstr";
 	    $this->recordError($message, $errorkey, $lmessage);
-	    echo $this->T_('A program fault has been recorded in the log'.$lmessage);
+	    Request::getInstance()->sendErrorResponse($this->T_('A program fault has been recorded in the log'.$lmessage),500);
 	    if ($errno & (E_USER_ERROR|E_COMPILE_ERROR|E_CORE_ERROR|E_ERROR)) die (T_('Serious PHP error - processing halted - see error log for details'));
 	}
 	
@@ -89,7 +89,7 @@ final class ErrorRecorder  {
 	}
 
 	public function recordError ($smessage, $errorkey, $lmessage='', $exception=null) {
-		define ('_API_RECORDING_TERMINAL_ERROR', true);
+		if (!defined('_API_RECORDING_TERMINAL_ERROR')) define ('_API_RECORDING_TERMINAL_ERROR', true);
 		error_log($lmessage);
 		try {
 			$database = AdminDatabase::getInstance();

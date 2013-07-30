@@ -29,6 +29,7 @@
 namespace SkySQL\SCDS\API\models;
 
 use \PDO as PDO;
+use SkySQL\COMMON\AdminDatabase;
 
 class Monitor extends EntityModel {
 	protected static $setkeyvalues = true;
@@ -39,16 +40,18 @@ class Monitor extends EntityModel {
 	protected $ordinaryname = 'monitor';
 	protected static $headername = 'Monitor';
 	
-	protected static $updateSQL = 'UPDATE Monitor SET %s WHERE Monitor = :monitor';
-	protected static $countSQL = 'SELECT COUNT(*) FROM Monitor WHERE Monitor = :monitor';
+	protected static $updateSQL = 'UPDATE Monitor SET %s WHERE SystemType = :systemtype AND Monitor = :monitor';
+	protected static $countSQL = 'SELECT COUNT(*) FROM Monitor WHERE SystemType = :systemtype AND Monitor = :monitor';
+	protected static $countAllSQL = 'SELECT COUNT(*) FROM Monitor';
 	protected static $insertSQL = 'INSERT INTO Monitor (%s) VALUES (%s)';
-	protected static $deleteSQL = 'DELETE FROM Monitor WHERE Monitor = :monitor';
-	protected static $selectSQL = 'SELECT %s FROM Monitor WHERE Monitor = :monitor';
+	protected static $deleteSQL = 'DELETE FROM Monitor WHERE SystemType = :systemtype AND Monitor = :monitor';
+	protected static $selectSQL = 'SELECT %s FROM Monitor WHERE SystemType = :systemtype AND Monitor = :monitor';
 	protected static $selectAllSQL = 'SELECT %s FROM Monitor %s';
 	
 	protected static $getAllCTO = array('monitor');
 	
 	protected static $keys = array(
+		'systemtype' => array('sqlname' => 'SystemType'),
 		'monitor' => array('sqlname' => 'Monitor')
 	);
 
@@ -61,11 +64,17 @@ class Monitor extends EntityModel {
 		'monitortype' => array('sqlname' => 'MonitorType', 'default' => ''),
 		'systemaverage' => array('sqlname' => 'SystemAverage', 'default' => 0),
 		'interval' => array('sqlname' => 'Interval', 'default' => 0),
-		'unit' => array('sqlname' => 'Unit', 'default' => '')		
+		'unit' => array('sqlname' => 'Unit', 'default' => ''),
+		'monitorid' => array('sqlname' => 'MonitorID', 'default' => 0)
 	);
 	
-	public function __construct ($monitor='') {
+	public function __construct ($systemtype='galera', $monitor='') {
+		$this->systemtype = $systemtype;
 		$this->monitor = $monitor;
+	}
+	
+	protected function validateInsert () {
+		$this->setInsertValue('monitorid', null);
 	}
 	
 	protected function insertedKey ($insertid) {

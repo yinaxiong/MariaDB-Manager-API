@@ -28,6 +28,8 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use stdClass;
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemPropertyManager;
@@ -38,7 +40,7 @@ class Systems extends SystemNodeCommon {
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
-		$this->backups_query = $this->db->prepare('SELECT MAX(Started) FROM Backup WHERE SystemID = :systemid');
+		$this->backups_query = $this->db->prepare("SELECT strftime('%s',MAX(Started)) FROM Backup WHERE SystemID = :systemid");
 		System::checkLegal();
 	}
 	
@@ -47,6 +49,14 @@ class Systems extends SystemNodeCommon {
 			$results[] = $this->retrieveOneSystem($system);
 		}
         $this->sendResponse(array("systems" => $this->filterResults((array) @$results)));
+	}
+	
+	public function getSystemTypes () {
+		$result = new stdClass();
+		foreach (API::$systemtypes as $type=>$about) {
+			$result->$type = $about['description'];
+		}
+		$this->sendResponse(array('systemtypes' => $result));
 	}
 
 	public function getSystemData ($uriparts) {
@@ -67,6 +77,14 @@ class Systems extends SystemNodeCommon {
 		SystemManager::getInstance()->deleteSystem($this->systemid);
 	}
 	
+	public function getSystemProcesses ($uriparts) {
+		$this->systemid = (int) $uriparts[1];
+		$nodes = NodeManager::getInstance()->getAllIDsForSystem($this->systemid);
+		$processes = array();
+		foreach ($nodes as $nodeid) $processes = array_merge($processes, $this->getNodeProcesses ($nodeid));
+		$this->sendResponse(array('process' => $this->filterResults($processes)));
+	}
+	
 	protected function retrieveOneSystem ($system) {
 		$this->systemid = (int) $system->systemid;
 		$system->nodes = NodeManager::getInstance()->getAllIDsForSystem($this->systemid);
@@ -81,6 +99,7 @@ class Systems extends SystemNodeCommon {
 	protected function retrieveLastBackup () {
 		// Can only be exactly one result for the latest backup
 		$this->backups_query->execute(array(':systemid' => $this->systemid));
-		return $this->backups_query->fetchColumn();
+		$unixtime = $this->backups_query->fetchColumn();
+		return $unixtime ? date('r', $unixtime) : null;
 	}
 }

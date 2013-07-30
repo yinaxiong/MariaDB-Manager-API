@@ -49,7 +49,7 @@ abstract class PropertyManager extends EntityManager {
 		$bind = $this->makeBind($key, $property);
 		$bind[':value'] = $value;
 		$database = AdminDatabase::getInstance();
-		$database->startImmediateTransaction();
+		$database->beginImmediateTransaction();
 		$update = $database->prepare($this->updateSQL);
 		$update->execute($bind);
 		$counter = $update->rowCount();

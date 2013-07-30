@@ -54,7 +54,7 @@ create table System (
 	SystemType		varchar(20),					/* Type of system e.g. galera or aws */
 	SystemName		varchar(80),					/* User defined system name */
 	InitialStart	datetime,						/* Time of first system boot */
-	LastAccess		datetime,						/* Last time admin access to system */
+	LastAccess		datetime,							/* Last time admin access to system */
 	State			varchar(20)						/* The current state of the system */
 );
 
@@ -95,6 +95,7 @@ create table Node (
 	Hostname	varchar(20),	/* Internal hostname of the node */
 	PublicIP	varchar(15),	/* Current public IP address of node */
 	PrivateIP	varchar(15),	/* Current private IP address of the node*/
+	Port		int,			/* Port number for database access */
 	InstanceID	varchar(20),	/* The EC2 instance ID of the node */
 	DBUserName	varchar(30),
 	DBPassword	varchar(30)
@@ -116,25 +117,29 @@ end;
 ** Log of commands executed on a node.
 */
 create table Task (
-	TaskID		integer PRIMARY KEY AUTOINCREMENT,
-	SystemID	int,					/* SystemID of the system */
-	NodeID		int,					/* NodeID executed on */
-	BackupID	int,					/* For backup, the ID of the backup record */
-    PrivateIP	varchar(15),			/* IP address for node running the command */
-	UserName	varchar(40),			/* UserName that requested the command execution */
-	Command		varchar(40),				/* Command executed */
-	Params		varchar(255),			/* Parameters for Command */
-	Started		datetime,				/* Timestamp at start of execution */
-    PID			int,					/* Process ID for running script */
-	Completed	datetime,				/* Timestamp on completion, thsi will be
-										* NULL for commands that are in progress
-										*/
-	StepIndex	smallint default 0,		/* Index of step being executed in CommandStep */
-	State		varchar(20)				/* Command state */
+	TaskID			integer PRIMARY KEY AUTOINCREMENT,
+	SystemID		int,					/* SystemID of the system */
+	NodeID			int,					/* NodeID executed on */
+	BackupID		int,					/* For backup, the ID of the backup record */
+    PrivateIP		varchar(15),			/* IP address for node running the command */
+	UserName		varchar(40),			/* UserName that requested the command execution */
+	Command			varchar(40),			/* Command executed */
+	Params			varchar(255),			/* Parameters for Command */
+	iCalEntry		text,					/* Schedule details, if scheduled */
+	NextStart		datetime,				/* Time for next scheduled start */
+	Started			datetime,				/* Timestamp at start of execution */
+    PID				int,					/* Process ID for running script */
+	Completed		datetime,				/* Timestamp on completion, this will be
+											* NULL for commands that are in progress
+											*/
+	StepIndex		smallint default 0,		/* Index of step being executed in CommandStep */
+	State			varchar(20)				/* Command state */
 );
 
 create table Monitor (
-	Monitor			varchar(40) PRIMARY KEY,	/* Short name of monitor */
+	MonitorID		integer PRIMARY KEY autoincrement,		/* ID for Monitor */
+	SystemType		varchar(20),				/* System type handled - e.g. aws or galera */
+	Monitor			varchar(40),				/* Short name of monitor */
 	Name			varchar(80),				/* Displayed name of this monitor */
 	SQL				varchar(200),				/* SQL to run on MySQL to get the current
 												* value of the monitor. */
@@ -148,12 +153,29 @@ create table Monitor (
 	Unit			varchar(40)					/* unit of measurement for data */
 );
 
-insert into Monitor (Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('connections', 'Connections', 0, 'select variable_value from global_status where variable_name = "THREADS_CONNECTED";', '', 'LineChart', 0, 'SQL', 0, 30, null);
-insert into Monitor (Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('traffic', 'Network Traffic', 0, 'select round(sum(variable_value) / 1024) from global_status where variable_name in ("BYTES_RECEIVED", "BYTES_SENT");', '', 'LineChart', 1, 'SQL', 0, 30, 'kB/min');
-insert into Monitor (Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('availability', 'Availability', 2, 'select 100;', '', 'LineChart', 0, 'SQL', 1, 30, '%');
-insert into Monitor (Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('nodestate', 'Node State', 0, 'crm status bynode', '', null, 0, 'CRM', 0, 30, null);
-insert into Monitor (Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('capacity', 'Capacity', 2, 'select round(((select variable_value from global_status where variable_name = "THREADS_CONNECTED") * 100) / variable_value) from global_variables where variable_name = "MAX_CONNECTIONS";', '', null, 0, 'SQL', 1, 30, '%');
-insert into Monitor (Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('hoststate', 'Host State', 0, '', '', null, 0, 'PING', 0, 30, null);
+create unique index MonitorSystemIDX on Monitor (SystemType,Monitor);
+
+/* AWS monitors */
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('aws', 'connections', 'Connections', 0, 'select variable_value from global_status where variable_name = "THREADS_CONNECTED";', '', 'LineChart', 0, 'SQL', 0, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('aws', 'traffic', 'Network Traffic', 0, 'select round(sum(variable_value) / 1024) from global_status where variable_name in ("BYTES_RECEIVED", "BYTES_SENT");', '', 'LineChart', 1, 'SQL', 0, 30, 'kB/min');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('aws', 'availability', 'Availability', 2, 'select 100;', '', 'LineChart', 0, 'SQL', 1, 30, '%');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('aws', 'nodestate', 'Node State', 0, 'crm status bynode', '', null, 0, 'CRM', 0, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('aws', 'capacity', 'Capacity', 2, 'select round(((select variable_value from global_status where variable_name = "THREADS_CONNECTED") * 100) / variable_value) from global_variables where variable_name = "MAX_CONNECTIONS";', '', null, 0, 'SQL', 1, 30, '%');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('aws', 'hoststate', 'Host State', 0, '', '', null, 0, 'PING', 0, 30, null);
+
+/* Galera monitors */
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'connections', 'Connections', 0, 'select variable_value from global_status where variable_name = "THREADS_CONNECTED";', '', 'LineChart', 0, 'SQL', 0, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'traffic', 'Network Traffic', 0, 'select round(sum(variable_value) / 1024) from global_status where variable_name in ("BYTES_RECEIVED", "BYTES_SENT");', '', 'LineChart', 1, 'SQL', 0, 30, 'kB/min');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'availability', 'Availability', 2, 'select 100;', '', 'LineChart', 0, 'SQL', 1, 30, '%');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'capacity', 'Capacity', 2, 'select round(((select variable_value from global_status where variable_name = "THREADS_CONNECTED") * 100) / variable_value) from global_variables where variable_name = "MAX_CONNECTIONS";', '', null, 0, 'SQL', 1, 30, '%');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'hoststate', 'Host State', 0, '', '', null, 0, 'PING', 0, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'nodestate', 'NodeState', 0, 'select 100 + variable_value from global_status where variable_name = "WSREP_LOCAL_STATE" union select 107 limit 1;', '', null, 0, 'SQL_NODE_STATE', 1, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'clustersize', 'Cluster Size', 0, 'select variable_value from global_status where variable_name = "WSREP_CLUSTER_SIZE";', 'Number of nodes in the cluster', 'LineChart', 0, 'SQL', 1, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'reppaused', 'Replication Paused', 2, 'select variable_value * 100 from global_status where variable_name = "WSREP_FLOW_CONTROL_PAUSED";', 'Percentage of time for which replication was paused', 'LineChart', 0, 'SQL', 1, 30, '%');
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'parallelism', 'Parallelism', 0, 'select variable_value from global_status where variable_name = "WSREP_CERT_DEPS_DISTANCE";', 'Average No. of parallel transactions', 'LineChart', 0, 'SQL', 1, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'recvqueue', 'Avg Receive Queue', 0, 'select variable_value from global_status where variable_name = "WSREP_LOCAL_RECV_QUEUE_AVG";', 'Average receive queue length', 'LineChart', 0, 'SQL', 1, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'flowcontrol', 'Flow Controlled', 0, 'select variable_value from global_status where variable_name = "WSREP_FLOW_CONTROL_SENT";', 'Flow control messages sent', 'LineChart', 1, 'SQL', 0, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'sendqueue', 'Avg Send Queue', 0, 'select variable_value from global_status where variable_name = "WSREP_LOCAL_SEND_QUEUE_AVG";', 'Average length of send queue', 'LineChart', 0, 'SQL', 1, 30, null);
 
 
 create table MonitorData (
@@ -161,7 +183,7 @@ create table MonitorData (
 	SystemID	int,
 	NodeID		int,
 	Value		int,		/* Value of the monitor */
-	Stamp		datetime,	/* Date/Time this value was observed */
+	Stamp		int,		/* Date/Time this value was observed */
 	Repeats		int			/* Number of repeated observations same value */
 );
 CREATE INDEX MonitorDataStampIDX ON MonitorData (Stamp);
@@ -181,7 +203,7 @@ create table UserProperties (
 );
 
 create table Backup (
-	BackupID	integer PRIMARY KEY autoincrement, /* Unique identifier for the backup */
+	BackupID	integer,		/* Unique identifier for the backup within System ID */
 	SystemID	int,			/* System backup was taken on */
 	NodeID		int,			/* Node backup was taken on */
 	BackupLevel	smallint,		/* full=1 or incremental=2 backup */
@@ -195,6 +217,8 @@ create table Backup (
 	BinLog		varchar(255),	/* Binlog of backup */
 	Log			varchar(255)	/* URL to Log of backup */
 );
+
+create unique index SystemBackupIDX ON Backup (SystemID, BackupID);
 
 CREATE TABLE ErrorLog (
 	id integer NOT NULL PRIMARY KEY AUTOINCREMENT, 

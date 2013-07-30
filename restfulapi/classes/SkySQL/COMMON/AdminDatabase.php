@@ -116,8 +116,13 @@ class AdminDatabase {
 		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
 	}
 	
-	public function startImmediateTransaction () {
+	public function beginImmediateTransaction () {
 		$this->query('BEGIN IMMEDIATE TRANSACTION');
+		$this->transact = true;
+	}
+	
+	public function beginExclusiveTransaction () {
+		$this->query('BEGIN EXCLUSIVE TRANSACTION');
 		$this->transact = true;
 	}
 	

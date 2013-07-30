@@ -33,7 +33,6 @@ use PDO;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeStateManager;
-use SkySQL\SCDS\API\models\Node;
 
 class SystemNodes extends SystemNodeCommon {
 	protected $nodeid = 0;
@@ -68,14 +67,35 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	public function getSystemNode ($uriparts) {
-		$this->systemid = $uriparts[1];
-		$this->nodeid = $uriparts[3];
+		$this->systemid = (int) $uriparts[1];
+		$this->nodeid = (int) $uriparts[3];
 		$node = NodeManager::getInstance()->getByID($this->systemid, $this->nodeid);
 		if ($node) {
 			$this->extraNodeData($node);
 			$this->sendResponse(array('node' => $this->filterSingleResult($node)));
 		}
 		else $this->sendErrorResponse("No matching node for system ID $this->systemid and node ID $this->nodeid", 404);
+	}
+	
+	public function getSystemNodeProcesses ($uriparts) {
+		$this->systemid = (int) $uriparts[1];
+		$this->nodeid = (int) $uriparts[3];
+		$this->sendResponse(array('process' => $this->filterResults($this->getNodeProcesses($this->nodeid))));
+	}
+	
+	public function getProcessPlan ($uriparts) {
+		$this->systemid = (int) $uriparts[1];
+		$this->nodeid = (int) $uriparts[3];
+		$processid = (int) $uriparts[5];
+		exit;
+	}
+	
+	public function killSystemNodeProcess ($uriparts) {
+		$this->systemid = (int) $uriparts[1];
+		$this->nodeid = (int) $uriparts[3];
+		$processid = (int) $uriparts[5];
+		if ($processid) $this->targetDatabaseQuery("KILL QUERY $processid", $this->nodeid);
+		exit;
 	}
 	
 	protected function extraNodeData (&$node) {

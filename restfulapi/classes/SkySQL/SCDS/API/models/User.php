@@ -41,6 +41,7 @@ class User extends EntityModel {
 	
 	protected static $updateSQL = 'UPDATE User SET %s WHERE UserName = :username';
 	protected static $countSQL = 'SELECT COUNT(*) FROM User WHERE UserName = :username';
+	protected static $countAllSQL = 'SELECT COUNT(*) FROM User';
 	protected static $insertSQL = 'INSERT INTO User (%s) VALUES (%s)';
 	protected static $deleteSQL = 'DELETE FROM User WHERE UserName = :username';
 	protected static $selectSQL = 'SELECT %s FROM User WHERE UserName = :username';

@@ -43,6 +43,7 @@ class Backup extends EntityModel {
 	
 	protected static $updateSQL = 'UPDATE Backup SET %s WHERE SystemID = :systemid AND BackupID = :backupid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
+	protected static $countAllSQL = 'SELECT COUNT(*) FROM Backup';
 	protected static $insertSQL = 'INSERT INTO Backup (%s) VALUES (%s)';
 	protected static $deleteSQL = 'DELETE FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
 	protected static $selectSQL = 'SELECT %s FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
@@ -77,6 +78,13 @@ class Backup extends EntityModel {
 	public static function getBackupStates () {
 		return API::mergeStates(API::$backupstates);
 	}
+	
+	public function loadData () {
+		$loader = AdminDatabase::getInstance()->prepare(sprintf(self::$selectSQL, self::getSelects()));
+		$loader->execute(array(':systemid' => $this->systemid, ':backupid' => $this->backupid));
+		$data = $loader->fetch();
+		foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
+	}
 
 	protected function keyComplete () {
 		return $this->backupid ? true : false;
@@ -94,6 +102,7 @@ class Backup extends EntityModel {
 	}
 
 	protected function validateInsert () {
+		$this->setCorrectFormatDateWithDefault('started');
 		if (empty($this->bind[':nodeid'])) $errors[] = 'No value provided for node when requesting system backup';
 		if (empty($this->bind[':level'])) $errors[] = 'No value provided for level when requesting system backup';
 		elseif ($this->bind[':level'] != 1 AND $this->bind[':level'] != 2) $errors[] = "Level given {$this->bind[':level']}, must be 1 or 2 (full or incremental)";
@@ -108,13 +117,11 @@ class Backup extends EntityModel {
 			$this->setInsertValue('binlog', $getlog->fetch(PDO::FETCH_COLUMN));
 		}
 	}
-
-	public static function getSelectedBackups ($systemid, $fromdate, $todate, $limit, $offset) {
-		$mainquery = "SELECT BackupID AS backupid, NodeID as nodeid, BackupLevel AS level, State AS state,
-			Size AS size, Started AS started, Updated AS updated, Restored AS restored,
-			Storage AS storage, Log AS log, BinLog AS binlog, ParentID AS parentid FROM Backup WHERE ";
-		$where[] = "SystemID = :systemid";
-		$bind[':systemid'] = $systemid;
+	
+	// Parameters are fromdate and todate in array
+	protected static function specialSelected ($args) {
+		$fromdate = @$args[0];
+		$todate = @$args[1];
 		if ($fromdate) {
 			$where[] = "started >= :fromdate";
 			$bind[':fromdate'] = $fromdate;
@@ -123,18 +130,6 @@ class Backup extends EntityModel {
 			$where[] = "started <= :todate";
 			$bind[':todate'] = $todate;
 		}
-		$conditions = implode(' AND ', $where);
-		$mainquery .= $conditions;
-		$database = AdminDatabase::getInstance();
-		if ($limit) {
-			$totaller = $database->prepare('SELECT COUNT(*) FROM Backup WHERE '.$conditions);
-			$totaller->execute($bind);
-			$total = $totaller->fetch(PDO::FETCH_COLUMN);
-			$mainquery .= " LIMIT $limit OFFSET $offset";
-		}
-		$statement = $database->prepare($mainquery);
-		$statement->execute($bind);
-		$backups = $statement->fetchALL(PDO::FETCH_ASSOC);
-		return array(($limit ? $total : count($backups)), $backups);
+		return array((array) @$where, (array) @$bind);
 	}
 }

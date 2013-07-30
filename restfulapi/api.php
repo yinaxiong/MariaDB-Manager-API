@@ -39,12 +39,13 @@
 
 namespace SkySQL\SCDS\API;
 
-use \PDOException;
-use \Exception;
+use PDOException;
+use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','0.7');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
+define ('_API_BASE_FILE', __FILE__);
 
 if (!function_exists('apache_request_headers')) require ('includes/apache_request_headers.php');
 
@@ -68,12 +69,23 @@ class API {
 	);
 	*/
 	
-	public static $nodetranslator = array(
+	public static $systemtypes = array(
 		'aws' => array(
-			'Master' => 'master',
-			'Started' => 'slave',
-			'Slave' => 'slave',
-			'not running' => 'stopped'
+			'nodetranslator' => array(
+				'Master' => 'master',
+				'Started' => 'slave',
+				'Slave' => 'slave',
+				'not running' => 'stopped'
+			),
+			'description' => 'Amazon AWS based System'
+		),
+		'galera' => array(
+			'nodetranslator' => array(
+				'Master' => 'master',
+				'Started' => 'slave',
+				'not runnng' => 'stopped'
+			),
+			'description' => 'Galera multi-master System'
 		)
 	);
 	

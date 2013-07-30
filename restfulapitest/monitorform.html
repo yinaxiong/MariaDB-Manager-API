@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
-	<link href="default.css" rel="stylesheet" type="text/css" />
+	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
@@ -27,16 +27,17 @@
       <h2>Monitor Management via SkySQL Manager API</h2>
 	  <div class="section">
 	  <h3>Get Monitor Classes</h3>
-	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','systemtype','key','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /monitorclass <br />
-			or /monitorclass/{key}<br />
+			or /monitorclass/{systemtype}<br />
+			or /monitorclass/{systemtype}/key/{key}<br />
 			If a Monitor Class Key is specified, only that class will be returned; otherwise all will be returned.<br />
 			Parameters:
 			<a class="tooltip" href="#">fields,<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			A comma separated list of field names to be returned, others will be omitted.
 			</span></a>&nbsp;
@@ -44,6 +45,8 @@
 			Default: All fields<br />
 	</p>
 		<p class="formfields">
+			<label for="systemtype">System Type</label>
+			<input type="text" name="systemtype" id="systemtype" /><br />
 			<label for="monitorid">Monitor Key</label>
 			<input type="text" name="monitor" id="monitorid" /><br />
 			<label for="fields">Fields to return</label>
@@ -58,60 +61,62 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a Monitor Class</h3>
-	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','systemtype','key','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass/{key} <br />
+			URI will be /monitorclass/{systemtype}/key/{key} <br />
 			Parameters:
 			<a class="tooltip" href="#">name,<span class="custom info">
-			<img src="images/Info.png" alt="Name parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Name parameter" height="48" width="48" />
 			<strong>name</strong><br />
 			The name you want to give to the monitor class (text).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">sql,<span class="custom info">
-			<img src="images/Info.png" alt="SQL parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="SQL parameter" height="48" width="48" />
 			<strong>sql</strong><br />
 			A SQL statement that is to be used to implement this monitor class.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">description,<span class="custom info">
-			<img src="images/Info.png" alt="Description parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
 			<strong>description</strong><br />
 			A description of the monitor class (text).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">type,<span class="custom info">
-			<img src="images/Info.png" alt="Chart Type parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Chart Type parameter" height="48" width="48" />
 			<strong>type</strong><br />
 			The type of chart e.g. LineChart
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">delta,<span class="custom info">
-			<img src="images/Info.png" alt="Delta parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Delta parameter" height="48" width="48" />
 			<strong>delta</strong><br />
 			Whether the observations are differences.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">monitortype,<span class="custom info">
-			<img src="images/Info.png" alt="Monitor type parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Monitor type parameter" height="48" width="48" />
 			<strong>monitortype</strong><br />
 			The type of monitor class - choose from SQL, CRM, PING, COMMAND.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">systemaverage,<span class="custom info">
-			<img src="images/Info.png" alt="System average parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="System average parameter" height="48" width="48" />
 			<strong>systemaverage</strong><br />
 			Whether the system value for a monitor is an average of the values for all the nodes or a sum of the values.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">interval,<span class="custom info">
-			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Interval parameter" height="48" width="48" />
 			<strong>interval</strong><br />
 			The number of seconds between successive observations.
 			</span></a>
 			<a class="tooltip" href="#">unit<span class="custom info">
-			<img src="images/Info.png" alt="Unit parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Unit parameter" height="48" width="48" />
 			<strong>unit</strong><br />
 			The name of the units in which observations are measured (text).
 			</span></a>
 			<br />
 	</p>
 		<p class="formfields">
+			<label for="systemtypep">System Type</label>
+			<input type="text" name="systemtype" id="systemtypep" /><br />
 			<label for="monitoridp">Monitor Key</label>
 			<input type="text" name="monitor" id="monitoridp" /><br />
 			<label for="name">Name</label>
@@ -142,17 +147,103 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a Monitor Class</h3>
-	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','systemtype','key','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass/{key}<br />
+			URI will be /monitorclass/{systemtype}/key/{key}<br />
 			No parameters<br />
 	</p>
 		<p class="formfields">
+			<label for="systemtyped">System Type</label>
+			<input type="text" name="systemtype" id="systemtyped" /><br />
 			<label for="monitoridd">Monitor Key</label>
 			<input type="text" name="monitor" id="monitoridd" /><br />
 			<input type="submit" class="submit" value="Delete Class" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Store Node Monitor Data</h3>
+	  <form action="" method="post" id="storedata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/data<br />
+			Parameters:
+			<a class="tooltip" href="#">value,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Value parameter" height="48" width="48" />
+			<strong>value</strong><br />
+			A numeric value that is a monitor observation, or to indicate no observation is available, omit 
+			the parameter or use the character string &quot;null&quot;.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">timestamp<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Time stamp parameter" height="48" width="48" />
+			<strong>timestamp</strong><br />
+			A numeric value that is the unix time (integer seconds) for the observation - 
+			optional, if omitted the current time will be assumed.
+			</span></a>
+			<br />
+			Defaults: null, the present time.
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="systemidw">System ID</label>
+			<input type="text" name="systemid" id="systemidw" /><br />
+			<label for="nodeidw">Node ID</label>
+			<input type="text" name="nodeid" id="nodeidw" /><br />
+			<label for="monitoridw">Monitor ID</label>
+			<input type="text" name="monitorid" id="monitoridw" /><br />
+			<label for="value">Observation value</label>
+			<input type="text" name="value" id="value" /><br />
+			<label for="timestamp">Time stamp</label>
+			<input type="text" name="timestamp" id="timestamp" /><br />
+			<input type="submit" class="submit" value="Get Data" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Store Bulk Monitor Data</h3>
+	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitordata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /monitordata <br />
+			Parameters: 
+			<a class="tooltip" href="#">timestamp,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Time stamp parameter" height="48" width="48" />
+			<strong>timestamp</strong><br />
+			A numeric value that is the unix time (integer seconds) for the observations - 
+			optional, if omitted the current time will be assumed.
+			</span></a>
+			<br />
+			arrays of monitor ID, system ID, node ID, value (the form caters for up to 10,
+			but the API will accept an arbitrary number of entries).  Each array must be of the same size.
+			<br />
+			Defaults: the present time, none.
+		</p>
+		<p class="formfields">
+			<label for="timestampb">Time stamp</label>
+			<input type="text" name="timestamp" id="timestampb" /><br />
+			<input type="text" size="10" name="m[0]" /><input type="text" size="10" name="s[0]" /><input type="text" size="10" name="n[0]" /><input type="text" size="10" name="v[0]" /><br />
+			<input type="text" size="10" name="m[1]" /><input type="text" size="10" name="s[1]" /><input type="text" size="10" name="n[1]" /><input type="text" size="10" name="v[1]" /><br />
+			<input type="text" size="10" name="m[2]" /><input type="text" size="10" name="s[2]" /><input type="text" size="10" name="n[2]" /><input type="text" size="10" name="v[2]" /><br />
+			<input type="text" size="10" name="m[3]" /><input type="text" size="10" name="s[3]" /><input type="text" size="10" name="n[3]" /><input type="text" size="10" name="v[3]" /><br />
+			<input type="text" size="10" name="m[4]" /><input type="text" size="10" name="s[4]" /><input type="text" size="10" name="n[4]" /><input type="text" size="10" name="v[4]" /><br />
+			<input type="text" size="10" name="m[5]" /><input type="text" size="10" name="s[5]" /><input type="text" size="10" name="n[5]" /><input type="text" size="10" name="v[5]" /><br />
+			<input type="text" size="10" name="m[6]" /><input type="text" size="10" name="s[6]" /><input type="text" size="10" name="n[6]" /><input type="text" size="10" name="v[6]" /><br />
+			<input type="text" size="10" name="m[7]" /><input type="text" size="10" name="s[7]" /><input type="text" size="10" name="n[7]" /><input type="text" size="10" name="v[7]" /><br />
+			<input type="text" size="10" name="m[8]" /><input type="text" size="10" name="s[8]" /><input type="text" size="10" name="n[8]" /><input type="text" size="10" name="v[8]" /><br />
+			<input type="text" size="10" name="m[9]" /><input type="text" size="10" name="s[9]" /><input type="text" size="10" name="n[9]" /><input type="text" size="10" name="v[9]" /><br />
+			<input type="submit" class="submit" value="Submit Data" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />
@@ -169,7 +260,7 @@
 			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/data<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
-			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
 			<strong>start</strong><br />
 			The time to start the first interval to be returned - unix time in seconds. 
 			If the start time is specified, then the count (either submitted or defaulted)
@@ -180,7 +271,7 @@
 			specified (or defaulted) count of intervals.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">finish,<span class="custom info">
-			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Finish time parameter" height="48" width="48" />
 			<strong>finish</strong><br />
 			The time to stop the last interval to be returned - unix time in seconds.  Default
 			is the present time.  If a start time is specified, then the finish time may be
@@ -188,7 +279,7 @@
 			the finish time.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">interval,<span class="custom info">
-			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Interval parameter" height="48" width="48" />
 			<strong>interval</strong><br />
 			Number of seconds in each time interval.  The number of intervals may be
 			specified below, although it may be overridden if a start time is given - see
@@ -196,7 +287,7 @@
 			recalculated.  There is a default value in the API configuration file.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">count<span class="custom info">
-			<img src="images/Info.png" alt="Count parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
 			<strong>count</strong><br />
 			The number of time intervals for which interpolated observations are wanted.
 			It may be overridden by a calculation based on start time - see the tip for
@@ -240,7 +331,7 @@
 			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/rawdata<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
-			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
 			<strong>start</strong><br />
 			The time to start selecting observations to be returned - unix time in seconds. 
 			If the start time is specified, it will be used. If no start time is specified, then
@@ -249,19 +340,19 @@
 			BETWEEN clause.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">finish,<span class="custom info">
-			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Finish time parameter" height="48" width="48" />
 			<strong>finish</strong><br />
 			The time to stop selecting observations to be returned - unix time in seconds.  Default
 			is the present time.  The stop time is the second variable in a SQL BETWEEN clause.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">interval,<span class="custom info">
-			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Interval parameter" height="48" width="48" />
 			<strong>interval</strong><br />
 			Number of seconds in each time interval.  Only used to compute the start time
 			if none is specified.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">count<span class="custom info">
-			<img src="images/Info.png" alt="Count parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
 			<strong>count</strong><br />
 			Only used to compute the start time if none is specified.
 			</span></a>
@@ -299,7 +390,7 @@
 			URI will be /system/{systemid}/monitor/{monitor}/data<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
-			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
 			<strong>start</strong><br />
 			The time to start the first interval to be returned - unix time in seconds. 
 			If the start time is specified, then the count (either submitted or defaulted)
@@ -310,7 +401,7 @@
 			specified (or defaulted) count of intervals.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">finish,<span class="custom info">
-			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Finish time parameter" height="48" width="48" />
 			<strong>finish</strong><br />
 			The time to stop the last interval to be returned - unix time in seconds.  Default
 			is the present time.  If a start time is specified, then the finish time may be
@@ -318,7 +409,7 @@
 			the finish time.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">interval,<span class="custom info">
-			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Interval parameter" height="48" width="48" />
 			<strong>interval</strong><br />
 			Number of seconds in each time interval.  The number of intervals may be
 			specified below, although it may be overridden if a start time is given - see
@@ -326,7 +417,7 @@
 			recalculated.  There is a default value in the API configuration file.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">count<span class="custom info">
-			<img src="images/Info.png" alt="Count parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
 			<strong>count</strong><br />
 			The number of time intervals for which interpolated observations are wanted.
 			It may be overridden by a calculation based on start time - see the tip for
@@ -368,7 +459,7 @@
 			URI will be /system/{systemid}/monitor/{monitor}/rawdata<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
-			<img src="images/Info.png" alt="Start time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
 			<strong>start</strong><br />
 			The time to start selecting observations to be returned - unix time in seconds. 
 			If the start time is specified, it will be used. If no start time is specified, then
@@ -377,19 +468,19 @@
 			BETWEEN clause.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">finish,<span class="custom info">
-			<img src="images/Info.png" alt="Finish time parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Finish time parameter" height="48" width="48" />
 			<strong>finish</strong><br />
 			The time to stop selecting observations to be returned - unix time in seconds.  Default
 			is the present time.  The stop time is the second variable in a SQL BETWEEN clause.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">interval,<span class="custom info">
-			<img src="images/Info.png" alt="Interval parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Interval parameter" height="48" width="48" />
 			<strong>interval</strong><br />
 			Number of seconds in each time interval.  Only used to compute the start time
 			if none is specified.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">count<span class="custom info">
-			<img src="images/Info.png" alt="Count parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
 			<strong>count</strong><br />
 			Only used to compute the start time if none is specified.
 			</span></a>
@@ -466,7 +557,7 @@
 	  </div>
 	  </div>
 	  </div>
-		<script type="text/javascript" src="md5.js"></script>
-		<script type="text/javascript" src="testapi.js"></script>
+		<script type="text/javascript" src="testresources/js/md5.js"></script>
+		<script type="text/javascript" src="testresources/js/testapi.js"></script>
     </body>
 </html>

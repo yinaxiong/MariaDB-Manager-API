@@ -43,6 +43,7 @@ class Node extends EntityModel {
 	
 	protected static $updateSQL = 'UPDATE Node SET %s WHERE SystemID = :systemid AND NodeID = :nodeid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM Node WHERE SystemID = :systemid AND NodeID = :nodeid';
+	protected static $countAllSQL = 'SELECT COUNT(*) FROM Node';
 	protected static $insertSQL = 'INSERT INTO Node (%s) VALUES (%s)';
 	protected static $deleteSQL = 'DELETE FROM Node WHERE SystemID = :systemid AND NodeID = :nodeid';
 	protected static $selectSQL = 'SELECT %s FROM Node WHERE SystemID = :systemid AND NodeID = :nodeid';
@@ -61,6 +62,7 @@ class Node extends EntityModel {
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicip' => array('sqlname' => 'PublicIP', 'default' => '', 'validate' => 'ipaddress'),
 		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'validate' => 'ipaddress'),
+		'port' => array('sqlname' => 'Port', 'default' => 0),
 		'instanceid' => array('sqlname' => 'InstanceID', 'default' => ''),
 		'dbusername' => array('sqlname' => 'DBUserName', 'default' => ''),
 		'dbpassword' => array('sqlname' => 'DBPassword', 'default' => '')

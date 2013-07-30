@@ -26,9 +26,6 @@ function callapi () {
 	httpcode=`curl -s -o /dev/null -w "%{http_code}" --request $2 -H "Date:$RFCDATE" -H "Authorization:api-auth-1-$MD5CHK" -H "Accept:application/json" --data "$4" http://$1/$URI`
 }
 
-# Report to the API that the job is running ?
-# echo 'UPDATE CommandExecution SET State = 2 WHERE TaskID = '$1';' | sqlite3 $2
-
 status=1
 index=1
 for stepscript in ${steps//,/ }

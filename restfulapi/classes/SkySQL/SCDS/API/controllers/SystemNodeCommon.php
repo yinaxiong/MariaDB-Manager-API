@@ -32,6 +32,7 @@ namespace SkySQL\SCDS\API\controllers;
 use PDO;
 use stdClass;
 use SkySQL\SCDS\API\managers\MonitorManager;
+use SkySQL\SCDS\API\managers\NodeManager;
 
 abstract class SystemNodeCommon extends ImplementAPI {
 	protected $monitorquery = null;
@@ -59,5 +60,46 @@ abstract class SystemNodeCommon extends ImplementAPI {
 			$monitorlatest->$property = $data->value;
 		}
 		return $monitorlatest;
+	}
+	
+	protected function targetDatabaseQuery ($query, $nodeid) {
+		try {
+			$node = NodeManager::getInstance()->getByID($this->systemid, $nodeid);
+			if (!$node) $this->sendErrorResponse("System $this->systemid and node $nodeid are not valid node identifiers", 400);
+			$connection = "mysql:host=$node->privateip;dbname=information_schema";
+			if ($node->port) $connection .= ";port=$node->port";
+            $this->subjectdb = new PDO($connection, $node->dbusername, $node->dbpassword);
+            $this->subjectdb->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->subjectdb->setAttribute(PDO::ATTR_EMULATE_PREPARES, false);
+			$this->subjectdb->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_OBJ);
+			try {
+				$statement = $this->subjectdb->prepare($query);
+	            $statement->execute();
+				$results = $statement->fetchAll();
+				return $results;
+			}
+			catch (PDOException $pe) {
+				$this->sendResponse(array('error' => $pe->getMessage()));
+			}
+        }
+        catch (PDOException $pe) {
+            $this->sendErrorResponse($pe->getMessage(), 400);
+            exit;
+        }
+	}
+
+	protected function getNodeProcesses ($nodeid) {
+		$processes = $this->targetDatabaseQuery('SHOW PROCESSLIST', $nodeid);
+		if ($processes) foreach ($processes as &$process) {
+			$process->nodeid = $nodeid;
+			foreach (get_object_vars($process) as $name=>$value) {
+				$lcname = strtolower($name);
+				if ($lcname != $name) {
+					$process->$lcname = $value;
+					unset($process->$name);
+				}
+			}
+		}
+		return $processes;
 	}
 }

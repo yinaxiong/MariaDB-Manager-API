@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
-	<link href="default.css" rel="stylesheet" type="text/css" />
+	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
@@ -52,21 +52,21 @@
 			URI will be /system/{systemid}/backup <br />
 			Parameters:
 			<a class="tooltip" href="#">from,
-			<span class="custom info"><img src="images/Info.png" alt="From parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="From parameter" height="48" width="48" />
 			<strong>from</strong><br />
 			The start date and optionally time in any format that can be unambiguously recognised by the PHP strtotime function.
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">to,
-			<span class="custom info"><img src="images/Info.png" alt="To parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="To parameter" height="48" width="48" />
 			<strong>to</strong><br />
 			The end date and optionally time in any format that can be unambiguously recognised by the PHP strtotime function.
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">fields, 
-			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			Comma separated list of the field names that you would like to be returned. If not specified,
 			all fields are returned.
@@ -74,14 +74,14 @@
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">limit,
-			<span class="custom info"><img src="images/Info.png" alt="Limit parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Limit parameter" height="48" width="48" />
 			<strong>limit</strong><br />
 			The maximum number of items to be returned (integer, default 10).
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">offset
-			<span class="custom info"><img src="images/Info.png" alt="Offset parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Offset parameter" height="48" width="48" />
 			<strong>offset</strong><br />
 			The offset to start at within the full set of results (integer, default 0).
 			</span>
@@ -91,6 +91,8 @@
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
 			<input type="text" name="systemid" id="systemidl" /><br />
+			<label for="qsdl">Query String</label>
+			<input type="text" name="querystring" id="qsdl"/><br />
 			<label for="from">From - Date+Time</label>
 			<input type="text" name="from" id="from" /><br />
 			<label for="to">To - Date+Time</label>
@@ -110,6 +112,36 @@
 	  </form>
 	  </div>
 	  <div class="section">
+	  <h3>Get One System Backup</h3>
+	  <form action="" method="post" id="getonebackup" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup','backupid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/backup/{backupid} <br />
+			Parameters:
+			<a class="tooltip" href="#">fields, 
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			Comma separated list of the field names that you would like to be returned. If not specified,
+			all fields are returned.
+			</span>
+			</a><br />
+			Default is all fields<br />
+		</p>
+		<p class="formfields">
+			<label for="systemidb">System ID</label>
+			<input type="text" name="systemid" id="systemidb" /><br />
+			<label for="backupidb">Backup ID</label>
+			<input type="text" name="backupid" id="backupidb" /><br />
+			<input type="submit" class="submit" value="Show Backup" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
 	  <h3>Create a System Backup</h3>
 	  <form action="" method="post" id="createback" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
@@ -118,14 +150,14 @@
 			URI will be /system/{systemid}/backup <br />
 			Parameters:
 			<a class="tooltip" href="#">nodeid,
-			<span class="custom info"><img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>nodeid</strong><br />
 			The node ID for the backup (integer, must match an existing node for the chosen system).
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">level,
-			<span class="custom info"><img src="images/Info.png" alt="Size parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Size parameter" height="48" width="48" />
 			<strong>level</strong><br />
 			The backup level, where a level of 1 is a full backup, or a level of 2 is an incremental backup.
 			</span>
@@ -155,35 +187,35 @@
 			URI will be /system/{systemid}/backup/{backupid} <br />
 			Parameters:
 			<a class="tooltip" href="#">state,
-			<span class="custom info"><img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>from</strong><br />
 			The state ID for the backup (integer, must match a possible state).
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">size,
-			<span class="custom info"><img src="images/Info.png" alt="Size parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Size parameter" height="48" width="48" />
 			<strong>size</strong><br />
 			The size of the backup (integer).
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">storage, 
-			<span class="custom info"><img src="images/Info.png" alt="Storage parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Storage parameter" height="48" width="48" />
 			<strong>storage</strong><br />
 			The backup storage.
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">binlog,
-			<span class="custom info"><img src="images/Info.png" alt="Binlog parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Binlog parameter" height="48" width="48" />
 			<strong>binlog</strong><br />
 			The backup binlog.
 			</span>
 			</a>
 			&nbsp;
 			<a class="tooltip" href="#">log
-			<span class="custom info"><img src="images/Info.png" alt="Log parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Log parameter" height="48" width="48" />
 			<strong>log</strong><br />
 			The backup log.
 			</span>
@@ -214,7 +246,7 @@
 	  </div>
 	  </div>
 	  </div>
-		<script type="text/javascript" src="md5.js"></script>
-		<script type="text/javascript" src="testapi.js"></script>
+		<script type="text/javascript" src="testresources/js/md5.js"></script>
+		<script type="text/javascript" src="testresources/js/testapi.js"></script>
     </body>
 </html>

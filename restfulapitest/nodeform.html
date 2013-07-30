@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
-	<link href="default.css" rel="stylesheet" type="text/css" />
+	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
 	  <div id="header">
@@ -34,7 +34,7 @@
 			URI will be /nodestate <br />
 			Parameters:
 			<a class="tooltip" href="#">fields 
-			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			Comma separated list of the field names that you would like to be returned. If not specified,
 			all fields are returned.
@@ -62,7 +62,7 @@
 			URI will be /nodestate/{state} <br />
 			Parameters:
 			<a class="tooltip" href="#">fields 
-			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			Comma separated list of the field names that you would like to be returned. If not specified,
 			all fields are returned.
@@ -91,13 +91,13 @@
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /system/{systemid}/node <br />
 			Parameters:
-			<a class="tooltip" href="#">state,<span class="custom info"><img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<a class="tooltip" href="#">state,<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>state</strong><br />
 			Optional - limit results to nodes that are in the specified state.
 			</span>
 			</a>&nbsp;
 			<a class="tooltip" href="#">fields 
-			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			Comma separated list of the field names that you would like to be returned. If not specified,
 			all fields are returned.
@@ -129,42 +129,47 @@
 			URI will be /system/{systemid}/node/{nodeid} <br />
 			Parameters:
 			<a class="tooltip" href="#">name,<span class="custom info">
-			<img src="images/Info.png" alt="Name parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Name parameter" height="48" width="48" />
 			<strong>name</strong><br />
 			The name you want to give to the node (text).
 			</span></a>&nbsp;&nbsp;
 			<a class="tooltip" href="#">state,<span class="custom info">
-			<img src="images/Info.png" alt="State parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>state</strong><br />
 			The state ID to be given to the system (integer).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">hostname,<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>hostname</strong><br />
 			The hostname for the node (text).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">publicip,<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>publicip</strong><br />
 			The public IP address of the node in the usual form, e.g. 12.34.56.78
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">privateip,<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>privateip</strong><br />
 			The private IP address of the node in the usual form, e.g. 23.45.67.89
 			</span></a>&nbsp;
+			<a class="tooltip" href="#">port,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>port</strong><br />
+			The port number used to access the database on this node - empty or zero if the default is to be used.
+			</span></a>&nbsp;
 			<a class="tooltip" href="#">instanceid,<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>instanceid</strong><br />
 			The ID number for the instance (integer).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">username,<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>username</strong><br />
 			The user name for the node (text).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">passwd<span class="custom info">
-			<img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>passwd</strong><br />
 			The password for the node (text).
 			</span></a>
@@ -184,6 +189,8 @@
 			<input type="text" id="publicip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'publicip');" /><br />
 			<label for="privateip">Private IP</label>
 			<input type="text" id="privateip" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'privateip');" /><br />
+			<label for="port">Port</label>
+			<input type="text" id="port" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'port');" /><br />
 			<label for="instanceid">Instance ID</label>
 			<input type="text" id="instanceid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'instanceid');" /><br />
 			<label for="username">User Name</label>
@@ -229,7 +236,7 @@
 			URI will be /system/{systemid}/node/{nodeid} <br />
 			Parameters:
 			<a class="tooltip" href="#">fields 
-			<span class="custom info"><img src="images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>fields</strong><br />
 			Comma separated list of the field names that you would like to be returned. If not specified,
 			all fields are returned.
@@ -254,7 +261,7 @@
 	  </div>
 	  </div>
 	  </div>
-		<script type="text/javascript" src="md5.js"></script>
-		<script type="text/javascript" src="testapi.js"></script>
+		<script type="text/javascript" src="testresources/js/md5.js"></script>
+		<script type="text/javascript" src="testresources/js/testapi.js"></script>
     </body>
 </html>

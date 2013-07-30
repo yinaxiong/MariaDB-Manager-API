@@ -84,6 +84,7 @@ abstract class Request {
 		array('class' => 'SystemProperties', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
 		array('class' => 'SystemProperties', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
 		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'SystemBackups', 'method' => 'getOneBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
 		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => 'backupstate', 'http' => 'GET'),
@@ -95,6 +96,10 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/rawdata', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
+		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST'),
+		array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'GET'),
+		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'DELETE'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/[0-9]+/node/[0-9]+/process', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE'),
@@ -109,23 +114,29 @@ abstract class Request {
 		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/.*', 'http' => 'POST'),
 		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET'),
+		array('class' => 'Systems', 'method' => 'getSystemProcesses', 'uri' => 'system/[0-9]+/process', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'putSystem', 'uri' => 'system/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Systems', 'method' => 'deleteSystem', 'uri' => 'system/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET'),
+		array('class' => 'Systems', 'method' => 'getSystemTypes', 'uri' => 'systemtype', 'http' => 'GET'),
 		array('class' => 'Buckets', 'method' => 'getData', 'uri' => 'bucket', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/.+', 'http' => 'POST'),
+		array('class' => 'Tasks', 'method' => 'runScheduledCommand', 'uri' => 'scheduled/[0-9]+', 'http' => 'POST'),
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+/key', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass//key', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/.+', 'http' => 'PUT'),
-		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+', 'http' => 'DELETE'),
+		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'PUT'),
+		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'DELETE'),
 		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/[A-Za-z]+', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET'),
@@ -198,7 +209,7 @@ abstract class Request {
 		if (!self::$uriTablePrepared) {
 			foreach (self::$uriTable as &$uridata) {
 				$parts = explode('/', trim($uridata['uri'],'/'));
-				foreach ($parts as $part) $uridata['uriparts'][] = str_replace('*', self::$uriregex, $part);
+				foreach ($parts as $part) $uridata['uriparts'][] = str_replace('.*', self::$uriregex, $part);
 				$this->apibase[$parts[0]] = 1;
 			}
 			$this->apibase = array_keys($this->apibase);
@@ -213,6 +224,7 @@ abstract class Request {
 		$this->getSuffix();
 		$this->handleAccept();
 		if ('true' == $this->getParam($this->requestmethod, 'suppress_response_codes')) $this->suppress = true;
+		$this->getQueryString();
 	}
 	
 	protected function readAndCheckConfig () {
@@ -228,6 +240,15 @@ abstract class Request {
 		if (empty($config['cache']['timelimit'])) $config['cache']['timelimit'] = 3600;
 		if (empty($config['cache']['sizelimit'])) $config['cache']['sizelimit'] = 500000;
 		return $config;
+	}
+	
+	protected function getQueryString () {
+		$querystring = $this->getParam($this->requestmethod, 'querystring');
+		if ($querystring) {
+			$data = &$this->getArrayFromName($this->requestmethod);
+			parse_str($querystring, $newdata);
+			foreach ($newdata as $name=>$value) $data[$name] = $value;
+		}
 	}
 	
 	protected function fatalError ($error, $status=500) {
@@ -312,7 +333,7 @@ abstract class Request {
 			}
 			try {
 				$object->$method($uriparts);
-				$this->sendErrorResponse('Selected method $method of class $class returned to controller', 500);
+				$this->sendErrorResponse("Selected method $method of class $class returned to controller", 500);
 			}
 			catch (PDOException $pe) {
 				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500, $pe);
@@ -371,12 +392,13 @@ abstract class Request {
 	}
 	
 	public function getAllParamNames ($arrname) {
-		return array_diff(array_keys($this->getArrayFromName($arrname)),
-			array('fields','limit','offset','suppress_response_codes','_method', '_accept', '_rfcdate', '_authorization'));
+		$arr = &$this->getArrayFromName($arrname);
+		return array_diff(array_keys($arr),
+			array('fields','limit','offset','suppress_response_codes','querystring','_method', '_accept', '_rfcdate', '_authorization'));
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
-		$arr = $this->getArrayFromName($arrname);
+		$arr = &$this->getArrayFromName($arrname);
 		/*
 		if (!is_array($arr)) return $def;
 		if (strlen($this->requestmethod > 4 AND 'POST' == substr($this->requestmethod,0,4))) {
@@ -404,11 +426,11 @@ abstract class Request {
 	}
 	
 	public function paramEmpty ($arrname, $name) {
-		$arr = $this->getArrayFromName($arrname);
+		$arr = &$this->getArrayFromName($arrname);
 		return (is_array($arr)) ? !isset($arr[$name]) : true;
 	}
 	
-	protected function getArrayFromName ($arrname) {
+	protected function &getArrayFromName ($arrname) {
 		if (is_array($arrname)) $arr =& $arrname;
 		elseif ($this->requestviapost) $arr =& $_POST;
 		elseif ('GET' == $arrname) $arr =& $_GET;

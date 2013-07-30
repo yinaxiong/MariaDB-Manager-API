@@ -30,6 +30,7 @@
 namespace SkySQL\SCDS\API\models;
 
 use SkySQL\COMMON\AdminDatabase;
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\managers\NodeStateManager;
 use PDO;
@@ -42,11 +43,14 @@ abstract class EntityModel {
 	protected $setter = array();
 	protected $insname = array();
 	protected $insvalue = array();
+	protected $keydata = array();
 	
 	public static function getAll () {
 		$getall = AdminDatabase::getInstance()->prepare(sprintf(static::$selectAllSQL, self::getSelects(), ''));
 		$getall->execute();
-		return $getall->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		$entities = $getall->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		foreach ($entities as &$entity) $entity = self::fixDate($entity);
+		return $entities;
 	}
 	
 	public static function getByID ($keyvalues) {
@@ -59,23 +63,45 @@ abstract class EntityModel {
 		}
 		$select->execute($bind);
 		// ->fetchObject has problems, inadvisable to use
-		$results = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
-		return count($results) ? $results[0] : null;
+		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		return count($entities) ? self::fixDate($entities[0]) : null;
+	}
+	
+	protected static function fixDate ($entity) {
+		foreach (static::$fields as $name=>$about) {
+			if ('datetime' == @$about['validate']) $entity->$name = date('r', strtotime($entity->$name));
+		}
+		return $entity;
 	}
 	
 	public static function select () {
-		list($where, $bind) = self::wheresAndBinds();
+		$args = func_get_args();
+		$controller = array_shift($args);
+		list($where, $bind) = self::wheresAndBinds($controller, $args);
 		$database = AdminDatabase::getInstance();
 		if ($where) {
-			$sql = sprintf(static::$selectAllSQL, self::getSelects(), ' WHERE '.implode(' AND ', $where));
+			$conditions = implode(' AND ', $where);
+			$sql = static::$countAllSQL.' WHERE '.$conditions;
+			$count = $database->prepare($sql);
+			$count->execute($bind);
+			$total = $count->fetch(PDO::FETCH_COLUMN);
+			$sql = sprintf(static::$selectAllSQL, self::getSelects(), ' WHERE '.$conditions).self::limitsClause($controller);
 			$select = $database->prepare($sql);
 			$select->execute($bind);
 		}
 		else {
-			$sql = sprintf(static::$selectAllSQL, self::getSelects(), '');
+			$count = $database->prepare(static::$countAllSQL);
+			$count->execute();
+			$total = $count->fetch(PDO::FETCH_COLUMN);
+			$sql = sprintf(static::$selectAllSQL, self::getSelects(), '').self::limitsClause($controller);
 			$select = $database->query($sql);
 		}
-		return $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		return array($total, $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO));
+	}
+	
+	protected static function limitsClause ($controller) {
+		$limit = $controller->getLimit();
+		return $limit ? " LIMIT $limit OFFSET {$controller->getOffset()}" : '';
 	}
 	
 	public function update ($alwaysrespond=true) {
@@ -90,8 +116,9 @@ abstract class EntityModel {
 			$this->clearCache(true);
 			$counter = $update->rowCount();
 			if ($counter OR $alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
-			return 0;
 		}
+		if ($alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => 0, 'insertkey' => 0));
+		return 0;
 	}
 	
 	public function insert ($alwaysrespond=true) {
@@ -106,16 +133,15 @@ abstract class EntityModel {
 		$insert->execute($this->bind);
 		$database->commitTransaction();
 		$this->clearCache(true);
-		if ($alwaysrespond) Request::getInstance()->sendResponse(
-			array('updatecount' => 0,  'insertkey' => $this->insertedKey($database->lastInsertId()))
-		);
-		return $database->lastInsertId();
+		$insertkey = $this->insertedKey($database->lastInsertId());
+		if ($alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => 0,  'insertkey' => $insertkey));
+		else return $insertkey;
 	}
 	
 	public function save () {
 		$this->settersAndBinds(__FUNCTION__);
 		$database = AdminDatabase::getInstance();
-		$database->startImmediateTransaction();
+		$database->beginImmediateTransaction();
 		if ($this->keyComplete()) {
 			if (!empty($this->setter)) $counter = $this->update(false);
 			else {
@@ -154,9 +180,9 @@ abstract class EntityModel {
 	
 	protected function setCorrectFormatDate ($name) {
 		$bindname = ":$name";
-		if ($this->bind[$bindname]) {
+		if (!empty($this->bind[$bindname])) {
 			$unixtime = strtotime($this->bind[$bindname]);
-			$this->bind[$bindname] = $unixtime ? date('Y-m-d H:i:s',$unixtime) : date('Y-m-d H:i:s');
+			$this->bind[$bindname] = date('Y-m-d H:i:s', ($unixtime ? $unixtime : time()));
 		}
 	}
 	
@@ -184,7 +210,7 @@ abstract class EntityModel {
 	public static function checkLegal ($extras=array()) {
 		$request = Request::getInstance();
 		$method = $request->getMethod();
-		$fields = array_merge(array_keys(static::$fields), array_keys(static::$keys), $extras);
+		$fields = array_merge(array_keys(static::$fields), array_keys(static::$keys), (array) $extras);
 		$illegals = array_diff($request->getAllParamNames($method),$fields);
 		if (count($illegals)) {
 			$illegalist = implode (', ', $illegals);
@@ -223,23 +249,45 @@ abstract class EntityModel {
 	protected function setInsertValue ($name, $value) {
 		$bindname = ":$name";
 		$this->bind[$bindname] = $value;
-		$this->insname[] = static::$fields[$name]['sqlname'];
+		$sqlname = static::$fields[$name]['sqlname'];
+		$sub = array_search($sqlname, $this->insname);
+		if ($sub) unset($this->insname[$sub], $this->insvalue[$sub]);
+		$this->insname[] = $sqlname;
 		$this->insvalue[] = $bindname;
 	}
 	
-	protected static function wheresAndBinds () {
-		$bind = $where = array();
+	protected function calendarDate () {
+		$savezone = date_default_timezone_get();
+		date_default_timezone_set('UTC');
+		$date = date('Ymd\THis\Z');
+		date_default_timezone_set($savezone);
+		return $date;
+	}
+
+	protected static function wheresAndBinds ($controller, $args) {
+		list($where, $bind) = static::specialSelected($args);
 		$request = Request::getInstance();
 		$source = $request->getMethod();
+		foreach ($controller->getKeyData() as $name=>$value) {
+			if (isset(static::$keys[$name])) {
+				$about = static::$keys[$name];
+				$where[] = "{$about['sqlname']} = :$name";
+				$bind[":$name"] = $value;
+			}
+		}
 		foreach (static::$fields as $name=>$about) {
-			$bindname = ":$name";
 			if (!$request->paramEmpty($source, $name)) {
-				$bind[$bindname] = self::getParam($source, $name, $about);
-				$where[] = $about['sqlname'].' = '.$bindname;
+				$bind[":$name"] = self::getParam($source, $name, $about);
+				$where[] = "{$about['sqlname']} = :$name";
 			}
 		}
 		if (count(self::$validationerrors)) $request->sendErrorResponse(self::$validationerrors, 400);
 		return array($where, $bind);
+	}
+	
+	// Can be overriden by subclasses
+	protected static function specialSelected ($args) {
+		return array(array(), array());
 	}
 	
 	protected static function getParam ($source, $name, $about) {
@@ -253,7 +301,7 @@ abstract class EntityModel {
 	
 	// Validation method for System Type
 	protected static function systemtype ($data) {
-		return isset(API::$nodetranslator[$data]);
+		return isset(API::$systemtypes['nodetranslator'][$data]);
 	}
 	
 	// Validation method for System State
