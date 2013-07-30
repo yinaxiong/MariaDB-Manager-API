@@ -69,7 +69,7 @@ abstract class EntityModel {
 	
 	protected static function fixDate ($entity) {
 		foreach (static::$fields as $name=>$about) {
-			if ('datetime' == @$about['validate']) $entity->$name = date('r', strtotime($entity->$name));
+			if (!empty($entity->$name) AND 'datetime' == @$about['validate']) $entity->$name = date('r', strtotime($entity->$name));
 		}
 		return $entity;
 	}
@@ -96,7 +96,9 @@ abstract class EntityModel {
 			$sql = sprintf(static::$selectAllSQL, self::getSelects(), '').self::limitsClause($controller);
 			$select = $database->query($sql);
 		}
-		return array($total, $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO));
+		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		foreach ($entities as &$entity) $entity = self::fixDate($entity);
+		return array($total, $entities);
 	}
 	
 	protected static function limitsClause ($controller) {

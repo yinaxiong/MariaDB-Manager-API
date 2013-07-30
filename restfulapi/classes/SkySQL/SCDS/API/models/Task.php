@@ -70,9 +70,9 @@ class Task extends EntityModel {
 		'parameters' => array('sqlname' => 'Params', 'default' => '', 'insertonly' => true),
 		'icalentry' => array('sqlname' => 'iCalEntry', 'default' => ''),
 		'nextstart' => array('sqlname' => 'NextStart', 'default' => ''),
-		'started' => array('sqlname' => 'Started', 'default' => '', 'insertonly' => true),
+		'started' => array('sqlname' => 'Started', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
 		'pid' => array('sqlname' => 'PID', 'default' => 0),
-		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime'),
+		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime', 'validate' => 'datetime'),
 		'stepindex' => array('sqlname' => 'StepIndex', 'default' => 0),
 		'state' => array('sqlname' => 'State', 'default' => 'running')
 	);
