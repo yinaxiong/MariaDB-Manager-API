@@ -81,9 +81,9 @@
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
 			Request URI will be /system/{systemid} <br />
 			Parameters:
-			<a class="tooltip" href="#">type,<span class="custom info">
+			<a class="tooltip" href="#">systemtype,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Type parameter" height="48" width="48" />
-			<strong>type</strong><br />
+			<strong>systemtype</strong><br />
 			The type of the system e.g. galera or aws (text).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">name,<span class="custom info">
@@ -349,6 +349,7 @@
 			API replies by including or excluding &quot;application/json&quot; in the HTTP Accept
 			header - the API will only reply with JSON if it is included.
 		</p>
+		<h3>Parameters to API calls</h3>
 		<p>
 			The form fields that are needed to make the Request URI are usually mandatory.  If
 			they are omitted, the request will still be sent to the API but results will vary
@@ -360,6 +361,13 @@
 			to which requests are being sent (shown above).  It is literal text except for items that
 			are enclosed in curly brackets.  Items in curly brackets are taken from the form field
 			with the approximately similar name.
+		</p>
+		<p>
+			When using this HTML explorer, optional parameter fields will have a pink background
+			after you put the cursor into them.  If a field has a pink background, it will be sent
+			to the API, even if it is empty.  Where an optional field has a white background, it
+			will not be sent to the API.  You can clear the pink background by double clicking in
+			the field.
 		</p>
 		<p>
 			If parameters (apart from the information in the URI) are submitted with a

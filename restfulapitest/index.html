@@ -330,12 +330,25 @@ sizelimit = 500000
 		  Another critical aspect to installing the API code is setting up Apache 
 		  mod_rewrite (or its equivalent).  Any URI that does not correspond to an actual
 		  file or directory should be rewritten to point to the api.php file in the root
-		  of the API directory structure.  Typical rewriting rules for Apache are:
+		  of the API directory structure.  The neatest arrangement is to install the API 
+		  code into a subdomain so that it is at the document root for the subdomain.  
+		  In that case, typical rewriting rules for Apache are:
 	  </p>
 	  <pre>
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
 RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-d
 RewriteRule ^(.*) /api.php [L]
+	  </pre>
+	  <p>
+		  If the API code has to be placed in a subdirectory of the Apache document root,
+		  then the last line of the rewrite rule should be altered accordingly.  This will
+		  prevent rewriting taking place outside the API directory.  The rules
+		  would then be:
+	  </p>
+	  <pre>
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-f
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_FILENAME} !-d
+RewriteRule ^(/some/directory/.*) /some/directory/api.php [L]
 	  </pre>
 	  <p>
 		  Depending on the web server configuration, it may also be necessary to use URI
