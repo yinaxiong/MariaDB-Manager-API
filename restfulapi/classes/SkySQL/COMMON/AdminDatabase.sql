@@ -179,11 +179,11 @@ insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, Char
 
 
 create table MonitorData (
-	Monitor		varchar(40),
-	SystemID	int,
-	NodeID		int,
-	Value		int,		/* Value of the monitor */
-	Stamp		int,		/* Date/Time this value was observed */
+	MonitorID	int,		/* ID number for monitor class */
+	SystemID	int,		/* System ID for observation */
+	NodeID		int,		/* Node ID for observation, zero if system observation */
+	Value		int,		/* Value for the observation */
+	Stamp		int,		/* Date/Time this value was observed, unix time */
 	Repeats		int			/* Number of repeated observations same value */
 );
 CREATE INDEX MonitorDataStampIDX ON MonitorData (Stamp);

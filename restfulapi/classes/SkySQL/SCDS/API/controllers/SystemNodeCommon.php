@@ -35,13 +35,11 @@ use SkySQL\SCDS\API\managers\MonitorManager;
 use SkySQL\SCDS\API\managers\NodeManager;
 
 abstract class SystemNodeCommon extends ImplementAPI {
-	protected $monitorquery = null;
 	protected $systemid = 0;
+	protected $monitorquery = null;
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
-		$this->monitorquery = $this->db->prepare('SELECT Monitor AS monitor, Value AS value, MAX(Stamp) FROM MonitorData 
-			WHERE SystemID = :systemid AND NodeID = :nodeid GROUP BY Monitor');
 	}
 
 	protected function getMonitorData ($nodeid) {
@@ -51,6 +49,11 @@ abstract class SystemNodeCommon extends ImplementAPI {
 			$property = $monitor->monitor;
 			$monitorlatest->$property = null;
 		}
+		if (empty($this->monitorquery)) $this->monitorquery = $this->db->prepare(
+			'SELECT c.Monitor AS monitor, m.MonitorID AS monitorid, m.Value AS value, MAX(m.Stamp) 
+			FROM MonitorData AS m INNER JOIN Monitor AS c ON c.MonitorID = m.MonitorID AND s.SystemType = c.SystemType 
+			INNER JOIN System AS s ON s.SystemID = m.SystemID
+			WHERE m.SystemID = :systemid AND m.NodeID = :nodeid GROUP BY Monitor');
 		$this->monitorquery->execute(
 			array(':systemid' => $this->systemid, ':nodeid' => $nodeid)
 		);

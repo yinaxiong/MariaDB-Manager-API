@@ -60,7 +60,7 @@ class Backup extends EntityModel {
 		'nodeid' => array('sqlname' => 'NodeID', 'desc' => 'ID for the node running the backup', 'default' => 0),
 		'level' => array('sqlname' => 'BackupLevel', 'desc' => 'Backup level, 1 = standard, 2 = incremental', 'default' => 0),
 		'parentid' => array('sqlname' => 'ParentID', 'desc' => 'Base for an incremental backup', 'default' => 0),
-		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the backup', 'default' => 'running'),
+		'state' => array('sqlname' => 'State', 'validate' => 'backupstate', 'desc' => 'Current state of the backup', 'default' => 'running'),
 		'started' => array('sqlname' => 'Started', 'validate' => 'datetime', 'desc' => 'Date and time backup started', 'default' => ''),
 		'updated' => array('sqlname' => 'Updated', 'validate' => 'datetime', 'desc' => 'Date and time backup updated', 'default' => ''),
 		'restored' => array('sqlname' => 'Restored', 'validate' => 'datetime', 'desc' => 'Date and time backup restored', 'default' => ''),
@@ -84,6 +84,7 @@ class Backup extends EntityModel {
 		$loader->execute(array(':systemid' => $this->systemid, ':backupid' => $this->backupid));
 		$data = $loader->fetch();
 		foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
+		self::fixDate($this);
 	}
 
 	protected function keyComplete () {

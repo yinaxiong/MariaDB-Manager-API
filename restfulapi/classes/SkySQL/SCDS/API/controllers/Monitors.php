@@ -36,6 +36,7 @@ use \PDO;
 final class Monitors extends ImplementAPI {
 	protected $systemid = 0;
 	protected $nodeid = 0;
+	protected $monitor = null;
 	protected $monitorid = 0;
 	protected $rawtimes = array();
 	protected $rawvalues = array();
@@ -70,13 +71,12 @@ final class Monitors extends ImplementAPI {
 	
 	public function storeMonitorData ($uriparts) {
 		$this->analyseMonitorURI($uriparts);
-		$monitor = MonitorManager::getInstance()->getByID($this->monitorid);
 		if ($this->paramEmpty('POST', 'value')) $this->sendErrorResponse('Updating monitor data but no value supplied', 400);
 		$value = $this->getParam('POST', 'value');
 		$stamp = $this->getParam('POST', 'timestamp', time());
 		if ('null' == $value) $value = null;
 		else {
-			$scale = isset($monitor->scale) ? $monitor->scale : 0;
+			$scale = isset($this->monitor->scale) ? $this->monitor->scale : 0;
 			$value =  $scale ? (int) round($value * pow(10,$scale)) : (int) $value;
 		}
 		$this->beginExclusiveTransaction();
@@ -320,16 +320,24 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function analyseMonitorURI ($uriparts) {
-		$this->systemid = $uriparts[1];
+		$this->systemid = (int) $uriparts[1];
 		if ('node' == $uriparts[2]) {
-			$this->nodeid = $uriparts[3];
-			$this->monitorid = $uriparts[5];
+			$this->nodeid = (int) $uriparts[3];
+			$this->monitorid = $this->getMonitorIDFromName($this->systemid, urldecode($uriparts[5]));
 		}
 		elseif ('monitor' == $uriparts[2]) {
 			$this->nodeid = 0;
-			$this->monitorid = $uriparts[3];
+			$this->monitorid = $this->getMonitorIDFromName($this->systemid, urldecode($uriparts[3]));
 		}
 		else $this->sendErrorResponse("Internal contradiction in Monitors->storeMonitorData", 500);
+	}
+	
+	protected function getMonitorIDFromName ($systemid, $monitorkey) {
+		$system = SystemManager::getInstance()->getByID($systemid);
+		if (empty($system)) $this-sendErrorResponse("System $systemid does not exist", 400);
+		$this->monitor = MonitorManager::getInstance()->getByID($system->systemtype, $monitorkey);
+		if (empty($this->monitor)) $this->sendErrorResponse("Monitor $monitorkey for system ID $systemid not available", 400);
+		return $this->monitor->monitorid;
 	}
 	
 	protected function getSpanParameters () {

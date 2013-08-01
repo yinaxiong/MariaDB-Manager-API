@@ -188,8 +188,22 @@
 			Parameters:
 			<a class="tooltip" href="#">state,
 			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
-			<strong>from</strong><br />
-			The state ID for the backup (integer, must match a possible state).
+			<strong>state</strong><br />
+			The state code for the backup (string, must match a possible state).
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">updated,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>updated</strong><br />
+			The date when the backup was updated, must be a valid date according to PHP strtotime.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">restored,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>restored</strong><br />
+			The date when the backup was restored, must be a valid date according to PHP strtotime.
 			</span>
 			</a>
 			&nbsp;
@@ -228,6 +242,10 @@
 			<input type="text" name="backupid" id="backupid" /><br />
 			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="updated">Updated</label>
+			<input type="text" id="updated" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'updated');" /><br />
+			<label for="restored">Restored</label>
+			<input type="text" id="restored" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'restored');" /><br />
 			<label for="size">Size</label>
 			<input type="text" id="size" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'size');" /><br />
 			<label for="storage">Storage</label>

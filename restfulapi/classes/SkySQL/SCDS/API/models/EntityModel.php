@@ -67,7 +67,7 @@ abstract class EntityModel {
 		return count($entities) ? self::fixDate($entities[0]) : null;
 	}
 	
-	protected static function fixDate ($entity) {
+	protected static function fixDate (&$entity) {
 		foreach (static::$fields as $name=>$about) {
 			if (!empty($entity->$name) AND 'datetime' == @$about['validate']) $entity->$name = date('r', strtotime($entity->$name));
 		}
@@ -303,7 +303,7 @@ abstract class EntityModel {
 	
 	// Validation method for System Type
 	protected static function systemtype ($data) {
-		return isset(API::$systemtypes['nodetranslator'][$data]);
+		return isset(API::$systemtypes[$data]);
 	}
 	
 	// Validation method for System State
@@ -319,6 +319,11 @@ abstract class EntityModel {
 	// Validation method for node state
 	protected static function nodestate ($data) {
 		return NodeStateManager::getInstance()->getByState($data) ? true : false;
+	}
+	
+	// Validation method for backup state
+	protected static function backupstate ($data) {
+		return isset(API::$backupstates[$data]);
 	}
 	
 	// Validation method for date/time

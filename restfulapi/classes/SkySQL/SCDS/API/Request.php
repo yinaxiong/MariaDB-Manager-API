@@ -88,14 +88,14 @@ abstract class Request {
 		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
 		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
 		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => 'backupstate', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/latest', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/data', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/monitor/[0-9]+/latest', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/rawdata', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/rawdata', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
-		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/[0-9]+/data', 'http' => 'POST'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/latest', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/monitor/.+/latest', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/rawdata', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/rawdata', 'http' => 'GET'),
+		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'POST'),
+		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST'),
 		array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'DELETE'),
@@ -319,19 +319,19 @@ abstract class Request {
 		if ('metadata' != $uriparts[0]) $this->checkSecurity();
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
-			if ('Request' == $link['class']) $object = $this;
-			else {
-				$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
-				if (!class_exists($class)) {
-					$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
-				}
-				$object = new $class($this);
-			}
-			$method = $link['method'];
-			if (!method_exists($object, $method)) {
-				$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 404);
-			}
 			try {
+				if ('Request' == $link['class']) $object = $this;
+				else {
+					$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
+					if (!class_exists($class)) {
+						$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
+					}
+					$object = new $class($this);
+				}
+				$method = $link['method'];
+				if (!method_exists($object, $method)) {
+					$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 404);
+				}
 				$object->$method($uriparts);
 				$this->sendErrorResponse("Selected method $method of class $class returned to controller", 500);
 			}
@@ -441,7 +441,8 @@ abstract class Request {
 				if ($arrname == substr($this->requestmethod,4)) $arr =& $_POST;
 			}
 		}
-		return isset($arr) ? $arr : array();
+		else $arr = array();
+		return $arr;
 	}
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
