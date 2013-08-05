@@ -72,7 +72,7 @@ class Task extends EntityModel {
 		'nextstart' => array('sqlname' => 'NextStart', 'default' => ''),
 		'started' => array('sqlname' => 'Started', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
 		'pid' => array('sqlname' => 'PID', 'default' => 0),
-		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime', 'validate' => 'datetime'),
+		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime'),
 		'stepindex' => array('sqlname' => 'StepIndex', 'default' => 0),
 		'state' => array('sqlname' => 'State', 'default' => 'running')
 	);
@@ -158,12 +158,12 @@ class Task extends EntityModel {
 	}
 	
 	protected function validateUpdate () {
-		if (isset($this->bind[':completed'])) {
+		if (isset($this->bind[':completed']) AND 'done' == @$this->bind[':state']) {
 			$unixtime = strtotime($this->bind[':completed']);
 			if (!$unixtime) $this->bind[':completed'] = date('Y-m-d H:i:s');
 			if (!isset($this->bind[':stepindex'])) {
 				$sqlname = self::$fields['stepindex']['sqlname'];
-				$this->setters[] = "$sqlname = :stepindex";
+				$this->setter[] = "$sqlname = :stepindex";
 			}
 			$this->bind[':stepindex'] = 0;
 		}

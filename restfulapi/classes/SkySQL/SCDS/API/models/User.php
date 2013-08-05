@@ -89,7 +89,7 @@ class User extends EntityModel {
 	
 	protected function validateUpdate () {
 		$this->fixPasswordAndSalt();
-		if (!empty($this->bind[':password'])) $this->setters[] = 'Password = :password';
+		if (!empty($this->bind[':password'])) $this->setter[] = 'Password = :password';
 	}
 	
 	protected function fixPasswordAndSalt () {

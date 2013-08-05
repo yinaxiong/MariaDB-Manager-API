@@ -184,8 +184,12 @@ abstract class EntityModel {
 		$bindname = ":$name";
 		if (!empty($this->bind[$bindname])) {
 			$unixtime = strtotime($this->bind[$bindname]);
-			$this->bind[$bindname] = date('Y-m-d H:i:s', ($unixtime ? $unixtime : time()));
+			$this->bind[$bindname] = self::formatDate($unixtime);
 		}
+	}
+	
+	protected static function formatDate ($unixtime) {
+		return date('Y-m-d H:i:s', ($unixtime ? $unixtime : time()));
 	}
 	
 	protected function setCorrectFormatDateWithDefault ($name) {
@@ -296,7 +300,8 @@ abstract class EntityModel {
 		$data = Request::getInstance()->getParam($source, $name, $about['default']);
 		if (@$about['validate']) {
 			$method = $about['validate'];
-			if (!self::$method($data)) self::$validationerrors[] = "Field $name with value $data failed validation";
+			if (!self::$method($data)) self::$validationerrors[] = "Field '$name' with value '$data' failed $method validation";
+			if ('datetime' == $method) $data = self::formatDate(strtotime($data));
 		}
 		return $data;
 	}
