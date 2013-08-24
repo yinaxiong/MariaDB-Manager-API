@@ -131,6 +131,11 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function getCommands ($state) {
+		$query = $this->db->prepare('SELECT Command AS command, Description AS description, Icon AS icon, Steps AS steps FROM NodeCommands WHERE State = :state  ORDER BY UIOrder');
+		$query->execute(array(':state' => $state));
+		return $query->fetchAll();
+
+		// Older code that returns commands as strings rather than objects
 		$query = $this->db->prepare('SELECT Command FROM NodeCommands WHERE State = :state');
 		$query->execute(array(':state' => $state));
 		return $query->fetchAll(PDO::FETCH_COLUMN);
