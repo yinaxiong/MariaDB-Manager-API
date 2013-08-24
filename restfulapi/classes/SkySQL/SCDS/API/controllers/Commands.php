@@ -40,7 +40,7 @@ class Commands extends ImplementAPI {
 	}
 
 	public function getCommands () {
-		$commands = $this->db->query("SELECT Command AS command, Description AS description, Icon AS icon, Steps AS steps FROM NodeCommands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
+		$commands = $this->db->query("SELECT Command AS command, State AS state, Description AS description, Icon AS icon, Steps AS steps FROM NodeCommands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
 		$results = $this->filterResults($commands->fetchAll(PDO::FETCH_ASSOC));
 		if (count($results)) $this->sendResponse(array('node_commands' => $results));
 		else $this->sendErrorResponse('', 404);
