@@ -35,8 +35,8 @@ class Tasks extends ImplementAPI {
 	
 	public function getMultipleTasks () {
 		Task::checkLegal();
-		$tasks = Task::select($this);
-		$this->sendResponse(array('tasks' => $this->filterResults($tasks)));
+		list($total, $tasks) = Task::select($this);
+		$this->sendResponse(array('total' => $total, 'tasks' => $this->filterResults($tasks)));
 	}
 	
 	public function getOneTask ($uriparts) {

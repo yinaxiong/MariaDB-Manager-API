@@ -51,7 +51,7 @@ final class Monitors extends ImplementAPI {
 		elseif (empty($uriparts[3])) {
 			$systemtype = urldecode($uriparts[1]);
 			$monitors = $manager->getByType($systemtype);
-			$this->sendResponse(array('monitorclass' => $this->filterResults($monitors)));
+			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
 		}
 		else {
 			$systemtype = urldecode($uriparts[1]);
