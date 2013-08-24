@@ -139,7 +139,8 @@ class API {
 		'promote' => array('icon' => 'promoting', 'description' => 'Promote a slave to master'),
 		'synchronize' => array('icon' => 'synchronizing', 'description' => 'Synchronize a node'),
 		'backup' => array('icon' => 'backingup', 'description' => 'Backup a node'),
-		'restore' => array('icon' => 'restoring', 'description' => 'Restore a node')
+		'restore' => array('icon' => 'restoring', 'description' => 'Restore a node'),
+		'restart' => array('icon' => 'starting', 'description' => 'Restart a node from error state')
 	);
 	
 	public static function getInstance () {
