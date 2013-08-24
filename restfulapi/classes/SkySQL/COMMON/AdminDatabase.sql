@@ -92,13 +92,13 @@ create table Node (
 	SystemID	int,			/* Which system ID is this node in */
 	NodeName	varchar(80),	/* User defined system name */
 	State		varchar(20),	/* Current state of the node */
-	Hostname	varchar(20),	/* Internal hostname of the node */
-	PublicIP	varchar(15),	/* Current public IP address of node */
-	PrivateIP	varchar(15),	/* Current private IP address of the node*/
+	Hostname	varchar(255),	/* Internal hostname of the node */
+	PublicIP	varchar(45),	/* Current public IP address of node */
+	PrivateIP	varchar(45),	/* Current private IP address of the node*/
 	Port		int,			/* Port number for database access */
 	InstanceID	varchar(20),	/* The EC2 instance ID of the node */
-	DBUserName	varchar(30),
-	DBPassword	varchar(30)
+	DBUserName	varchar(50),
+	DBPassword	varchar(50)
 );
 create unique index SystemNodeIDX on Node (SystemID, NodeID);
 
@@ -121,14 +121,14 @@ create table Task (
 	SystemID		int,					/* SystemID of the system */
 	NodeID			int,					/* NodeID executed on */
 	BackupID		int,					/* For backup, the ID of the backup record */
-    PrivateIP		varchar(15),			/* IP address for node running the command */
 	UserName		varchar(40),			/* UserName that requested the command execution */
 	Command			varchar(40),			/* Command executed */
-	Params			varchar(255),			/* Parameters for Command */
+	Params			text,					/* Parameters for Command */
 	iCalEntry		text,					/* Schedule details, if scheduled */
 	NextStart		datetime,				/* Time for next scheduled start */
 	Started			datetime,				/* Timestamp at start of execution */
     PID				int,					/* Process ID for running script */
+	ATJobNumber		int,					/* Linux AT job number */
 	Completed		datetime,				/* Timestamp on completion, this will be
 											* NULL for commands that are in progress
 											*/
@@ -136,12 +136,30 @@ create table Task (
 	State			varchar(20)				/* Command state */
 );
 
+/*
+** Scheduled tasks.
+*/
+create table Schedule (
+	ScheduleID		integer PRIMARY KEY AUTOINCREMENT,
+	SystemID		int,					/* SystemID of the system */
+	NodeID			int,					/* NodeID executed on */
+	UserName		varchar(40),			/* UserName that requested the command execution */
+	Command			varchar(40),			/* Command executed */
+	BackupLevel		int,					/* Whether a full=1 or incremental=2 backup, if applicable */
+	Params			text,					/* Parameters for Command */
+	iCalEntry		text,					/* Schedule details, if scheduled */
+	NextStart		datetime,				/* Time for next scheduled start */
+	ATJobNumber		int,					/* Linux AT job number */
+	Created			datetime,				/* Timestamp when created */
+	Updated			datetime				/* Timestamp when last updated */
+);
+
 create table Monitor (
 	MonitorID		integer PRIMARY KEY autoincrement,		/* ID for Monitor */
 	SystemType		varchar(20),				/* System type handled - e.g. aws or galera */
 	Monitor			varchar(40),				/* Short name of monitor */
 	Name			varchar(80),				/* Displayed name of this monitor */
-	SQL				varchar(200),				/* SQL to run on MySQL to get the current
+	SQL				text,						/* SQL to run on MySQL to get the current
 												* value of the monitor. */
 	Description		varchar(255),				/* tooltip description of monitor */
 	Decimals		int default 0,				/* Number of decimal places (can be negative) */
@@ -202,6 +220,14 @@ create table UserProperties (
 	Value		text
 );
 
+create table UserTag (
+	UserName	varchar (40),
+	TagType		varchar	(40),
+	TagName		varchar	(40),
+	Tag			text
+);
+create unique index UserTagIDX on UserTag (UserName, TagType, TagName, Tag);
+
 create table Backup (
 	BackupID	integer,		/* Unique identifier for the backup within System ID */
 	SystemID	int,			/* System backup was taken on */
@@ -213,9 +239,9 @@ create table Backup (
 	Updated		datetime,		/* Date of last update of this record during backup */
 	Restored	datetime,		/* Date of last restore from this backup */
 	Size		int,			/* Size of backup */
-	Storage		varchar(255),	/* Path to storage location */
-	BinLog		varchar(255),	/* Binlog of backup */
-	Log			varchar(255)	/* URL to Log of backup */
+	Storage		text,			/* Path to storage location */
+	BinLog		text,			/* Binlog of backup */
+	Log			text			/* URL to Log of backup */
 );
 
 create unique index SystemBackupIDX ON Backup (SystemID, BackupID);
