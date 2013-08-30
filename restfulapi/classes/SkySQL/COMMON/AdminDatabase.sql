@@ -120,15 +120,14 @@ create table Task (
 	TaskID			integer PRIMARY KEY AUTOINCREMENT,
 	SystemID		int,					/* SystemID of the system */
 	NodeID			int,					/* NodeID executed on */
+	PrivateIP		varchar(45),			/* Private IP address of the node when task was started*/
 	BackupID		int,					/* For backup, the ID of the backup record */
 	UserName		varchar(40),			/* UserName that requested the command execution */
 	Command			varchar(40),			/* Command executed */
+	Steps			varchar(255),			/* Comma separated list of step IDs */
 	Params			text,					/* Parameters for Command */
-	iCalEntry		text,					/* Schedule details, if scheduled */
-	NextStart		datetime,				/* Time for next scheduled start */
 	Started			datetime,				/* Timestamp at start of execution */
     PID				int,					/* Process ID for running script */
-	ATJobNumber		int,					/* Linux AT job number */
 	Completed		datetime,				/* Timestamp on completion, this will be
 											* NULL for commands that are in progress
 											*/
@@ -195,17 +194,6 @@ insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, Char
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'flowcontrol', 'Flow Controlled', 0, 'select variable_value from global_status where variable_name = "WSREP_FLOW_CONTROL_SENT";', 'Flow control messages sent', 'LineChart', 1, 'SQL', 0, 30, null);
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'sendqueue', 'Avg Send Queue', 0, 'select variable_value from global_status where variable_name = "WSREP_LOCAL_SEND_QUEUE_AVG";', 'Average length of send queue', 'LineChart', 0, 'SQL', 1, 30, null);
 
-
-create table MonitorData (
-	MonitorID	int,		/* ID number for monitor class */
-	SystemID	int,		/* System ID for observation */
-	NodeID		int,		/* Node ID for observation, zero if system observation */
-	Value		int,		/* Value for the observation */
-	Stamp		int,		/* Date/Time this value was observed, unix time */
-	Repeats		int			/* Number of repeated observations same value */
-);
-CREATE INDEX MonitorDataStampIDX ON MonitorData (Stamp);
-
 create table User (
 	UserID		integer PRIMARY KEY autoincrement,
 	UserName	varchar(40),
@@ -227,6 +215,26 @@ create table UserTag (
 	Tag			text
 );
 create unique index UserTagIDX on UserTag (UserName, TagType, TagName, Tag);
+
+create table Assignments (
+	id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	access_type varchar(60) NOT NULL,
+	access_id text NOT NULL,
+	role varchar(60) NOT NULL
+);
+create index AccessType on Assignments (access_type, access_id, role);
+
+create table Permissions (
+	id integer NOT NULL PRIMARY KEY AUTOINCREMENT,
+	role varchar(60) NOT NULL,
+	control tinyint unsigned NOT NULL default 0,
+	action varchar(60) NOT NULL,
+	subject_type varchar(60) NOT NULL,
+	subject_id text NOT NULL,
+	system smallint unsigned NOT NULL default 0
+);
+create index RoleType on Permissions (role, action, subject_type, subject_id);
+create index SubAction on Permissions (subject_type, action, subject_id);
 
 create table Backup (
 	BackupID	integer,		/* Unique identifier for the backup within System ID */

@@ -55,10 +55,15 @@ abstract class EntityModel {
 	
 	public static function getByID ($keyvalues) {
 		$request = Request::getInstance();
-		if (count($keyvalues) != count(static::$keys)) $request->sendErrorResponse('Number of values given does not match number of keys', 500);
+		$classname = static::$headername;
+		$actualcount = count($keyvalues);
+		$keycount = count(static::$keys);
+		if ($actualcount != $keycount) {
+			$request->sendErrorResponse("Keys array passed to getByID in $classname has $actualcount values, should be $keycount", 500);
+		}
 		$select = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
 		foreach (static::$keys as $name=>$about) {
-			if (empty($keyvalues[$name])) $request->sendErrorResponse("No key value given for {$about['sqlname']} as key to select items", 400);
+			if (empty($keyvalues[$name])) $request->sendErrorResponse("No key value given in $classname for {$about['sqlname']} as key to select items", 400);
 			$bind[":$name"] = $keyvalues[$name];
 		}
 		$select->execute($bind);
@@ -74,6 +79,15 @@ abstract class EntityModel {
 		return $entity;
 	}
 	
+	public function loadData () {
+		$loader = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
+		foreach (array_keys(static::$keys) as $key) $bind[":$key"] = $this->$key; 
+		$loader->execute((array) @$bind);
+		$data = $loader->fetch();
+		foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
+		self::fixDate($this);
+	}
+
 	public static function select () {
 		$args = func_get_args();
 		$controller = array_shift($args);
@@ -224,6 +238,10 @@ abstract class EntityModel {
 		}
 	}
 	
+	public function setPropertiesFromParams () {
+		$this->settersAndBinds('insert');
+	}
+	
 	protected function settersAndBinds ($caller) {
 		$request = Request::getInstance();
 		// Source for data is always provided except for deletes
@@ -297,11 +315,15 @@ abstract class EntityModel {
 	}
 	
 	protected static function getParam ($source, $name, $about) {
-		$data = Request::getInstance()->getParam($source, $name, $about['default']);
+		$request = Request::getInstance();
+		$data = $request->getParam($source, $name, $about['default']);
 		if (@$about['validate']) {
 			$method = $about['validate'];
-			if (!self::$method($data)) self::$validationerrors[] = "Field '$name' with value '$data' failed $method validation";
-			if ('datetime' == $method) $data = self::formatDate(strtotime($data));
+			if (method_exists(__CLASS__, $method)) {
+				if (!self::$method($data)) self::$validationerrors[] = "Field '$name' with value '$data' failed $method validation";
+				if ('datetime' == $method) $data = self::formatDate(strtotime($data));
+			}
+			else $request->sendErrorResponse("Field $name specified validation '$method', but no such method exists", 500);
 		}
 		return $data;
 	}

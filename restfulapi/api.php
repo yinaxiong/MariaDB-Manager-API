@@ -262,7 +262,7 @@ class API {
 		$html = '';
 		foreach(debug_backtrace() as $back) {
 		    if (isset($back['file']) AND $back['file']) {
-			    $html .= '<br />'.$back['file'].':'.$back['line'];
+			    $html .= "\n".$back['file'].':'.$back['line'];
 			}
 		}
 		if ($error) $counter++;

@@ -210,6 +210,119 @@
 			</p>
 		</form>
 		</div>
+	  <div class="section">
+	  <h3>Add a User Tag</h3>
+	  <form action="" method="post" id="addusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag','tagname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/monitortag/{tagname} <br />
+			Parameters: systemid, nodeid, monitor <br />
+			Note: nodeid can be zero for a system monitor <br />
+		</p>
+		<p class="formfields">
+			<label for="usernameta">Username</label>
+			<input type="text" name="username" id="usernameta" /><br />
+			<label for="tagnameta">Tag Name</label>
+			<input type="text" name="tagname" id="tagnameta" /><br />
+			<label for="systemidta">System ID</label>
+			<input type="text" name="systemid" id="systemidta" /><br />
+			<label for="nodeidta">Node ID</label>
+			<input type="text" name="nodeid" id="nodeidta" /><br />
+			<label for="monitorta">Monitor Key</label>
+			<input type="text" name="monitor" id="monitorta" /><br />
+			<input type="submit" class="submit" value="Add Tag" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		</div>
+	  <div class="section">
+	  <h3>Get Named User Tags</h3>
+	  <form action="" method="post" id="getusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag','tagname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/monitortag/{tagname} <br />
+			Parameters: None <br />
+		</p>
+		<p class="formfields">
+			<label for="usernametg">Username</label>
+			<input type="text" name="username" id="usernametg" /><br />
+			<label for="tagnametg">Tag Name</label>
+			<input type="text" name="tagname" id="tagnametag" /><br />
+			<input type="submit" class="submit" value="Get Tags" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		</div>
+	  <div class="section">
+	  <h3>Get All User Tags</h3>
+	  <form action="" method="post" id="getallusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/monitortag <br />
+			Parameters: None <br />
+		</p>
+		<p class="formfields">
+			<label for="usernametga">Username</label>
+			<input type="text" name="username" id="usernametga" /><br />
+			<input type="submit" class="submit" value="Get Tags" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		</div>
+	  <div class="section">
+	  <h3>Delete Named User Tags</h3>
+	  <form action="" method="post" id="delusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag','tagname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/monitortag/{tagname} <br />
+			Parameters: None <br />
+		</p>
+		<p class="formfields">
+			<label for="usernametd">Username</label>
+			<input type="text" name="username" id="usernametd" /><br />
+			<label for="tagnametd">Tag Name</label>
+			<input type="text" name="tagname" id="tagnametd" /><br />
+			<input type="submit" class="submit" value="Delete Tags" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		</div>
+	  <div class="section">
+	  <h3>Delete All User Tags</h3>
+	  <form action="" method="post" id="delallusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/monitortag <br />
+			Parameters: None <br />
+		</p>
+		<p class="formfields">
+			<label for="usernametda">Username</label>
+			<input type="text" name="username" id="usernametda" /><br />
+			<input type="submit" class="submit" value="Delete Tags" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+		</div>
 		</div>
 		</div>
 		<script type="text/javascript" src="testresources/js/md5.js"></script>

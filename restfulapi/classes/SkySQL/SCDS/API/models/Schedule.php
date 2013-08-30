@@ -22,14 +22,13 @@
  * Author: Martin Brampton
  * Date: May 2013
  * 
- * The Command class is used only to manage command requests, and does not refer
- * to a specific stored entity.
+ * The Command class is not instantiated, but is used for checking.
  * 
  */
 
 namespace SkySQL\SCDS\API\models;
 
-class Command extends EntityModel {
+class Schedule extends EntityModel {
 	protected static $setkeyvalues = false;
 	
 	protected static $classname = __CLASS__;
@@ -40,22 +39,20 @@ class Command extends EntityModel {
 	protected static $getAllCTO = array('command');
 	
 	protected static $keys = array(
-		'command' => array('sqlname' => 'Command', 'type'  => 'int')
+		'scheduleid' => array('sqlname' => 'Command', 'type'  => 'int')
 	);
 	
 	protected static $fields = array(
 		'systemid' => array('sqlname' => 'SystemID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
-		'privateip' => array('sqlname' => 'PrivateIP', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
-		'level' => array('sqlname' => 'Level', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
-		'parentid' => array('sqlname' => 'ParentID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
+		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
+		'level' => array('sqlname' => 'BackupLevel', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
-		'state' => array('sqlname' => 'State', 'type' => 'int', 'default' => ''),
-		'step' => array('sqlname' => 'Step', 'type' => 'int', 'default' => 0)
+		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'text', 'default' => 'running'),
+		'nextstart' => array('sqlname' => 'NextStart', 'default' => '', 'insertonly' => true),
+		'atjobnumber' => array('sqlname' => 'ATJobNumber', 'default' => 0, 'insertonly' => true),
+		'created' => array('sqlname' => 'Created', 'insertonly' => true),
+		'updated' => array('sqlname' => 'Updated', 'insertonly' => true)
 	);
-	
-	public function __construct ($command) {
-		$this->command = $command;
-	}
 }

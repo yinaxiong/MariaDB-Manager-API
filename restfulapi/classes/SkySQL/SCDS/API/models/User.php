@@ -58,6 +58,9 @@ class User extends EntityModel {
 		'password' => array('sqlname' => 'Password', 'default' => '', 'secret' => true)
 	);
 	
+	protected static $savedpass = '';
+	protected static $encrypted = '';
+	
 	public function __construct ($username) {
 		$this->username = $username;
 	}
@@ -93,7 +96,13 @@ class User extends EntityModel {
 	}
 	
 	protected function fixPasswordAndSalt () {
-		if (isset($this->bind[':password'])) $this->bind[':password'] = crypt($this->bind[':password'], $this->blowfishSalt());
+		if (isset($this->bind[':password'])) {
+			if (self::$savedpass == $this->bind[':password']) $this->bind[':password'] = self::$encrypted;
+			else {
+				self::$savedpass = $this->bind[':password'];
+				self::$encrypted = $this->bind[':password'] = crypt($this->bind[':password'], $this->blowfishSalt());
+			}
+		}
 	}
 
 	protected function insertedKey ($insertid) {

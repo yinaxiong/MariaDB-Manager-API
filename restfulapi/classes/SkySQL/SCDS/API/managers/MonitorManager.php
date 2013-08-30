@@ -34,11 +34,13 @@ class MonitorManager extends EntityManager {
 	protected static $instance = null;
 	protected $monitors = array();
 	protected $allmonitors = array();
+	protected $monitorsbyid = array();
 	
 	protected function __construct () {
 		$this->allmonitors = Monitor::getAll();
 		foreach ($this->allmonitors as $monitor) {
 			$this->monitors[$monitor->systemtype][$monitor->monitor] = $monitor;
+			$this->monitorsbyid[$monitor->monitorid] = $monitor;
 		}
 	}
 	
@@ -52,6 +54,10 @@ class MonitorManager extends EntityManager {
 	
 	public function getByID ($systemtype, $id) {
 		return isset($this->monitors[$systemtype][$id]) ? $this->monitors[$systemtype][$id] : null;
+	}
+	
+	public function getByMonitorID ($id) {
+		return isset($this->monitorsbyid[$id]) ? $this->monitorsbyid[$id] : null;
 	}
 	
 	public function getAll () {

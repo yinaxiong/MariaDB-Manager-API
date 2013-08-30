@@ -107,6 +107,12 @@ abstract class Request {
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
+		array('class' => 'UserTags', 'method' => 'getUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'GET'),
+		array('class' => 'UserTags', 'method' => 'getAllUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'GET'),
+		array('class' => 'UserTags', 'method' => 'addUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'POST'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+/.+', 'http' => 'DELETE'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'DELETE'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'DELETE'),
 		array('class' => 'UserProperties', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT'),
 		array('class' => 'UserProperties', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/.*', 'http' => 'GET'),
@@ -125,8 +131,9 @@ abstract class Request {
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/.+', 'http' => 'POST'),
-		array('class' => 'Tasks', 'method' => 'runScheduledCommand', 'uri' => 'scheduled/[0-9]+', 'http' => 'POST'),
+		array('class' => 'Tasks', 'method' => 'runScheduledCommand', 'uri' => 'task/[0-9]+', 'http' => 'POST'),
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
+		array('class' => 'Tasks', 'method' => 'getSelectedTasks', 'uri' => 'task/.+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
@@ -326,7 +333,9 @@ abstract class Request {
 					if (!class_exists($class)) {
 						$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
 					}
-					$object = new $class($this);
+					$factory = $link['class'].'Factory';
+					if (method_exists($class, $factory)) $object = call_user_func (array($class, $factory), $uriparts, $this);
+					else $object = new $class($this);
 				}
 				$method = $link['method'];
 				if (!method_exists($object, $method)) {

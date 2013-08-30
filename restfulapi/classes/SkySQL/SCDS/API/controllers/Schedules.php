@@ -22,61 +22,50 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * The Tasks class handles task related requests.
+ * The Schedules class handles schedule related requests.
  * 
  */
 
 namespace SkySQL\SCDS\API\controllers;
 
-use SkySQL\SCDS\API\models\Task;
-use SkySQL\SCDS\API\models\Command;
-use SkySQL\SCDS\API\models\Node;
-use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\models\Schedule;
 
-class Tasks extends ImplementAPI {
+class Schedules extends ImplementAPI {
 	
-	public function getMultipleTasks () {
-		Task::checkLegal();
-		list($total, $tasks) = Task::select($this);
-		$this->sendResponse(array('total' => $total, 'tasks' => $this->filterResults($tasks)));
+	public function __construct ($controller) {
+		parent::__construct($controller);
+		Schedule::checkLegal();
+	}
+
+	public function getMultipleSchedules () {
+		list($total, $schedules) = Schedule::select($this);
+		$this->sendResponse(array('total' => $total, 'schedules' => $this->filterResults($schedules)));
 	}
 	
-	public function getOneTask ($uriparts) {
-		Task::checkLegal();
-		$task = Task::getByID(array('taskid' => (int) $uriparts[1]));
-		$this->sendResponse(array('task' => $this->filterSingleResult($task)));
+	public function getOneSchedule ($uriparts) {
+		$schedule = Schedule::getByID(array('scheduleid' => (int) $uriparts[1]));
+		$this->sendResponse(array('schedule' => $this->filterSingleResult($schedule)));
 	}
 	
-	public function getSelectedTasks ($uriparts) {
-		Task::checkLegal();
-		list($total, $tasks) = Task::select($this, trim(urldecode($uriparts[1])));
-		$this->sendResponse(array('total' => $total, 'tasks' => $this->filterResults($tasks)));
+	public function getSelectedSchedules ($uriparts) {
+		list($total, $schedules) = Schedule::select($this, trim(urldecode($uriparts[1])));
+		$this->sendResponse(array('total' => $total, 'schedules' => $this->filterResults($schedules)));
 	}
 	
-	public function updateTask ($uriparts) {
-		Task::checkLegal();
-		$task = new Task((int) $uriparts[1]);
-		$task->update();
-		
-		// Remaining code relates to scheduling
-		$task->loadData();
-		if ($task->atjobnumber) exec ("atrm $task->atjobnumber");
-		$task->update(false);
-		if ($task->icalentry) {
-			$this->setRunAt($task);
-			if ($task->isDue()) $this->execute($task);
+	public function updateSchedule ($uriparts) {
+		$schedule = new Schedule((int) $uriparts[1]);
+		$schedule->loadData();
+		if ($schedule->atjobnumber) exec ("atrm $schedule->atjobnumber");
+		$schedule->update(false);
+		if ($schedule->icalentry) {
+			$this->setRunAt($schedule);
+			if ($schedule->isDue()) $this->execute($schedule);
 		}
 	}
 	
 	public function runCommand ($uriparts) {
 		Command::checkLegal('icalentry');
-		$command = new Command(urldecode($uriparts[1]));
-		$command->setPropertiesFromParams();
-		$state = $this->getParam('POST', 'state');
-		$node = NodeManager::getInstance()->getByID($command->systemid, $command->nodeid);
-		if ($state AND ($node instanceof Node) AND $state != $node->state) {
-			$this->sendErrorResponse(sprintf('Command required node (%d, %d) to be in state %s but it is in state %s', $node->systemid, $node->nodeid, $state, $node->state), 409);
-		}
+		$command = urldecode($uriparts[1]);
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
 		foreach (array('LaunchCommand','RunCommand') as $script) {
 			if (!is_executable($scriptdir."/$script.sh")) {
@@ -85,16 +74,15 @@ class Tasks extends ImplementAPI {
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
 		$task = new Task;
-		$task->insertOnCommand($command->command);
-		//if ($task->icalentry) {
-		//	$this->setRunAt($task);
-		//	if (!$task->isDue()) $this->sendResponse(array('task' => $task));
-		//}
+		$task->insertOnCommand($command);
+		if ($task->icalentry) {
+			$this->setRunAt($task);
+			if (!$task->isDue()) $this->sendResponse(array('task' => $task));
+		}
 		$this->execute($task);
 		$this->sendResponse(array('task' => $task));
 	}
 	
-	// To do with scheduling - may need to be moved
 	public function runScheduledCommand ($uriparts) {
 		$taskid = (int) $uriparts[1];
 		$task = new Task($taskid);
@@ -105,7 +93,6 @@ class Tasks extends ImplementAPI {
 		exit;
 	}
 	
-	// Internal to scheduling
 	protected function setRunAt ($task) {
 		$pathtoapi = _API_BASE_FILE;
 		$php = $this->config['shell']['php'];

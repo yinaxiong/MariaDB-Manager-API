@@ -31,6 +31,7 @@ namespace SkySQL\SCDS\API\controllers;
 use SkySQL\SCDS\API\managers\MonitorManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\COMMON\MonitorDatabase;
 use \PDO;
 
 final class Monitors extends ImplementAPI {
@@ -41,6 +42,7 @@ final class Monitors extends ImplementAPI {
 	protected $rawtimes = array();
 	protected $rawvalues = array();
 	protected $rawrepeats = array();
+	protected $monitordb = null;
 	
 	public function getMonitorClasses ($uriparts) {
 		$manager = MonitorManager::getInstance();
@@ -79,8 +81,9 @@ final class Monitors extends ImplementAPI {
 			$scale = isset($this->monitor->scale) ? $this->monitor->scale : 0;
 			$value =  $scale ? (int) round($value * pow(10,$scale)) : (int) $value;
 		}
+		$this->monitordb = MonitorDatabase::getInstance();
 		$this->beginExclusiveTransaction();
-		$check = $this->db->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
+		$check = $this->monitordb->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
 			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
 			ORDER BY Stamp DESC');
 		$check->execute(array(
@@ -90,14 +93,14 @@ final class Monitors extends ImplementAPI {
 		));
 		$lastrecord = $check->fetch();
 		if (is_object($lastrecord) AND $lastrecord->Value == $value AND $lastrecord->Repeats) {
-			$store = $this->db->prepare("UPDATE MonitorData SET Stamp = :stamp, Repeats = Repeats + 1 WHERE rowid = :rowid");
+			$store = $this->monitordb->prepare("UPDATE MonitorData SET Stamp = :stamp, Repeats = Repeats + 1 WHERE rowid = :rowid");
 			$store->execute(array(
 				':stamp' => $stamp,
 				':rowid' => $lastrecord->rowid
 			));
 		}
 		else {
-			$store = $this->db->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Stamp, Repeats)
+			$store = $this->monitordb->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Stamp, Repeats)
 				VALUES (:systemid, :nodeid, :monitorid, :value, :stamp, :repeats)");
 			$store->execute(array(
 				':monitorid' => $this->monitorid,
@@ -127,14 +130,15 @@ final class Monitors extends ImplementAPI {
 				unset($monitors[$i],$systems[$i],$nodes[$i],$values[$i]);
 				continue;
 			}
-			if (!MonitorManager::getInstance()->getByID($monitors[$i])) $errors[] = "No such monitor ID {$monitors[$i]}";
-			if (!SystemManager::getInstance()->getByID($systems[$i])) $errors[] = "No such system ID {$systems[$i]}";
+			if (!MonitorManager::getInstance()->getByMonitorID($monitors[$i])) $errors[] = "No such monitor ID {$monitors[$i]}";
+			if (!SystemManager::getInstance()->getByID($systems[$i])) $errors[] = "No such system ID: {$systems[$i]}";
 			if (0 != $nodes[$i] AND !NodeManager::getInstance()->getByID($systems[$i], $nodes[$i])) $errors[] = "No such node as system ID {$systems[$i]}, node ID {$nodes[$i]}";
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		
-		$this->db->beginExclusiveTransaction();
-		$latest = $this->db->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, rowid, MAX(Stamp) FROM MonitorData GROUP BY SystemID, MonitorID, NodeID ');
+		$this->monitordb = MonitorDatabase::getInstance();
+		$this->monitordb->beginExclusiveTransaction();
+		$latest = $this->monitordb->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, rowid, MAX(Stamp) FROM MonitorData GROUP BY SystemID, MonitorID, NodeID ');
 		foreach ($latest->fetchAll() as $instance) {
 			$instances[$instance->MonitorID][$instance->SystemID][$instance->NodeID] = array(
 				'value' => $instance->Value, 'repeats' => $instance->Repeats, 'rowid' => $instance->rowid
@@ -166,20 +170,21 @@ final class Monitors extends ImplementAPI {
 		}		
 		if (isset($updaterows)) {
 			$rowlist = implode(',',$updaterows);
-			$this->db->query("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = '$stamp' WHERE rowid IN ($rowlist)");
+			$this->monitordb->query("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = '$stamp' WHERE rowid IN ($rowlist)");
 		}
 		if (isset($insertrows)) {
-			$insert = $this->db->prepare($insertrows);
+			$insert = $this->monitordb->prepare($insertrows);
 			$insert->execute($bind);
 		}
 		
-		$this->db->commitTransaction();
+		$this->monitordb->commitTransaction();
 		$this->sendResponse('Data accepted');
 	}
 	
 	public function monitorLatest ($uriparts) {
+		$this->monitordb = MonitorDatabase::getInstance();
 		$this->analyseMonitorURI($uriparts, 'monitorData');
-		$select = $this->db->prepare('SELECT Value FROM MonitorData
+		$select = $this->monitordb->prepare('SELECT Value FROM MonitorData
 			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
 			ORDER BY Stamp DESC');
 		$select->execute(array(
@@ -203,6 +208,7 @@ final class Monitors extends ImplementAPI {
 		else {
 			$this->start = $this->finish - ($this->interval * $this->count);
 		}
+		$this->monitordb = MonitorDatabase::getInstance();
 		$data = $this->getRawData($this->start, $this->finish);
 		$preceding = $this->getPreceding($this->start);
 		if (empty($preceding)) {
@@ -280,13 +286,14 @@ final class Monitors extends ImplementAPI {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
 		$start = $this->start ? $this->start : $this->finish - ($this->interval * $this->count);
+		$this->monitordb = MonitorDatabase::getInstance();
 		$data = $this->getRawData($start, $this->finish);
 		array_walk($data, array($this,'transformRawData'));
 		$this->sendResponse(array('monitor_rawdata' => array('timestamp' => $this->rawtimes, 'value' => $this->rawvalues, 'repeats' => $this->rawrepeats)));
 	}
 	
 	protected function getPreceding ($start) {
-		$preceding = $this->db->prepare('SELECT Value AS value, Stamp AS timestamp, Repeats AS repeats
+		$preceding = $this->monitordb->prepare('SELECT Value AS value, Stamp AS timestamp, Repeats AS repeats
 			FROM MonitorData WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
 			AND Stamp < :start ORDER BY Stamp DESC');
 		$preceding->execute(array(
@@ -299,7 +306,7 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getRawData ($from, $to) {
-		$select = $this->db->prepare('SELECT Value AS value, 
+		$select = $this->monitordb->prepare('SELECT Value AS value, 
 			Stamp AS timestamp, Repeats AS repeats FROM MonitorData
 			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
 			AND Stamp BETWEEN :from AND :to ORDER BY Stamp');

@@ -33,6 +33,9 @@ use PDO;
 use stdClass;
 use SkySQL\SCDS\API\managers\MonitorManager;
 use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\models\Monitor;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\COMMON\MonitorDatabase;
 
 abstract class SystemNodeCommon extends ImplementAPI {
 	protected $systemid = 0;
@@ -49,18 +52,22 @@ abstract class SystemNodeCommon extends ImplementAPI {
 			$property = $monitor->monitor;
 			$monitorlatest->$property = null;
 		}
-		if (empty($this->monitorquery)) $this->monitorquery = $this->db->prepare(
-			'SELECT c.Monitor AS monitor, m.MonitorID AS monitorid, m.Value AS value, MAX(m.Stamp) 
-			FROM MonitorData AS m INNER JOIN Monitor AS c ON c.MonitorID = m.MonitorID AND s.SystemType = c.SystemType 
-			INNER JOIN System AS s ON s.SystemID = m.SystemID
-			WHERE m.SystemID = :systemid AND m.NodeID = :nodeid GROUP BY Monitor');
+		if (empty($this->monitorquery)) $this->monitorquery = MonitorDatabase::getInstance()->prepare(
+			'SELECT MonitorID AS monitorid, Value AS value, MAX(Stamp) 
+			FROM MonitorData WHERE SystemID = :systemid AND NodeID = :nodeid GROUP BY MonitorID');
+		// AS m INNER JOIN Monitor AS c ON c.MonitorID = m.MonitorID AND s.SystemType = c.SystemType 
+		//	INNER JOIN System AS s ON s.SystemID = m.SystemID
+			
 		$this->monitorquery->execute(
 			array(':systemid' => $this->systemid, ':nodeid' => $nodeid)
 		);
 		$latest = $this->monitorquery->fetchAll();
 		foreach ($latest as $data) {
-			$property = $data->monitor;
-			$monitorlatest->$property = $data->value;
+			$monitor = MonitorManager::getInstance()->getByMonitorID($data->monitorid);
+			if ($monitor) {
+				$property = $monitor->monitor;
+				$monitorlatest->$property = $data->value;
+			}
 		}
 		return $monitorlatest;
 	}

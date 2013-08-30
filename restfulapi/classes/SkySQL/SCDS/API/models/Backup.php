@@ -79,14 +79,6 @@ class Backup extends EntityModel {
 		return API::mergeStates(API::$backupstates);
 	}
 	
-	public function loadData () {
-		$loader = AdminDatabase::getInstance()->prepare(sprintf(self::$selectSQL, self::getSelects()));
-		$loader->execute(array(':systemid' => $this->systemid, ':backupid' => $this->backupid));
-		$data = $loader->fetch();
-		foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
-		self::fixDate($this);
-	}
-
 	protected function keyComplete () {
 		return $this->backupid ? true : false;
 	}

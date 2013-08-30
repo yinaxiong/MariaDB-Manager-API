@@ -6,6 +6,26 @@
  * Created: September 2010
  * Description: Determines the next date of recursion given an iCalendar "rrule" like pattern.
  * Requirements: PHP 5.3+ - makes extensive use of the Date and Time library (http://us2.php.net/manual/en/book.datetime.php)
+ * 
+ * Copyright (c) 2010 Thomas Planer
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of 
+ * this software and associated documentation files (the "Software"), to deal in 
+ * the Software without restriction, including without limitation the rights to use, 
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the 
+ * Software, and to permit persons to whom the Software is furnished to do so, 
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all 
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR 
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS 
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN 
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
  */
 
 namespace SkySQL\COMMON\WHEN;
@@ -20,6 +40,8 @@ class WhenException extends Exception {
 
 class When
 {
+	protected static $right_now = null;
+	
 	protected $frequency;
 
 	protected $start_date;
@@ -66,6 +88,7 @@ class When
 	 */
 	public function __construct()
 	{
+		if (!(self::$right_now instanceof DateTime)) self::$right_now = new DateTime();
 		$this->frequency = null;
 
 		$this->gobymonth = false;
@@ -760,12 +783,18 @@ class When
 			}
 		}
 	}
-
-	// return the next valid DateTime object after the given date, or if none supplied, 
-	// after the present time, which matches the pattern and follows the rules
-	public function nextAfter($datetime=null)
+	
+	// Say whether the first time that follows the rules is already in the past
+	public function alreadyDue ()
 	{
-		if (!($datetime instanceof DateTime)) $datetime = new DateTime();
+		return ($this->next() <= self::$right_now);
+	}
+
+	// Return the next valid DateTime object after the given date, or if none supplied, 
+	// after the present time, which matches the pattern and follows the rules
+	public function nextAfter ($datetime=null)
+	{
+		if (!($datetime instanceof DateTime)) $datetime = self::$right_now;
 		while ($trydate = $this->next()) {
 			if ($trydate > $datetime) return $trydate;
 		}

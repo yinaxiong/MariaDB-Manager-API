@@ -91,7 +91,7 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /command/{commandname} <br />
-			Parameters: system, node, username, level, parentid, parameters (command dependent), icalentry <br />
+			Parameters: system, node, state, username, level, parentid, parameters (command dependent), icalentry <br />
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
@@ -109,6 +109,8 @@
 			<input type="text" name="systemid" id="systemc" /><br />
 			<label for="nodec">Node ID</label>
 			<input type="text" name="nodeid" id="nodec" /><br />
+			<label for="statec">State of Node</label>
+			<input type="text" name="state" id="statec" /><br />
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="level">Level (backup)</label>
@@ -117,8 +119,6 @@
 			<input type="text"  id="parentid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parentid');" /><br />
 			<label for="params">Parameters</label>
 			<input type="text" id="params" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parameters');" /><br />
-			<label for="ical">iCalEntry</label>
-			<input type="text" id="ical" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'icalentry');" /><br />
 			<input type="submit" class="submit" value="Run Command" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
