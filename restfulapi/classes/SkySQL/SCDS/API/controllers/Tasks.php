@@ -85,6 +85,7 @@ class Tasks extends ImplementAPI {
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
 		$task = new Task;
+		// insertOnCommand also fixes dates as RFC
 		$task->insertOnCommand($command->command);
 		//if ($task->icalentry) {
 		//	$this->setRunAt($task);

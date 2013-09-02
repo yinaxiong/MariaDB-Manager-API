@@ -80,6 +80,7 @@ class Task extends EntityModel {
 	public function insertOnCommand ($command) {
 		$this->command = $command;
 		parent::insert(false);
+		self::fixDate($this);
 	}
 
 	protected function insertedKey ($insertid) {

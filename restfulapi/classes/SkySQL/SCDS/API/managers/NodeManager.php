@@ -52,7 +52,7 @@ class NodeManager extends EntityManager {
 		return array_values($this->nodes);
 	}
 	
-	public function getAllForSystem ($system, $state=0) {
+	public function getAllForSystem ($system, $state='') {
 		if (isset($this->nodes[$system])) {
 			if ($state) {
 				foreach ($this->nodes[$system] as $node) if ($state == $node->state) $results[] = $node;
@@ -87,9 +87,16 @@ class NodeManager extends EntityManager {
 		$node->save();
 	}
 	
-	public function deleteNode ($system, $id) {
-		$node = new Node($system,$id);
-		if (isset($this->nodes[$system][$id])) unset($this->nodes[$system][$id]);
-		$node->delete();
+	public function deleteNode ($system, $id=0) {
+		if ($id) {
+			$node = new Node($system,$id);
+			if (isset($this->nodes[$system][$id])) unset($this->nodes[$system][$id]);
+			$node->delete();
+		}
+		else {
+			if (isset($this->nodes[$system])) unset($this->nodes[$system]);
+			Node::deleteAllForSystem($system);
+			$this->clearCache();
+		}
 	}
 }

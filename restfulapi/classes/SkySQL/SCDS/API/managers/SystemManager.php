@@ -62,6 +62,7 @@ class SystemManager extends EntityManager {
 		$system = new System($id);
 		if (isset($this->systems[$id])) unset($this->systems[$id]);
 		SystemPropertyManager::getInstance()->deleteAllProperties($id);
+		NodeManager::getInstance()->deleteNode($id);
 		$system->delete();
 		// Above method does not return - sends a response and exits
 	}

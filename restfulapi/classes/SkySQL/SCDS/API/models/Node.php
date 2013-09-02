@@ -100,4 +100,9 @@ class Node extends EntityModel {
 	protected function insertedKey ($insertid) {
 		return $this->nodeid;
 	}
+	
+	public static function deleteAllForSystem ($systemid) {
+		$delete = AdminDatabase::getInstance()->prepare('DELETE FROM Node WHERE SystemID = :systemid');
+		$delete->execute(array(':systemid' => $systemid));
+	}
 }
