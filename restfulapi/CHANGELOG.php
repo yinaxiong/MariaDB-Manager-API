@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 2 September 2013, 9:10 am BST
+ * 
+ * Provide automatic cache clear on new database; add unique ID to log entries; 
+ * start improving task HTML page; fix bugs.
+ * 
+ * 
  * 30 August 2013
  * 
  * Split the database into monitoring data (data only, not monitor classes) and
