@@ -32,6 +32,8 @@ use SkySQL\APIHELP\SkysqlCallAPI;
 ini_set('display_errors', 1);
 error_reporting(-1);
 
+$noexec = true;
+
 require (dirname(__FILE__).'/api.php');
 require (dirname(__FILE__).'/skysqlCallAPI.php');
 
@@ -76,6 +78,7 @@ class TestAPI {
 		<input type="radio" name="testid" value="getCommands" />Get all commands<br />
 		<input type="radio" name="testid" value="getCommandStates" />Get command states<br />
 		<input type="radio" name="testid" value="getCommandSteps" />Get command steps<br />
+		<input type="radio" name="testid" value="runCommandForm" />Run command<br />
 		<input type="submit" value="Go" />
 	</form>
 
@@ -356,6 +359,31 @@ LOGIN_FORM;
 	
 	public function getCommandSteps () {
 		return $this->apicall->getCommandSteps();
+	}
+	
+	public function runCommandForm () {
+		echo <<<COMMAND_FORM
+   
+    <h2>Run a command</h2>
+	<form action="testapi.php" method="POST">
+		<label for="command">Command to run</label>
+		<input type="text" id="command" name="command" /><br />
+		<label for="systemid">System ID</label>
+		<input type="text" id="systemid" name="systemid" /><br />
+		<label for="nodeid">Node ID</label>
+		<input type="text" id="nodeid" name="nodeid" /><br />
+		<label for="username">Username for login</label>
+		<input type="text" id="username" name="username" /><br />
+		<input type="hidden" name="testid" value="runCommand" />
+		<input type="submit" value="Go" />
+	</form>
+
+COMMAND_FORM;
+		
+	}
+	
+	public function runCommand () {
+		return $this->apicall->runCommand(@$_POST['command'], @$_POST['systemid'], @$_POST['nodeid'], @$_POST['username']);
 	}
 }
 

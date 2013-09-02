@@ -53,7 +53,7 @@ use SkySQL\COMMON\EAC_HTTP\HttpRequest;
  * The location of the log file, if writeable, will be used to write diagnostic
  * information.
  */
-define ('LOCATION_OF_SKYSQL_API', 'http://eng01.skysql.com/consoleAPI/api');
+define ('LOCATION_OF_SKYSQL_API', 'http://api.skysql.yorkshireweb.net');
 define ('AUTHORIZATION_ID_SKYSQL_API', '1');
 define ('AUTHORIZATION_CODE_SKYSQL_API', '1f8d9e040e65d7b105538b1ed0231770');
 define ('LOG_FILE_SKYSQL_API', '/usr/local/skysql/log/api.log');
@@ -166,6 +166,10 @@ class SkysqlCallAPI {
 	
 	public function getCommandSteps () {
 		return $this->get(LOCATION_OF_SKYSQL_API."/command/step");
+	}
+	
+	public function runCommand ($command, $systemid, $nodeid, $username) {
+		return $this->post(LOCATION_OF_SKYSQL_API."/command/".$command, array('systemid' => $systemid, 'nodeid' => $nodeid, 'username' => $username));
 	}
 	
 	protected function checkProperty (&$systemid, $property) {

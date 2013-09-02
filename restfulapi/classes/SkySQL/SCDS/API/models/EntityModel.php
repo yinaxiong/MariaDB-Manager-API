@@ -253,9 +253,12 @@ abstract class EntityModel {
 				$this->insvalue[] = $bindname;
 				if ('insert' == $caller OR empty($about['insertonly'])) {
 					if ('insert' == $caller OR !$request->paramEmpty($source, $name)) {
-						$this->bind[$bindname] = self::getParam($source, $name, $about);
 						$this->setter[] = $about['sqlname'].' = '.$bindname;
-						$this->$name = $this->bind[$bindname];
+						if (empty($this->$name)) {
+							$this->bind[$bindname] = self::getParam($source, $name, $about);
+							$this->$name = $this->bind[$bindname];
+						}
+						else $this->bind[$bindname] = $this->$name;
 					}
 				}
 			}
