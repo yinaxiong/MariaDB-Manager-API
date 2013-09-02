@@ -5,26 +5,26 @@
 **/
 
 CREATE TABLE SystemCommands ( 
-Command varchar(40), /* Name of the command */ 
-State varchar(20), /* System state */
-Description varchar(255), /* Textual description */ 
-Icon varchar(200), /* Name of icon */
-UIOrder smallint, /* Display order in UI */ 
-UIGroup varchar(40), /* Display group in UI */ 
-Steps varchar(255) /* Comma separated list of step IDs */ 
+	Command varchar(40), /* Name of the command */ 
+	State varchar(20), /* System state */
+	Description varchar(255), /* Textual description */ 
+	Icon varchar(200), /* Name of icon */
+	UIOrder smallint, /* Display order in UI */ 
+	UIGroup varchar(40), /* Display group in UI */ 
+	Steps varchar(255) /* Comma separated list of step IDs */ 
 );
 insert into SystemCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'running', 'Stop System', 'stop', 2, 'control', 'stop');
 insert into SystemCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'running', 'Restart System', 'restart', 3, 'control', 'stop,start');
 insert into SystemCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('start', 'stopped', 'Start System', 'start', 1, 'control', 'start');
 
 CREATE TABLE NodeCommands ( 
-Command varchar(40), /* Name of the command */ 
-State varchar(20), /* System state */
-Description varchar(255), /* Textual description */ 
-Icon varchar(200), /* Name of icon */
-UIOrder smallint, /* Display order in UI */ 
-UIGroup varchar(40), /* Display group in UI */ 
-Steps varchar(255) /* Comma separated list of step IDs */ 
+	Command varchar(40), /* Name of the command */ 
+	State varchar(20), /* System state */
+	Description varchar(255), /* Textual description */ 
+	Icon varchar(200), /* Name of icon */
+	UIOrder smallint, /* Display order in UI */ 
+	UIGroup varchar(40), /* Display group in UI */ 
+	Steps varchar(255) /* Comma separated list of step IDs */ 
 );
 insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'master', 'Stop Master Node', 'stop', 2, 'control', 'stop');
 insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'slave', 'Stop Slave Node', 'stop', 2, 'control', 'stop');

@@ -86,4 +86,8 @@ abstract class CachedSingleton {
 	public function cacheNow () {
 		SingletonObjectCache::getInstance()->store($this);
 	}
+	
+	public static function deleteAll () {
+		SingletonObjectCache::deleteAll();
+	}
 }

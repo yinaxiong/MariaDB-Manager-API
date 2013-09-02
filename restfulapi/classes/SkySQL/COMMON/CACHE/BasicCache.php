@@ -32,15 +32,21 @@ namespace SkySQL\COMMON\CACHE;
 
 if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
 
+define ('_API_CACHE_HANDLER_TYPE', 'Disk');
+
 abstract class BasicCache {
 	protected $sizelimit = 0;
 	protected $timeout = 0;
 	protected $handler = null;
 
 	public function __construct () {
-		$type = 'Disk';
-		$handlerclass = __NAMESPACE__.'\\Cache'.$type.'Storage';
+		$type = _API_CACHE_HANDLER_TYPE;
+		$handlerclass = self::getHandlerClass($type);
 		$this->handler = new $handlerclass($this->sizelimit, $this->timeout);
+	}
+	
+	protected static function getHandlerClass ($type) {
+		return __NAMESPACE__.'\\Cache'.$type.'Storage';
 	}
 
 	protected function getBasePath () {
@@ -84,6 +90,11 @@ abstract class BasicCache {
 		$result = $this->handler->getData($path);
 		// if ($result AND $timer) echo "<br />Loaded $class in ".$timer->getElapsed().' secs';
 		return $result;
+	}
+	
+	public static function deleteAll () {
+		$handlerclass = self::getHandlerClass(_API_CACHE_HANDLER_TYPE);
+		call_user_func(array($handlerclass, 'deleteAll'));
 	}
 }
 

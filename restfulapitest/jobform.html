@@ -32,7 +32,13 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /command <br />
-			Parameter: fields <br />
+			Parameter: 
+			<a class="tooltip" href="#">fields,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>&nbsp;
+			<br />
 			Default: All fields <br />
 		</p>
 		<p class="formfields">
@@ -91,7 +97,63 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /command/{commandname} <br />
-			Parameters: system, node, state, username, level, parentid, parameters (command dependent), icalentry <br />
+			Parameters:
+			<a class="tooltip" href="#">systemid,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>systemid</strong><br />
+			The System ID on which the command should be run.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">nodeid,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>nodeid</strong><br />
+			The node ID on which the command should be run.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">state,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>state</strong><br />
+			Optional state code for the required state of the node when the command
+			is executed - if the node is not in the specified state, then the command
+			will be reject with an error (HTTP code 409 Conflict).  If the state code
+			is not specified, then the command will be run if possible.  The exact 
+			steps may vary according to the actual node state.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">username,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>username</strong><br />
+			The username for the user who requested the command to be run.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">level,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>level</strong><br />
+			Only applicable to a backup command.  Indicates whether a full or
+			incremental backup is required.  1 = full, 2 = incremental.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">parentid,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>parentid</strong><br />
+			For an incremental backup, indicates the ID of the backup that is the
+			base from which the increment is computed.  For a restore, indicates 
+			the ID of the backup to be restored.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">parameters,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>parameters</strong><br />
+			The parameters for the command - command specific - individual
+			parameters are separate from each other by |
+			</span>
+			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
@@ -134,7 +196,13 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /task/{taskid} <br />
-			Parameters: state, nodeid, fields <br />
+			Parameters:
+			<a class="tooltip" href="#">fields<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>
+			<br />
 		</p>
 		<p class="formfields">
 			<label for="task">Task ID</label>
@@ -157,6 +225,28 @@
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /task <br />
 			Parameters: state, nodeid, fields <br />
+			<a class="tooltip" href="#">state,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>state</strong><br />
+			Optional state code to filter results, with only tasks in the
+			specified state being returned.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">nodeid,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>nodeid</strong><br />
+			Optional Node ID to filter results, with only tasks run on the
+			specified node being returned.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">fields<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>
+			<br />
 		</p>
 		<p class="formfields">
 			<label for="statejm">State</label>

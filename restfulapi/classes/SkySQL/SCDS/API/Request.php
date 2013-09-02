@@ -51,14 +51,21 @@ if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This softwar
 class aliroProfiler {
     private $start=0;
     private $prefix='';
+	private $microsec = 0;
 
     function __construct ( $prefix='' ) {
-        $this->start = microtime(true);
+	    $this->reset();
         $this->prefix = $prefix;
     }
 
 	public function reset () {
-		$this->start = microtime(true);
+	    list($usec, $sec) = explode(" ", microtime());
+        $this->start = (float)$usec + (float)$sec;
+		$this->microsec = (int) ($usec * 1000000);
+	}
+	
+	public function getMicroSeconds () {
+		return $this->microsec;
 	}
 
     public function mark( $label ) {
@@ -198,6 +205,7 @@ abstract class Request {
 	);
 
 	protected $timer = null;
+	protected $micromarker = 0;
 	protected $config = array();
 	protected $uri = '';
 	protected $apibase = array();
@@ -213,6 +221,7 @@ abstract class Request {
 	
 	protected function __construct() {
 		$this->timer = new aliroProfiler();
+		$this->micromarker = $this->timer->getMicroSeconds();
 		if (!self::$uriTablePrepared) {
 			foreach (self::$uriTable as &$uridata) {
 				$parts = explode('/', trim($uridata['uri'],'/'));
@@ -505,12 +514,10 @@ abstract class Request {
 	
 	public function log ($data) {
 		if (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) {
-			//$phpuser = posix_getpwuid(posix_geteuid());
-			//$phpusername = isset($phpuser['name']) ? '.'.$phpuser['name'] : '';
 			$logfile = $this->config['logging']['directory']."/api.log";
 			if (!file_exists($logfile) OR is_writeable($logfile)) {
 				if (!is_string($data)) $data = serialize($data);
-				file_put_contents($logfile, $data, FILE_APPEND);
+				file_put_contents($logfile, "[$this->micromarker] $data", FILE_APPEND);
 			}
 		}
 	}

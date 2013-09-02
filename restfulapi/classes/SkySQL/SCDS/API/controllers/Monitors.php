@@ -341,7 +341,7 @@ final class Monitors extends ImplementAPI {
 	
 	protected function getMonitorIDFromName ($systemid, $monitorkey) {
 		$system = SystemManager::getInstance()->getByID($systemid);
-		if (empty($system)) $this-sendErrorResponse("System $systemid does not exist", 400);
+		if (empty($system)) $this->sendErrorResponse("System $systemid does not exist", 400);
 		$this->monitor = MonitorManager::getInstance()->getByID($system->systemtype, $monitorkey);
 		if (empty($this->monitor)) $this->sendErrorResponse("Monitor $monitorkey for system ID $systemid not available", 400);
 		return $this->monitor->monitorid;

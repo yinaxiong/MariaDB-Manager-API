@@ -30,8 +30,8 @@ namespace SkySQL\COMMON;
 
 use PDO;
 use PDOException;
-use SkySQL\SCDS\API\Request;
 use SQLite3;
+use SkySQL\COMMON\CACHE\CachedSingleton;
 
 if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
 
@@ -56,6 +56,7 @@ class AdminDatabase extends APIDatabase {
 			$sqldb = new SQLite3($dboparts[1]);
 			$sqldb->exec($nocomment);
 			$sqldb->close();
+			cachedSingleton::deleteAll();
 		}
 		if (isset($error)) throw new PDOException($error);
 		$pdo = new PDO($dbconfig['pdoconnect'], $dbconfig['user'], $dbconfig['password']);

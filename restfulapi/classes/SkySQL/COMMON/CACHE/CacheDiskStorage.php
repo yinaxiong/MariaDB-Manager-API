@@ -51,7 +51,7 @@ abstract class aliroCacheStorage {
 
 	public function delete ($id) {}
 
-	public function deleteAll () {}
+	public static function deleteAll () {}
 
 	public function getBasePath () {}
 
@@ -85,9 +85,28 @@ abstract class aliroCacheStorage {
 }
 
 class CacheDiskStorage extends aliroCacheStorage {
+	protected static $markerfile = '';
+	protected static $invalidated = false;
+	
+	public function __construct ($sizelimit, $timeout) {
+		parent::__construct($sizelimit, $timeout);
+		self::setInvalidated();
+		if (self::$invalidated) $this->timeout = min(time()-self::$invalidated-1, $timeout);
+	}
+	
+	protected static function setInvalidated () {
+		if (!self::$markerfile) {
+			self::$markerfile = self::basePath().'invalidated';
+			self::$invalidated = @filectime(self::$markerfile);
+		}
+	}
+	
+	protected static function basePath () {
+		return _SKYSQL_API_CACHE_DIRECTORY;
+	}
 
 	public function getBasePath () {
-		return _SKYSQL_API_CACHE_DIRECTORY;
+		return self::basePath();
 	}
 
 	public function storeData ($id, $data, $reportSizeError=true) {
@@ -99,7 +118,7 @@ class CacheDiskStorage extends aliroCacheStorage {
 	}
 
 	public function getData ($id, $time_limit=0) {
-		if (_SKYSQL_API_CACHE_DIRECTORY AND file_exists($id.'.php') AND ($string = @file_get_contents($id.'.php'))) {
+		if (_SKYSQL_API_CACHE_DIRECTORY AND is_writable($id.'.php') AND ($string = @file_get_contents($id.'.php'))) {
 			$dataparts = explode(_BLOCK_PHP_EXECUTION_HEADER, $string);
 			return $this->extractObject (end($dataparts), $time_limit);
 		}
@@ -110,7 +129,9 @@ class CacheDiskStorage extends aliroCacheStorage {
 		if (_SKYSQL_API_CACHE_DIRECTORY) @unlink($id.'.php');
 	}
 
-	public function deleteAll () {
-		// ??
+	public static function deleteAll () {
+		self::setInvalidated();
+		@touch(self::$markerfile);
+		self::$invalidated = time();
 	}
 }

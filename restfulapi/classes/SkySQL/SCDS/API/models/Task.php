@@ -181,25 +181,20 @@ class Task extends EntityModel {
 		}
 	}
 
-	// Parameters are fromdate and todate in array
+	// Optional parameters are fromdate and todate, comma separated, in $args[0]
 	protected static function specialSelected ($args) {
 		$selectors = explode(',', @$args[0]);
 		foreach ($selectors as $selector) {
-			if ('scheduled' == $selector) $scheduled = true;
-			else {
-				$unixtime = strtotime($selector);
-				if ($unixtime) $dates[] = date('Y-m-d H:i:s', $unixtime);
-			}
+			$unixtime = strtotime($selector);
+			if ($unixtime) $dates[] = date('Y-m-d H:i:s', $unixtime);
 		}
-		$where[] = empty($scheduled) ? "iCalEntry = ''" : "iCalEntry != ''";
 		if (isset($dates)) {
-			$datefield = empty($scheduled) ? 'started' : 'nextstart';
 			$bind[":startdate"] = $dates[0];
 			if (1 == count($dates)) {
-				$where[] = "$datefield >= :startdate";
+				$where[] = "started >= :startdate";
 			}
 			else {
-				$where[] = "$datefield >= :startdate AND $datefield <= :enddate";
+				$where[] = "started >= :startdate AND started <= :enddate";
 				$bind[":enddate"] = $dates[1];
 			}
 		}
