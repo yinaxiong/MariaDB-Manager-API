@@ -32,9 +32,8 @@ namespace SkySQL\SCDS\API\controllers;
 use PDO;
 use stdClass;
 use SkySQL\SCDS\API\managers\MonitorManager;
+use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
-use SkySQL\SCDS\API\models\Monitor;
-use SkySQL\SCDS\API\models\System;
 use SkySQL\COMMON\MonitorDatabase;
 
 abstract class SystemNodeCommon extends ImplementAPI {
@@ -46,7 +45,8 @@ abstract class SystemNodeCommon extends ImplementAPI {
 	}
 
 	protected function getMonitorData ($nodeid) {
-		$monitors = MonitorManager::getInstance()->getAll();
+		$system = SystemManager::getInstance()->getByID($this->systemid);
+		$monitors = MonitorManager::getInstance()->getByType(@$system->systemtype);
 		$monitorlatest = new stdClass;
 		foreach ($monitors as $monitor) {
 			$property = $monitor->monitor;
