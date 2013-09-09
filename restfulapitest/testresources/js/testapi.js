@@ -5,6 +5,7 @@ function setFields () {
 		uri = uri + '/' + arguments[i];
 		if (i+1 < arguments.length) {
 			uri = uri + '/' + encodeURIComponent(form.elements[arguments[i+1]].value);
+			form.elements[arguments[i+1]].name = "";
 		}
 	}
 	form.action = getPersistent("myLink") + uri;
@@ -15,6 +16,11 @@ function setName (id, name) {
 	var element = document.getElementById(id);
 	element.name = name;
 	element.classList.add("hasdata");
+}
+function setNameURI (id, name) {
+	var element = document.getElementById(id);
+	element.name = name;
+	element.classList.add("hasuri");
 }
 function unsetName (id) {
 	var element = document.getElementById(id);

@@ -100,7 +100,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" /><br />
+			<input type="text" name="systemid" id="systemid" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="type">System Type</label>
 			<input type="text" id="type" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'systemtype');" /><br />
 			<label for="name">System Name</label>
@@ -126,7 +126,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidd">System ID</label>
-			<input type="text" name="systemid" id="systemidd" /><br />
+			<input type="text" name="systemid" id="systemidd" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -154,7 +154,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
-			<input type="text" name="systemid" id="systemidx" /><br />
+			<input type="text" name="systemid" id="systemidx" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="fieldssi">Fields to return</label>
 			<input type="text" name="fields" id="fieldssi" /><br />
 			<input type="submit" class="submit" value="Information" />
@@ -176,9 +176,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidpg">System ID</label>
-			<input type="text" name="systemid" id="systemidpg" /><br />
+			<input type="text" name="systemid" id="systemidpg" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="propertynameg">Property Name</label>
-			<input type="text" name="property" id="propertynameg" /><br />
+			<input type="text" name="property" id="propertynameg" onfocus="setNameURI(this.id,'property');" /><br />
 			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -204,9 +204,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidp">System ID</label>
-			<input type="text" name="systemid" id="systemidp" /><br />
+			<input type="text" name="systemid" id="systemidp" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="propertyname">Property Name</label>
-			<input type="text" name="property" id="propertyname" /><br />
+			<input type="text" name="property" id="propertyname" onfocus="setNameURI(this.id,'property');" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
@@ -228,9 +228,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemiddp">System ID</label>
-			<input type="text" name="systemid" id="systemiddp" /><br />
+			<input type="text" name="systemid" id="systemiddp" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="propertynamed">Property Name</label>
-			<input type="text" name="property" id="propertynamed" /><br />
+			<input type="text" name="property" id="propertynamed" onfocus="setNameURI(this.id,'property');" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -250,9 +250,9 @@
 		</p>
 		<p class="formfields">
 			<label for="appidpg">Application ID</label>
-			<input type="text" name="appid" id="appidpg" /><br />
+			<input type="text" name="appid" id="appidpg" onfocus="setNameURI(this.id,'appid');" /><br />
 			<label for="propertynameag">Property Name</label>
-			<input type="text" name="property" id="propertynameag" /><br />
+			<input type="text" name="property" id="propertynameag" onfocus="setNameURI(this.id,'property');" /><br />
 			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -278,11 +278,11 @@
 		</p>
 		<p class="formfields">
 			<label for="appidp">ApplicationID</label>
-			<input type="text" name="appid" id="appdp" /><br />
+			<input type="text" name="appid" id="appdp" onfocus="setNameURI(this.id,'appid');" /><br />
 			<label for="propertynamea">Property Name</label>
-			<input type="text" name="property" id="propertynamea" /><br />
-			<label for="value">Value</label>
-			<input type="text" name="value" id="value" /><br />
+			<input type="text" name="property" id="propertynamea" onfocus="setNameURI(this.id,'property');" /><br />
+			<label for="valueap">Value</label>
+			<input type="text" name="value" id="valueap" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -302,9 +302,9 @@
 		</p>
 		<p class="formfields">
 			<label for="appiddp">Application ID</label>
-			<input type="text" name="appid" id="appiddp" /><br />
-			<label for="propertynamed">Property Name</label>
-			<input type="text" name="property" id="propertynamed" /><br />
+			<input type="text" name="appid" id="appiddp" onfocus="setNameURI(this.id,'appid');" /><br />
+			<label for="propertynamead">Property Name</label>
+			<input type="text" name="property" id="propertynamead" onfocus="setNameURI(this.id,'property');" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

@@ -31,6 +31,9 @@ namespace SkySQL\SCDS\API\models;
 use PDO;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
+use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\NodeStateManager;
+use SkySQL\SCDS\API\managers\SystemManager;
 
 class Node extends EntityModel {
 	protected static $setkeyvalues = true;
@@ -58,7 +61,7 @@ class Node extends EntityModel {
 
 	protected static $fields = array(
 		'name' => array('sqlname' => 'NodeName', 'default' => ''),
-		'state' => array('sqlname' => 'State', 'default' => 'offline', 'validate' => 'nodestate'),
+		'state' => array('sqlname' => 'State', 'default' => 'offline'),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicip' => array('sqlname' => 'PublicIP', 'default' => '', 'validate' => 'ipaddress'),
 		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'validate' => 'ipaddress'),
@@ -78,6 +81,21 @@ class Node extends EntityModel {
 	public function __construct ($systemid, $nodeid=0) {
 		$this->systemid = $systemid;
 		$this->nodeid = $nodeid;
+	}
+
+	public function getSystemType () {
+		$system = SystemManager::getInstance()->getByID($this->systemid);
+		return @$system->systemtype;
+	}
+
+	public function getCommands () {
+		$query = AdminDatabase::getInstance()->prepare('SELECT Command AS command, Description AS description, Icon AS icon, Steps AS steps 
+			FROM NodeCommands WHERE SystemType = :systemtype AND State = :state  ORDER BY UIOrder');
+		$query->execute(array(
+			':systemtype' => $this->getSystemType(),
+			':state' => $this->state
+		));
+		return $query->fetchAll();
 	}
 	
 	protected function keyComplete () {
@@ -99,6 +117,19 @@ class Node extends EntityModel {
 
 	protected function insertedKey ($insertid) {
 		return $this->nodeid;
+	}
+	
+	protected function validateState () {
+		return NodeStateManager::getInstance()->getByState($this->getSystemType(), $this->state) ? true : false;
+	}
+	
+	protected function validateInsert () {
+		if (empty($this->privateip)) Request::getInstance()->sendErrorResponse('Private IP must be provided to create a node', 400);
+		if (!$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", $this->state, $this->getSystemType()), 400);
+	}
+	
+	protected function validateUpdate () {
+		if (!$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", $this->state, $this->getSystemType()), 400);
 	}
 	
 	public static function deleteAllForSystem ($systemid) {

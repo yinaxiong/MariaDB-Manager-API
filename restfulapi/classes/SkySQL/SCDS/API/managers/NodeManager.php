@@ -28,7 +28,9 @@
 
 namespace SkySQL\SCDS\API\managers;
 
+use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\managers\NodeStateManager;
 
 class NodeManager extends EntityManager {
 	protected static $instance = null;
@@ -84,6 +86,9 @@ class NodeManager extends EntityManager {
 	
 	public function saveNode ($system, $id) {
 		$node = new Node($system,$id);
+		$request = Request::getInstance();
+		$stateid = $request->getParam($request->getMethod(), 'stateid', 0);
+		if ($stateid) $request->putParam($request->getMethod(), 'state', NodeStateManager::getInstance()->getByStateID($node->getSystemType(), $stateid));
 		$node->save();
 	}
 	

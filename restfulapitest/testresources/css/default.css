@@ -213,6 +213,11 @@ label {
 	text-decoration: underline;
 }
 
+/* URI parameters when data will be sent */
+.hasuri {
+	background-color: #CCFFFF;
+}
+
 /* Optional parameters when data will be sent */
 .hasdata {
 	background-color: #FFCCFF;

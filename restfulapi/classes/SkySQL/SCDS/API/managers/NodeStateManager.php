@@ -30,6 +30,7 @@ namespace SkySQL\SCDS\API\managers;
 
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\models\NodeState;
+use stdClass;
 
 class NodeStateManager {
 	protected static $instance = null;
@@ -39,11 +40,24 @@ class NodeStateManager {
 	}
 	
 	public function getAll () {
-		return API::mergeStates(API::$nodestates);
+		$allstates = new stdClass();
+		foreach (array_keys(API::$systemtypes) as $type) $allstates->$type = $this->getAllForType($type);
+		return $allstates;
 	}
 	
-	public function getByState ($state) {
-		return isset(API::$nodestates[$state]) ? API::$nodestates[$state] : null;
+	public function getAllForType ($type) {
+		return isset(API::$systemtypes[$type]) ? API::mergeStates(API::$systemtypes[$type]['nodestates']) : array();
+	}
+	
+	public function getByState ($systemtype, $state) {
+		return isset(API::$systemtypes[$systemtype]['nodestates'][$state]) ? API::$systemtypes[$systemtype]['nodestates'][$state] : null;
+	}
+	
+	public function getByStateID ($systemtype, $stateid) {
+		$nodestates = @API::$systemtypes[$systemtype]['nodestates'];
+		if (is_array($nodestates)) foreach ($nodestates as $state=>$properties) {
+			if ($stateid == $properties['stateid']) return $state;
+		}
 	}
 	
 	public function getAllLike ($selector) {

@@ -233,8 +233,8 @@ abstract class Request {
 		}
         $this->config = $this->readAndCheckConfig();
 		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
-		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', @$this->config['cache']['timelimit']);
-		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', @$this->config['cache']['sizelimit']);
+		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
+		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->getHeaders();
 		$this->uri = $this->getURI();
 		$this->getSuffix();
@@ -249,12 +249,19 @@ abstract class Request {
 		}
         $config = parse_ini_file(_API_INI_FILE_LOCATION, true);
 		if (!$config) $this->fatalError(sprintf('Could not parse configuration file at %s', _API_INI_FILE_LOCATION));
-		if (empty($config['logging']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a logging directory',_API_INI_FILE_LOCATION);
+		if (empty($config['apikeys'])) $this->fatalError(sprintf('Configuration at %s does not specify any API Keys', _API_INI_FILE_LOCATION));
+		if (empty($config['logging']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a logging directory', _API_INI_FILE_LOCATION);
 		elseif (!is_writeable($config['logging']['directory'])) $this->warnings[] = sprintf('Logging directory %s is not writeable, cannot write log, please check existence, permissions, SELinux',$config['logging']['directory']);
-		if (empty($config['cache']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a caching directory',_API_INI_FILE_LOCATION);
+		if (empty($config['cache']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a caching directory', _API_INI_FILE_LOCATION);
 		elseif (!is_writeable($config['cache']['directory'])) $this->warnings[] = sprintf('Caching directory %s is not writeable, cannot write cache, please check existence, permissions, SELinux',$config['cache']['directory']);
-		if (empty($config['cache']['timelimit'])) $config['cache']['timelimit'] = 3600;
-		if (empty($config['cache']['sizelimit'])) $config['cache']['sizelimit'] = 500000;
+		if (empty($config['shell']['path'])) $this->warnings[] = sprintf('Configuration at %s does not specify a path for scripts used to run commands', _API_INI_FILE_LOCATION);
+		if (empty($config['shell']['php'])) $this->warnings[] = sprintf('Configuration at %s does not specify a path to the PHP executable needed for scheduling', _API_INI_FILE_LOCATION);
+		if (empty($config['shell']['hostname'])) $this->warnings[] = sprintf('Configuration at %s does not specify the hostname for scripts to call back to the API', _API_INI_FILE_LOCATION);
+		if (empty($config['cache']['timelimit'])) $config['cache']['timelimit'] = _SKYSQL_API_OBJECT_CACHE_TIME_DEFAULT;
+		if (empty($config['cache']['sizelimit'])) $config['cache']['sizelimit'] = _SKYSQL_API_OBJECT_CACHE_SIZE_DEFAULT;
+		if (empty($config['monitor-defaults']['interval'])) $config['monitor-defaults']['interval'] = _SKYSQL_API_MONITOR_INTERVAL_DEFAULT;
+		if (empty($config['monitor-defaults']['count'])) $config['monitor-defaults']['count'] = _SKYSQL_API_MONITOR_COUNT_DEFAULT;
+		
 		return $config;
 	}
 	
@@ -441,6 +448,11 @@ abstract class Request {
 	        }
 	    }
 	    return isset($result) ? $result : $def;
+	}
+	
+	public function putParam ($arrname, $name, $value) {
+		$arr = &$this->getArrayFromName($arrname);
+		if (is_array($arr)) $arr[$name] = $value;
 	}
 	
 	public function paramEmpty ($arrname, $name) {

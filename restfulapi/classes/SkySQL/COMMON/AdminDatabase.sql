@@ -18,26 +18,45 @@ insert into SystemCommands (Command, State, Description, Icon, UIOrder, UIGroup,
 insert into SystemCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('start', 'stopped', 'Start System', 'start', 1, 'control', 'start');
 
 CREATE TABLE NodeCommands ( 
-	Command varchar(40), /* Name of the command */ 
-	State varchar(20), /* System state */
-	Description varchar(255), /* Textual description */ 
-	Icon varchar(200), /* Name of icon */
-	UIOrder smallint, /* Display order in UI */ 
-	UIGroup varchar(40), /* Display group in UI */ 
-	Steps varchar(255) /* Comma separated list of step IDs */ 
+	Command		varchar(40),	/* Name of the command */ 
+	SystemType	varchar(20),	/* Type of system e.g. galera or aws */
+	State		varchar(20),	/* System state */
+	Description varchar(255),	/* Textual description */ 
+	Icon		varchar(200),	/* Name of icon */
+	UIOrder		smallint,		/* Display order in UI */ 
+	UIGroup		varchar(40),	/* Display group in UI */ 
+	Steps		varchar(255)	/* Comma separated list of step IDs */ 
 );
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'master', 'Stop Master Node', 'stop', 2, 'control', 'stop');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'slave', 'Stop Slave Node', 'stop', 2, 'control', 'stop');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'master', 'Restart Master Node', 'stop', 3, 'control', 'stop,start');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'slave', 'Restart Slave Node', 'restart', 3, 'control', 'stop,start');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('promote', 'slave', 'Promote Slave Node', 'promote', 6, 'control', 'promote');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('backup', 'slave', 'Backup Online Slave Node', 'backup', 1, 'backup', 'isolate,backup,promote');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restore', 'slave', 'Restore Online Slave Node', 'stop', 2, 'backup', 'isolate,restore,synchronize');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('backup', 'offline', 'Backup Offline Slave Node', 'backup', 1, 'backup', 'backup');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'offline', 'Restore Offline Slave Node', 'stop', 2, 'backup', 'restore');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('start', 'stopped', 'Start Stopped Node', 'start', 1, 'control', 'start');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('start', 'error', 'Stop Node in Error', 'stop', 2, 'control', 'stop');
-insert into NodeCommands (Command, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'error', 'Restart Node in Error', 'restart', 3, 'control', 'restart');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'aws', 'master', 'Stop Master Node', 'stop', 2, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'aws', 'slave', 'Stop Slave Node', 'stop', 2, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'aws', 'master', 'Restart Master Node', 'stop', 3, 'control', 'stop,start');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'aws', 'slave', 'Restart Slave Node', 'restart', 3, 'control', 'stop,start');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('promote', 'aws', 'slave', 'Promote Slave Node', 'promote', 6, 'control', 'promote');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('backup', 'aws', 'slave', 'Backup Online Slave Node', 'backup', 1, 'backup', 'isolate,backup,promote');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restore', 'aws', 'slave', 'Restore Online Slave Node', 'stop', 2, 'backup', 'isolate,restore,synchronize');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('backup', 'aws', 'offline', 'Backup Offline Slave Node', 'backup', 1, 'backup', 'backup');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restore', 'aws', 'offline', 'Restore Offline Slave Node', 'restore', 2, 'backup', 'restore');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('start', 'aws', 'stopped', 'Start Stopped Node', 'start', 1, 'control', 'start');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'aws', 'error', 'Stop Node in Error', 'stop', 2, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'aws', 'error', 'Restart Node in Error', 'restart', 3, 'control', 'restart');
+
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('start', 'galera', 'down', 'Start Node from Down', 'start', 3, 'control', 'start');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('backup', 'galera', 'down', 'Backup Node while Down', 'backup', 3, 'backup', 'backup');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restore', 'galera', 'down', 'Restore Node while Down', 'restore', 3, 'backup', 'restore');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'open', 'Stop Node when Open', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'primary', 'Stop Node when Primary', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'joiner', 'Stop Node when Joiner', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'joined', 'Stop Node when Joined', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('restart', 'galera', 'joined', 'Restart Node when Joined', 'restart', 3, 'control', 'stop,start');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('isolate', 'galera', 'joined', 'Take Joined Node out of Replication', 'isolate', 3, 'control', 'isolate');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('recover', 'galera', 'joined', 'Recover Joined Node', 'recovering', 3, 'control', 'recover');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('backup', 'galera', 'joined', 'Backup Joined Node', 'backup', 3, 'backup', 'isolate,backup,recover');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'synced', 'Stop Node when Synced', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('isolate', 'galera', 'synced', 'Isolate Node when Synced', 'isolate', 3, 'control', 'isolate');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'donor', 'Stop Donor Node', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('isolate', 'galera', 'donor', 'Isolate Donor Node', 'isolate', 3, 'control', 'isolate');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('stop', 'galera', 'isolated', 'Stop Node when Isolated', 'stop', 3, 'control', 'stop');
+insert into NodeCommands (Command, SystemType, State, Description, Icon, UIOrder, UIGroup, Steps) values ('recover', 'galera', 'isolated', 'Recover Node when Isolated', 'recover', 3, 'control', 'recover');
 
 /* End of new tables */
 
@@ -54,7 +73,7 @@ create table System (
 	SystemType		varchar(20),					/* Type of system e.g. galera or aws */
 	SystemName		varchar(80),					/* User defined system name */
 	InitialStart	datetime,						/* Time of first system boot */
-	LastAccess		datetime,							/* Last time admin access to system */
+	LastAccess		datetime,						/* Last time admin access to system */
 	State			varchar(20)						/* The current state of the system */
 );
 
@@ -131,7 +150,7 @@ create table Task (
 	Completed		datetime,				/* Timestamp on completion, this will be
 											* NULL for commands that are in progress
 											*/
-	StepIndex		smallint default 0,		/* Index of step being executed in CommandStep */
+	StepIndex		smallint default 0,		/* Index of step being executed - refers to the internal commandsteps table */
 	State			varchar(20)				/* Command state */
 );
 

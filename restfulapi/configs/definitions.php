@@ -27,6 +27,11 @@
 
 namespace SkySQL\SCDS;
 
+define ('_SKYSQL_API_OBJECT_CACHE_TIME_DEFAULT', 3600);
+define ('_SKYSQL_API_OBJECT_CACHE_SIZE_DEFAULT', 500000);
+define ('_SKYSQL_API_MONITOR_INTERVAL_DEFAULT', 1800);
+define ('_SKYSQL_API_MONITOR_COUNT_DEFAULT', 15);
+
 // Can be used with the getParam method of Request class
 define( '_MOS_NOTRIM', 0x0001 );  		// prevent getParam trimming input
 define( '_MOS_ALLOWHTML', 0x0002 );		// cause getParam to allow HTML - purified on user side

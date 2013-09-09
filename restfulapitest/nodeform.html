@@ -54,12 +54,12 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Get One Node State</h3>
-	  <form action="" method="post" id="getnodestate" target="apiresults" onsubmit="return(setFields(this.id,'nodestate','stateid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <h3>Get Node States for System Type</h3>
+	  <form action="" method="post" id="getnodestate" target="apiresults" onsubmit="return(setFields(this.id,'nodestate','systemtype'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /nodestate/{state} <br />
+			URI will be /nodestate/{systemtype} <br />
 			Parameters:
 			<a class="tooltip" href="#">fields 
 			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -71,8 +71,8 @@
 			Default: All fields <br />
 		</p>
 		<p class="formfields">
-			<label for="stateid">State</label>
-			<input type="text" name="stateid" id="stateid" /><br />
+			<label for="systemtype">System Type</label>
+			<input type="text" name="systemtype" id="systemtype" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="List State" />
@@ -138,6 +138,14 @@
 			<strong>state</strong><br />
 			The state code to be given to the node, must be selected from valid node states (string).
 			</span></a>&nbsp;
+			<a class="tooltip" href="#">stateid,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>stateid</strong><br />
+			The state ID number (integer) that refers to the state to be given to the node.  It will only be
+			used if state is not provided.  The ID will be used to look up the state in the API
+			internal tables, and the number given must refer to a valid node state, or it will be 
+			ignored.
+			</span></a>&nbsp;
 			<a class="tooltip" href="#">hostname,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>hostname</strong><br />
@@ -183,6 +191,8 @@
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="stateid">State ID</label>
+			<input type="text" id="stateid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stateid');" /><br />
 			<label for="hostname">Hostname</label>
 			<input type="text" id="hostname" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'hostname');" /><br />
 			<label for="publicip">Public IP</label>

@@ -109,7 +109,7 @@ class Tasks extends ImplementAPI {
 	// Internal to scheduling
 	protected function setRunAt ($task) {
 		$pathtoapi = _API_BASE_FILE;
-		$php = $this->config['shell']['php'];
+		$php = @$this->config['shell']['php'];
 		if (!is_executable($php)) $this->sendErrorResponse ("Configuration file api.ini says PHP is '$php' but this is not executable", 500);
 		$command = sprintf('%s %s \"POST\" \"task/%d\"', $php, $pathtoapi, $task->taskid);
 		$atcommand = sprintf('echo "%s" | at -t %s 2>&1', $command, date('YmdHi.s', strtotime($task->nextstart)));
@@ -122,7 +122,8 @@ class Tasks extends ImplementAPI {
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
 		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
 		$params = @$task->parameters;
-		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $task->taskid \"{$task->steps}\" \"{$this->config['shell']['hostname']}\" \"$params\" \"$task->privateip\" \"$logfile\"";
+		$hostname = @$this->config['shell']['hostname'];
+		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $task->taskid \"{$task->steps}\" \"$hostname\" \"$params\" \"$task->privateip\" \"$logfile\"";
        	$pid = exec($cmd);
 		$this->log("Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid\n");
 		$task->updatePIDandState($pid);

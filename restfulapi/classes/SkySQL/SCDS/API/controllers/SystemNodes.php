@@ -30,6 +30,7 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use PDO;
+use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeStateManager;
@@ -48,13 +49,7 @@ class SystemNodes extends SystemNodeCommon {
 			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAll())));
 		}
 		else {
-			$state = urldecode($uriparts[1]);
-			$nodestate = $manager->getByState($state);
-			if ($nodestate) {
-				$nodestate = array_merge(array('state' => $state), $nodestate);
-				$this->sendResponse(array('nodestate' => $this->filterSingleResult($nodestate)));
-			}
-			else $this->sendErrorResponse("No node state $state", 404);
+			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAllForType(urldecode($uriparts[1])))));
 		}
 	}
 	
@@ -99,12 +94,13 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function extraNodeData (&$node) {
-		$node->commands = ($this->isFilterWord('commands') AND $node->state) ? $this->getCommands($node->state) : null;
+		$node->commands = ($this->isFilterWord('commands') AND $node->state) ? $node->getCommands() : null;
 		$node->monitorlatest = $this->getMonitorData($node->nodeid);
 		list($node->taskid, $node->command) = $this->getCommand($node->nodeid);
 	}
 
 	public function putSystemNode ($uriparts) {
+		Node::checkLegal('stateid');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) @$uriparts[3];
 		if ($this->validateSystem()) NodeManager::getInstance()->saveNode($this->systemid, $this->nodeid);
@@ -128,16 +124,5 @@ class SystemNodes extends SystemNodeCommon {
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $nodeid));
 		$row = $query->fetch();
 		return $row ? array($row->TaskID, $row->Command) : array(null, null);
-	}
-	
-	protected function getCommands ($state) {
-		$query = $this->db->prepare('SELECT Command AS command, Description AS description, Icon AS icon, Steps AS steps FROM NodeCommands WHERE State = :state  ORDER BY UIOrder');
-		$query->execute(array(':state' => $state));
-		return $query->fetchAll();
-
-		// Older code that returns commands as strings rather than objects
-		$query = $this->db->prepare('SELECT Command FROM NodeCommands WHERE State = :state');
-		$query->execute(array(':state' => $state));
-		return $query->fetchAll(PDO::FETCH_COLUMN);
 	}
 }

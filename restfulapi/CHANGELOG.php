@@ -3,6 +3,25 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 9 September 2013, 17:00 BST
+ * 
+ * Changes to NodeCommands table and contents.  To keep your existing database,
+ * please delete this table and recreate using the CREATE and INSERT statements
+ * in ../classes/SkySQL/COMMON/AdminDatabase.sql
+ * 
+ * More checks on the config file to give user friendly errors.
+ * 
+ * Modified Node state update to support monitor providing stateid (integer)
+ * rather than state (string).
+ * 
+ * Change ../nodestates and ../nodestates/{systemtype} to return node states by
+ * system type.
+ * 
+ * Minimise required parameters.
+ * 
+ * Changes to HTML System Form to avoid sending URI elements as POST data.  Other
+ * pages to follow.
+ * 
  * 2 September 2013, 9:10 am BST
  * 
  * Provide automatic cache clear on new database; add unique ID to log entries; 

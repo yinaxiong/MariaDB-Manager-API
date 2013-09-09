@@ -32,7 +32,6 @@ namespace SkySQL\SCDS\API\models;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
-use SkySQL\SCDS\API\managers\NodeStateManager;
 use PDO;
 
 abstract class EntityModel {
@@ -281,6 +280,7 @@ abstract class EntityModel {
 		if ($sub) unset($this->insname[$sub], $this->insvalue[$sub]);
 		$this->insname[] = $sqlname;
 		$this->insvalue[] = $bindname;
+		$this->setter[] = $sqlname.' = '.$bindname;
 	}
 	
 	protected function calendarDate () {
@@ -343,12 +343,7 @@ abstract class EntityModel {
 	
 	// Validation method for IP address
 	protected static function ipaddress ($data) {
-		return filter_var($data, FILTER_VALIDATE_IP);
-	}
-	
-	// Validation method for node state
-	protected static function nodestate ($data) {
-		return NodeStateManager::getInstance()->getByState($data) ? true : false;
+		return empty($data) ? true : filter_var($data, FILTER_VALIDATE_IP);
 	}
 	
 	// Validation method for backup state

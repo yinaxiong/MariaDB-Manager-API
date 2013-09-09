@@ -77,7 +77,15 @@ class API {
 				'Slave' => 'slave',
 				'not running' => 'stopped'
 			),
-			'description' => 'Amazon AWS based System'
+			'description' => 'Amazon AWS based System',
+			'nodestates' => array(
+				'master' => array('stateid' => 1, 'description' => 'Master', 'icon' => 'master'),
+				'slave' => array('stateid' => 2, 'description' => 'Slave Online', 'icon' => 'slave'),
+				'offline' => array('stateid' => 3, 'description' => 'Slave Offline', 'icon' => 'offline'),
+				'stopped' => array('stateid' => 5, 'description' => 'Slave Stopped', 'icon' => 'stopped'),
+				'error' => array('stateid' => 13, 'description' => 'Slave Error', 'icon' => 'error'),
+				'standalone' => array('stateid' => 18, 'description' => 'Standalone Database', 'icon' => 'node'),
+			)
 		),
 		'galera' => array(
 			'nodetranslator' => array(
@@ -85,7 +93,17 @@ class API {
 				'Started' => 'slave',
 				'not runnng' => 'stopped'
 			),
-			'description' => 'Galera multi-master System'
+			'description' => 'Galera multi-master System',
+			'nodestates' => array(
+				'down' => array('stateid' => 100, 'description' => 'Down', 'icon' => 'stopped'),
+				'open' => array('stateid' => 101, 'description' => 'Open', 'icon' => 'starting'),
+				'primary' => array('stateid' => 102, 'description' => 'Primary', 'icon' => 'master'),
+				'joiner' => array('stateid' => 103, 'description' => 'Joiner', 'icon' => 'promoting'),
+				'joined' => array('stateid' => 104, 'description' => 'Joined', 'icon' => 'master'),
+				'synced' => array('stateid' => 105, 'description' => 'Synced', 'icon' => 'master'),
+				'donor' => array('stateid' => 106, 'description' => 'Donor', 'icon' => 'master'),
+				'isolated' => array('stateid' => 99, 'description' => 'Isolated', 'icon' => 'isolated')
+			)
 		)
 	);
 	
