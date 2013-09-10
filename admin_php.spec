@@ -1,7 +1,7 @@
 %define _topdir	 	%(echo $PWD)/
 %define name		admin_php
-%define release		1
-%define version 	0.4
+%define release         ##RELEASE_TAG##
+%define version         ##VERSION_TAG##
 %define buildroot %{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
 
@@ -14,7 +14,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-Requires:		php coreutils curl
+Requires:		php coreutils curl php-process php-pdo
 #BuildRequires:		
 
 %description
@@ -30,20 +30,23 @@ PHP sripts that implements admin console backend
 mkdir -p /usr/local/skysql/log
 chown apache:apache /usr/local/skysql/log
 chown -R apache:apache /var/www
-sudo ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
-sudo sed -i "s/;date.timezone =/date.timezone = Europe\/London/" /etc/php.ini
+ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
+timezone=`grep ZONE /etc/sysconfig/clock | sed 's/ZONE="\([^"]*\)"/\1/'`
+sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
 touch /var/log/SDS.log
 chown apache:apache /var/log/SDS.log
+mkdir -p /usr/local/skysql/cache/api
+chown -R apache:apache usr/local/skysql/cache
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
-mkdir -p $RPM_BUILD_ROOT/etc/scdsapi/
+mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d/
 
 cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
+mv -R restfulapi/root/* $RPM_BUILD_ROOT/
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest $RPM_BUILD_ROOT%{install_path}
-cp restfulapi/api.ini $RPM_BUILD_ROOT/etc/scdsapi/
-rm restfulapi/api.ini
+cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 
 %clean
 
@@ -57,7 +60,10 @@ rm restfulapi/api.ini
 %{install_path}restfulapi/*
 %{install_path}restfulapitest/
 %{install_path}restfulapitest/*
-/etc/scdsapi/api.ini
+/etc/skysqlmgr/api.ini
+/usr/local/skysql/scripts/api/*
+/usr/local/skysql/scripts/api/steps/*
+/etc/httpd/conf.d/skysql_rewrite.con
 
 %changelog
 * Wed Apr 17 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-3
