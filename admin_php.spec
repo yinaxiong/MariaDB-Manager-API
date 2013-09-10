@@ -63,7 +63,7 @@ cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 /etc/skysqlmgr/api.ini
 /usr/local/skysql/scripts/api/*
 /usr/local/skysql/scripts/api/steps/*
-/etc/httpd/conf.d/skysql_rewrite.con
+/etc/httpd/conf.d/skysql_rewrite.conf
 
 %changelog
 * Wed Apr 17 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-3
