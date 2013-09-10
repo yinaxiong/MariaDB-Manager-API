@@ -43,7 +43,7 @@ mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
 mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d/
 
 cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
-mv -R restfulapi/root/* $RPM_BUILD_ROOT/
+mv restfulapi/root/* $RPM_BUILD_ROOT/
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest $RPM_BUILD_ROOT%{install_path}
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
