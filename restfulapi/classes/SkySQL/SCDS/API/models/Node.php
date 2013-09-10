@@ -61,7 +61,7 @@ class Node extends EntityModel {
 
 	protected static $fields = array(
 		'name' => array('sqlname' => 'NodeName', 'default' => ''),
-		'state' => array('sqlname' => 'State', 'default' => 'offline'),
+		'state' => array('sqlname' => 'State', 'default' => ''),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicip' => array('sqlname' => 'PublicIP', 'default' => '', 'validate' => 'ipaddress'),
 		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'validate' => 'ipaddress'),
@@ -120,16 +120,16 @@ class Node extends EntityModel {
 	}
 	
 	protected function validateState () {
-		return NodeStateManager::getInstance()->getByState($this->getSystemType(), $this->state) ? true : false;
+		return NodeStateManager::getInstance()->getByState($this->getSystemType(), @$this->state) ? true : false;
 	}
 	
 	protected function validateInsert () {
 		if (empty($this->privateip)) Request::getInstance()->sendErrorResponse('Private IP must be provided to create a node', 400);
-		if (!$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", $this->state, $this->getSystemType()), 400);
+		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
 	}
 	
 	protected function validateUpdate () {
-		if (!$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", $this->state, $this->getSystemType()), 400);
+		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
 	}
 	
 	public static function deleteAllForSystem ($systemid) {

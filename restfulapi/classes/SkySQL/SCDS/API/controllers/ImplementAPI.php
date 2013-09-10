@@ -96,13 +96,31 @@ abstract class ImplementAPI {
 	}
 	
 	protected function filterWordsArray ($value) {
+		$nested = $this->nestedFilter($value);
+		if (!empty($nested)) return $nested;
 		foreach ($this->fieldnames as $word) if (isset($value[$word])) {
 			$hits[$word] = $value[$word];
 		}
 		return empty($hits) ? null : $hits;
 	}
 	
+	protected function nestedFilter ($value) {
+		foreach ($value as $key=>$sub) if (is_array($sub) OR is_object($sub)) {
+			$filtered = is_array($sub) ? $this->filterWordsArray($sub) : $this->filterWordsObject($sub);
+			if ($filtered) {
+				if (is_object($value)) {
+					if (!isset($hits)) $hits = new stdClass();
+					$hits->$key = $filtered;
+				}
+				else $hits[$key] = $filtered;
+			}
+		}
+		return isset($hits) ? $hits : null;
+	}
+	
 	protected function filterWordsObject ($value) {
+		$nested = $this->nestedFilter($value);
+		if (!empty($nested)) return $nested;
 		$hits = new stdClass();
 		foreach ($this->fieldnames as $word) if (isset($value->$word)) {
 			$hits->$word = $value->$word;

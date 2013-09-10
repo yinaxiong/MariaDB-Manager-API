@@ -3,6 +3,7 @@
   <head>
     <title>Manipulate Users via SkySQL Manager API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8"></meta>
   </head>
   <body>
 	  <div id="header">
@@ -46,9 +47,9 @@
 	</p>
 		<p class="formfields">
 			<label for="systemtype">System Type</label>
-			<input type="text" name="systemtype" id="systemtype" /><br />
+			<input type="text" id="systemtype" onfocus="setNameURI(this.id,'systemtype');" /><br />
 			<label for="monitorid">Monitor Key</label>
-			<input type="text" name="monitor" id="monitorid" /><br />
+			<input type="text" name="monitor" id="monitorid" onfocus="setNameURI(this.id,'monitor');" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="Fetch Classes" />
@@ -116,9 +117,9 @@
 	</p>
 		<p class="formfields">
 			<label for="systemtypep">System Type</label>
-			<input type="text" name="systemtype" id="systemtypep" /><br />
+			<input type="text" name="systemtype" id="systemtypep" onfocus="setNameURI(this.id,'systemtype');" /><br />
 			<label for="monitoridp">Monitor Key</label>
-			<input type="text" name="monitor" id="monitoridp" /><br />
+			<input type="text" name="monitor" id="monitoridp" onfocus="setNameURI(this.id,'monitor');" /><br />
 			<label for="name">Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="sql">SQL</label>
@@ -156,9 +157,9 @@
 	</p>
 		<p class="formfields">
 			<label for="systemtyped">System Type</label>
-			<input type="text" name="systemtype" id="systemtyped" /><br />
+			<input type="text" name="systemtype" id="systemtyped" onfocus="setNameURI(this.id,'systemtype');" /><br />
 			<label for="monitoridd">Monitor Key</label>
-			<input type="text" name="monitor" id="monitoridd" /><br />
+			<input type="text" name="monitor" id="monitoridd" onfocus="setNameURI(this.id,'monitor');" /><br />
 			<input type="submit" class="submit" value="Delete Class" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -193,11 +194,11 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidw">System ID</label>
-			<input type="text" name="systemid" id="systemidw" /><br />
+			<input type="text" name="systemid" id="systemidw" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeidw">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidw" /><br />
+			<input type="text" name="nodeid" id="nodeidw" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="monitoridw">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridw" /><br />
+			<input type="text" name="monitorid" id="monitoridw" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<label for="value">Observation value</label>
 			<input type="text" name="value" id="value" /><br />
 			<label for="timestamp">Time stamp</label>
@@ -299,11 +300,11 @@
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" /><br />
+			<input type="text" name="systemid" id="systemid" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" /><br />
+			<input type="text" name="nodeid" id="nodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="monitoridg">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridg" /><br />
+			<input type="text" name="monitorid" id="monitoridg" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<label for="monitorstart">Start (unix) time</label>
 			<input type="text" name="start" id="monitorstart" /><br />
 			<label for="monitorfinish">Finish (unix) time</label>
@@ -360,11 +361,11 @@
 		</p>
 		<p class="formfields">
 			<label for="rsystemid">System ID</label>
-			<input type="text" name="systemid" id="rsystemid" /><br />
+			<input type="text" name="systemid" id="rsystemid" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="rnodeid">Node ID</label>
-			<input type="text" name="nodeid" id="rnodeid" /><br />
+			<input type="text" name="nodeid" id="rnodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="rmonitoridg">Monitor Key</label>
-			<input type="text" name="monitorid" id="rmonitoridg" /><br />
+			<input type="text" name="monitorid" id="rmonitoridg" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<label for="rmonitorstart">Start (unix) time</label>
 			<input type="text" name="start" id="rmonitorstart" /><br />
 			<label for="rmonitorfinish">Finish (unix) time</label>
@@ -429,9 +430,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemids">System ID</label>
-			<input type="text" name="systemid" id="systemids" /><br />
+			<input type="text" name="systemid" id="systemids" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="monitoridgs">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridgs" /><br />
+			<input type="text" name="monitorid" id="monitoridgs" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<label for="monitorstarts">Start (unix) time</label>
 			<input type="text" name="start" id="monitorstarts" /><br />
 			<label for="monitorfinishs">Finish (unix) time</label>
@@ -488,9 +489,9 @@
 		</p>
 		<p class="formfields">
 			<label for="rsystemids">System ID</label>
-			<input type="text" name="systemid" id="rsystemids" /><br />
+			<input type="text" name="systemid" id="rsystemids" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="rmonitoridgs">Monitor Key</label>
-			<input type="text" name="monitorid" id="rmonitoridgs" /><br />
+			<input type="text" name="monitorid" id="rmonitoridgs" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<label for="rmonitorstarts">Start (unix) time</label>
 			<input type="text" name="start" id="rmonitorstarts" /><br />
 			<label for="rmonitorfinishs">Finish (unix) time</label>
@@ -519,11 +520,11 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" /><br />
+			<input type="text" name="systemid" id="systemidl" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeidl">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidl" /><br />
+			<input type="text" name="nodeid" id="nodeidl" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="monitoridl">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridl" /><br />
+			<input type="text" name="monitorid" id="monitoridl" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<input type="submit" class="submit" value="Get Latest" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -544,9 +545,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidls">System ID</label>
-			<input type="text" name="systemid" id="systemidls" /><br />
+			<input type="text" name="systemid" id="systemidls" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="monitoridls">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridls" /><br />
+			<input type="text" name="monitorid" id="monitoridls" onfocus="setNameURI(this.id,'monitorid');" /><br />
 			<input type="submit" class="submit" value="Get Latest" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

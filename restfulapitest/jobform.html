@@ -157,7 +157,7 @@
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
-			<select name="command" id="commandname">
+			<select name="command" id="commandname" onfocus="setNameURI(this.id,'command');">
 				<option value="backup">Backup</option>
 				<option value="restore">Restore</option>
 				<option value="start">Start</option>
@@ -172,7 +172,7 @@
 			<label for="nodec">Node ID</label>
 			<input type="text" name="nodeid" id="nodec" /><br />
 			<label for="statec">State of Node</label>
-			<input type="text" name="state" id="statec" /><br />
+			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" id="statec" /><br />
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="level">Level (backup)</label>
@@ -206,7 +206,7 @@
 		</p>
 		<p class="formfields">
 			<label for="task">Task ID</label>
-			<input type="text" name="taskid" id="taskid" /><br />
+			<input type="text" name="taskid" id="taskid" onfocus="setNameURI(this.id,'taskid');" /><br />
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Get Task" />
@@ -274,7 +274,7 @@
 		</p>
 		<p class="formfields">
 			<label for="tasku">Task ID</label>
-			<input type="text" name="taskid" id="taskidu" /><br />
+			<input type="text" name="taskid" id="taskidu" onfocus="setNameURI(this.id,'taskid');" /><br />
 			<label for="stateju">State</label>
 			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="pidju">Process ID (PID)</label>

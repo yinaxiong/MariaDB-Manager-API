@@ -28,9 +28,6 @@
 
 namespace SkySQL\SCDS\API\models;
 
-use \PDO as PDO;
-use SkySQL\COMMON\AdminDatabase;
-
 class Monitor extends EntityModel {
 	protected static $setkeyvalues = true;
 	

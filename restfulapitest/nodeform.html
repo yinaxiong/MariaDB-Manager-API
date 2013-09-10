@@ -72,7 +72,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemtype">System Type</label>
-			<input type="text" name="systemtype" id="systemtype" /><br />
+			<input type="text" name="systemtype" id="systemtype" onfocus="setNameURI(this.id,'systemtype');" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="List State" />
@@ -107,9 +107,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" /><br />
+			<input type="text" name="systemid" id="systemidl" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="statean">Node state</label>
-			<input type="text" name="state" id="statean" /><br />
+			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" id="statean" /><br />
 			<label for="fieldsan">Fields to return</label>
 			<input type="text" name="fields" id="fieldsan" /><br />
 			<input type="submit" class="submit" value="List" />
@@ -184,9 +184,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" /><br />
+			<input type="text" name="systemid" id="systemid" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" /><br />
+			<input type="text" name="nodeid" id="nodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="name">Node Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State</label>
@@ -226,9 +226,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidd">System ID</label>
-			<input type="text" name="systemid" id="systemidd" /><br />
+			<input type="text" name="systemid" id="systemidd" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeidd">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidd" /><br />
+			<input type="text" name="nodeid" id="nodeidd" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -256,9 +256,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
-			<input type="text" name="systemid" id="systemidx" /><br />
+			<input type="text" name="systemid" id="systemidx" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeidx">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidx" /><br />
+			<input type="text" name="nodeid" id="nodeidx" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="fieldsi">Fields to return</label>
 			<input type="text" name="fields" id="fieldsi" /><br />
 			<input type="submit" class="submit" value="Information" />

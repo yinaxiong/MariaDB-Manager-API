@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 10 September 2013, 18:00 BST
+ * 
+ * Modify presentation of results for monitorclasses to be more consistent - 
+ * group results by systemtype.  It may be necessary to clear cache data to 
+ * ensure monitorclass functions work correctly.  Fix small bugs.
+ * 
  * 9 September 2013, 17:00 BST
  * 
  * Changes to NodeCommands table and contents.  To keep your existing database,

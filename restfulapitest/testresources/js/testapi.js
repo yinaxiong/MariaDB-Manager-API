@@ -4,8 +4,14 @@ function setFields () {
 	for (i = 1; i < arguments.length; i+=2) {
 		uri = uri + '/' + arguments[i];
 		if (i+1 < arguments.length) {
-			uri = uri + '/' + encodeURIComponent(form.elements[arguments[i+1]].value);
-			form.elements[arguments[i+1]].name = "";
+			if (form.elements[arguments[i+1]] === undefined) uri = uri + '/';
+			else {
+				uripart = form.elements[arguments[i+1]].value;
+				uri = uri + '/' + encodeURIComponent(form.elements[arguments[i+1]].value);
+				form.elements[arguments[i+1]].blur();
+				form.elements[arguments[i+1]].value = "";
+				form.elements[arguments[i+1]].name = "";
+			}
 		}
 	}
 	form.action = getPersistent("myLink") + uri;

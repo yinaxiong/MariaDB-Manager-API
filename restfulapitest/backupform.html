@@ -90,13 +90,13 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" /><br />
+			<input type="text" name="systemid" id="systemidl" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="qsdl">Query String</label>
-			<input type="text" name="querystring" id="qsdl"/><br />
+			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'querystring');" id="qsdl"/><br />
 			<label for="from">From - Date+Time</label>
-			<input type="text" name="from" id="from" /><br />
+			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'from');" id="from" /><br />
 			<label for="to">To - Date+Time</label>
-			<input type="text" name="to" id="to" /><br />
+			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'to');" id="to" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<label for="limit">Max items to return</label>
@@ -130,9 +130,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidb">System ID</label>
-			<input type="text" name="systemid" id="systemidb" /><br />
+			<input type="text" name="systemid" id="systemidb" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="backupidb">Backup ID</label>
-			<input type="text" name="backupid" id="backupidb" /><br />
+			<input type="text" name="backupid" id="backupidb" onfocus="setNameURI(this.id,'backupid');" /><br />
 			<input type="submit" class="submit" value="Show Backup" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -165,9 +165,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidc">System ID</label>
-			<input type="text" name="systemid" id="systemidc" /><br />
+			<input type="text" name="systemid" id="systemidc" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" /><br />
+			<input type="text" name="nodeid" id="nodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
 			<label for="level">Level ID</label>
 			<input type="text" name="level" id="level" /><br />
 			<input type="submit" class="submit" value="Create Backup" />
@@ -237,9 +237,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidu">System ID</label>
-			<input type="text" name="systemid" id="systemidu" /><br />
+			<input type="text" name="systemid" id="systemidu" onfocus="setNameURI(this.id,'systemid');" /><br />
 			<label for="backupid">Backup ID</label>
-			<input type="text" name="backupid" id="backupid" /><br />
+			<input type="text" name="backupid" id="backupid" onfocus="setNameURI(this.id,'backupid');" /><br />
 			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="updated">Updated</label>
