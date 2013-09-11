@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 11 September 2013, 12:00 BST
+ * 
+ * Change API version to 0.8; add code release date, visible at ../metadata;
+ * improve links within metadata pages and add summary page; correct mistakes in
+ * HTML for node update parameters and simplify parameter descriptions for nodes 
+ * and users.
+ * 
  * 10 September 2013, 18:00 BST
  * 
  * Modify presentation of results for monitorclasses to be more consistent - 
