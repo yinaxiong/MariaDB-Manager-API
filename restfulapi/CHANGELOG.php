@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 13 September 2012, 09:40 BST
+ * 
+ * Fix faulty mechanism for filtering "fields".  Fix error in reporting node
+ * command/taskid state.
+ * 
  * 11 September 2013, 12:00 BST
  * 
  * Change API version to 0.8; add code release date, visible at ../metadata;

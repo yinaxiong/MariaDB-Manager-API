@@ -48,7 +48,8 @@ final class Monitors extends ImplementAPI {
 		$manager = MonitorManager::getInstance();
 		if (empty($uriparts[1])) {
 			$monitors = $manager->getAll();
-			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
+			foreach ($monitors as $type=>$results) $monitors[$type] = $this->filterResults($results);
+			$this->sendResponse(array('monitorclasses' => $monitors));
 		}
 		elseif (empty($uriparts[3])) {
 			$systemtype = urldecode($uriparts[1]);

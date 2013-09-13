@@ -119,9 +119,9 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function getCommand ($nodeid) {
-		$query = $this->db->prepare('SELECT TaskID, Command FROM Task 
-			WHERE SystemID = :systemid AND NodeID = :nodeid AND State = 2');
-		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => $nodeid));
+		$query = $this->db->prepare("SELECT TaskID, Command FROM Task 
+			WHERE SystemID = :systemid AND NodeID = :nodeid AND State = 'running'");
+		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => (int) $nodeid));
 		$row = $query->fetch();
 		return $row ? array($row->TaskID, $row->Command) : array(null, null);
 	}
