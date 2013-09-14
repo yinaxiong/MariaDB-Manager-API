@@ -44,7 +44,7 @@ use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','0.8');
-define ('_API_CODE_ISSUE_DATE', '11 September 2013');
+define ('_API_CODE_ISSUE_DATE', '14 September 2013');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 

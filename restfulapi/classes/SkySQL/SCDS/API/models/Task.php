@@ -30,7 +30,6 @@ namespace SkySQL\SCDS\API\models;
 
 use SkySQL\SCDS\API\Request;
 use SkySQL\COMMON\AdminDatabase;
-use SkySQL\COMMON\WHEN\When;
 use SkySQL\SCDS\API\managers\NodeManager;
 
 class Task extends EntityModel {
@@ -126,48 +125,14 @@ class Task extends EntityModel {
 		}
 		if (isset($errors)) $request->sendErrorResponse($errors, 400);
 		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
-		$this->privateip = $this->node->privateip;
 		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
+		$this->privateip = $this->node->privateip;
 		$this->getSteps();
-		//if (!empty($this->icalentry)) {
-		//	$this->processCalendarEntry();
-		//	$this->setInsertValue('state', 'scheduled');
-		//}
 		foreach (array('command','privateip', 'steps') as $name) {
 			$this->setInsertValue($name, $this->$name);
 		}
 		$this->setCorrectFormatDate('completed');
 		$this->setCorrectFormatDateWithDefault('started');
-	}
-	
-	// Probably needs to be moved somewhere else
-	protected function processCalendarEntry () {
-		$calines = explode('|', $this->icalentry);
-		$lastone = count($calines) - 1;
-		foreach ($calines as $i=>$line) {
-			$parts = explode(':', $line, 2);
-			if (0 == $i AND ('BEGIN' != $parts[0] OR 'VEVENT' != $parts[1])) $errors[] = "iCalendar event should start with BEGIN:VEVENT";
-			if ($lastone == $i AND ('END' != $parts[0] OR 'VEVENT' != $parts[1])) $errors[] = "iCalendar event should end with END:VEVENT";
-			if ('DTSTART' == $parts[0]) $dtstart = $parts[1];
-			elseif ('RRULE' == $parts[0]) $rrule = $parts[1];
-		}
-		if (empty($dtstart)) {
-			$dtstart = $this->calendarDate();
-		}
-		if (!preg_match('/^\d{8}T\d{6}Z$/', $dtstart)) {
-			$errors[] = "Start date $dtstart for schedule incorrectly formatted";
-		}
-		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors,400);
-		$this->updateNextStart($dtstart, $rrule);
-		$this->state = 'scheduled';
-	}
-	
-	// Probably needs to be moved elsewhere
-	protected function updateNextStart ($dtstart, $rrule) {
-		$event = new When();
-		$event->recur($dtstart)->rrule($rrule);
-		$this->nextstart = date('Y-m-d H:i:s', $event->nextAfter()->getTimeStamp());
-		$this->runatonce = $event->alreadyDue();
 	}
 	
 	protected function validateUpdate () {

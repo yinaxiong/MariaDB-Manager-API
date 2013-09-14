@@ -55,4 +55,87 @@ class Schedule extends EntityModel {
 		'created' => array('sqlname' => 'Created', 'insertonly' => true),
 		'updated' => array('sqlname' => 'Updated', 'insertonly' => true)
 	);
+	
+	public function __construct ($scheduleid=0) {
+		$this->scheduleid = $scheduleid;
+	}
+	
+	public function insertOnCommand ($command) {
+		$this->command = $command;
+		parent::insert(false);
+		self::fixDate($this);
+	}
+
+	protected function insertedKey ($insertid) {
+		$this->scheduleid = $insertid;
+		return $insertid;
+	}
+
+	public function updateJobNumber ($number) {
+		$database = AdminDatabase::getInstance();
+		$update = $database->prepare("UPDATE Schedule SET ATJobNumber = :atjobnumber, NextStart = :nextstart WHERE ScheduleID = :scheduleid");
+		$update->execute(array(':atjobnumber' => $number, ':nextstart' => $this->nextstart, ':scheduleid' => $this->scheduleid));
+		$this->atjobnumber = $number;
+	}
+	
+	protected function validateInsert () {
+		$request = Request::getInstance();
+		foreach (array('systemid','nodeid','username') as $name) {
+			if (empty($this->bind[':'.$name])) $errors[] = "Value for $name is required to schedule a command";
+		}
+		if (isset($errors)) $request->sendErrorResponse($errors, 400);
+		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
+		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
+		if (!$this->icalentry) $request->sendErrorResponse("Cannot create a schedule without an iCalendar specification", 400);
+		$this->processCalendarEntry();
+		$this->setInsertValue('command', $this->command);
+	}
+	
+	protected function processCalendarEntry () {
+		$calines = explode('|', $this->icalentry);
+		$lastone = count($calines) - 1;
+		foreach ($calines as $i=>$line) {
+			$parts = explode(':', $line, 2);
+			if (0 == $i AND ('BEGIN' != $parts[0] OR 'VEVENT' != $parts[1])) $errors[] = "iCalendar event should start with BEGIN:VEVENT";
+			if ($lastone == $i AND ('END' != $parts[0] OR 'VEVENT' != $parts[1])) $errors[] = "iCalendar event should end with END:VEVENT";
+			if ('DTSTART' == $parts[0]) $dtstart = $parts[1];
+			elseif ('RRULE' == $parts[0]) $rrule = $parts[1];
+		}
+		if (empty($dtstart)) {
+			$dtstart = $this->calendarDate();
+		}
+		if (!preg_match('/^\d{8}T\d{6}Z$/', $dtstart)) {
+			$errors[] = "Start date $dtstart for schedule incorrectly formatted";
+		}
+		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors,400);
+		$this->updateNextStart($dtstart, $rrule);
+		$this->state = 'scheduled';
+	}
+	
+	protected function updateNextStart ($dtstart, $rrule) {
+		$event = new When();
+		$event->recur($dtstart)->rrule($rrule);
+		$this->nextstart = date('Y-m-d H:i:s', $event->nextAfter()->getTimeStamp());
+		$this->runatonce = $event->alreadyDue();
+	}
+	
+	// Optional parameters are fromdate and todate, comma separated, in $args[0]
+	protected static function specialSelected ($args) {
+		$selectors = explode(',', @$args[0]);
+		foreach ($selectors as $selector) {
+			$unixtime = strtotime($selector);
+			if ($unixtime) $dates[] = date('Y-m-d H:i:s', $unixtime);
+		}
+		if (isset($dates)) {
+			$bind[":startdate"] = $dates[0];
+			if (1 == count($dates)) {
+				$where[] = "started >= :startdate";
+			}
+			else {
+				$where[] = "started >= :startdate AND started <= :enddate";
+				$bind[":enddate"] = $dates[1];
+			}
+		}
+		return array((array) @$where, (array) @$bind);
+	}
 }

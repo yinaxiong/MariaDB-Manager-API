@@ -3,7 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * 13 September 2012, 09:40 BST
+ * 14 September 2013
+ * 
+ * When receiving PUT data fields, convert null to empty string.
+ * Preparations for introducing Schedule entities; code preparatory to
+ * supporting component properties in nodes (no change to interface yet).
+ * 
+ * 13 September 2013, 09:40 BST
  * 
  * Fix faulty mechanism for filtering "fields".  Fix error in reporting node
  * command/taskid state.

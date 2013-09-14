@@ -57,6 +57,9 @@ final class StandardRequest extends Request {
 			if (false === stripos($rawput, '=')) $dequery = $rawput;
 			else parse_str($rawput, $dequery);
 			$this->putdata = (is_null($dejson) OR (is_array($dequery) AND count($dejson) < count($dequery))) ? $dequery : $dejson;
+			if (is_array($this->putdata)) foreach ($this->putdata as $key=>$value) {
+				if (is_null($value)) $this->putdata[$key] = '';
+			}
 		}
 		$this->requestmethod = $_SERVER['REQUEST_METHOD'];
 		parent::__construct();
