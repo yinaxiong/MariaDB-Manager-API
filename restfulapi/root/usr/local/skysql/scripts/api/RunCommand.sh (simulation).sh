@@ -1,66 +1,72 @@
 #!/bin/bash
 
-# script takes TaskID as parameter and runs the steps that comprise the command in question
-steps=$(echo "SELECT Steps FROM Commands, CommandExecution WHERE CommandExecution.TaskID = "$1" AND Commands.CommandID = CommandExecution.CommandID;" | sqlite3 $2)
-echo 'stepIDs: '$steps
+# Parameters passed are:
+# $1 The ID of the job that is to be run
+# $2 A comma separated list of steps (each being a script)
+# $3 The hostname for the API
+# $4 Parameters to be passed on to step scripts
+# $5 IP address for the node
+# $6 Log file
 
-# set command state to "Running"
-echo 'UPDATE CommandExecution SET State = 2 WHERE TaskID = '$1';' | sqlite3 $2
+dbpath="/usr/local/skysql/SQLite/AdminConsole/admin"
+taskid=$1
+steps=$2
 
-# get parameters to pass to step scripts
-params=$(echo 'SELECT SystemID, NodeID, UserID, Params FROM CommandExecution WHERE CommandExecution.TaskID = '$1';' | sqlite3 $2)
-params=${params//|/ }
+echo 'steps: '$steps
+
+# get system and node IDs, needed to update the node's state
+target=$(echo 'SELECT SystemID, NodeID FROM Task WHERE TaskID = '$taskid';' | sqlite3 $dbpath)
+target=(${target//|/ })
 
 # loop through stepIDs comprising the command
-simulparams=($params)
 index=1
-for stepID in ${steps//,/ }
+for step in ${steps//,/ }
 do
-	# update CommandExecution to the current step, so the UI can advance the progress bar
-	echo 'UPDATE CommandExecution SET StepIndex = '$index' WHERE TaskID = '$1';' | sqlite3 $2
+	# simulate running the script
+	echo $index') '$step
+
+	# simulate the step updating StepIndex, so the UI can advance the progress bar
+	echo 'UPDATE Task SET StepIndex = '$index' WHERE TaskID = '$taskid';' | sqlite3 $dbpath
 	
-	# get the name of the step script to run next
-	script=`echo 'SELECT Script FROM Step WHERE StepID ='$stepID';' | sqlite3 $2`'.sh'
-
-	# run the script and exit if an error occurs
-	fullpath=`dirname $0`"/steps/$script $params"
-	echo 'running: '$fullpath
-
-	case $stepID in
-	1) state=10;;	# start->starting
-	2) state=4;;	# stop->stopping
-	3) state=6;;	# isolate->isolating
-	4) state=7;;	# recover->recovering
-	5) state=11;;	# promote->promoting
-	6) state=12;;	# synchronize->synchronizing
-	7) state=9;;	# backup->backingup
-	8) state=8;;	# restore->restoring
+	# simulate the node changing its initial state in response to the step being run
+	case $step in
+	start) state=starting;;
+	stop) state=stopping;;
+	isolate) state=isolating;;
+	recover) state=recovering;;
+	promote) state=promoting;;
+	synchronize) state=synchronizing;;
+	backup) state=backingup;;
+	restore) state=restoring;;
+	restart) state=starting;;
 	esac
-	echo 'UPDATE Node SET State = '$state' WHERE SystemID='${simulparams[0]}' AND NodeID='${simulparams[1]}';' | sqlite3 $2
-	echo 'stepID '$stepID' start, state: '$state
+	echo 'UPDATE Node SET State = "'$state'" WHERE SystemID="'${target[0]}'" AND NodeID="'${target[1]}'";' | sqlite3 $dbpath
+	echo '   '$step' - initial state: '$state
 	
+	# simulate spending some time while the step is running
 	sleep 5
 
-	case $stepID in
-	1) state=2;;	# starting->slave
-	2) state=5;;	# stopping->stopped
-	3) state=3;;	# isolating->offline
-	4) state=2;;	# recovering->slave
-	5) state=1;;	# promoting->master
-	6) state=2;;	# synchronizing->slave
-	7) state=3;;	# backingup->offline
-	8) state=3;;	# restoring->offline
+	# simulate the node changing its final state in response to the step being run
+	case $step in
+	start) state=slave;;
+	stop) state=stopped;;
+	isolate) state=offline;;
+	recover) state=slave;;
+	promote) state=master;;
+	synchronize) state=slave;;
+	backup) state=offline;;
+	restore) state=offline;;
+	restart) state=slave;;
 	esac
-	echo 'UPDATE Node SET State = '$state' WHERE SystemID='${simulparams[0]}' AND NodeID='${simulparams[1]}';' | sqlite3 $2
-	echo 'stepID '$stepID' end, state: '$state
+	echo 'UPDATE Node SET State = "'$state'" WHERE SystemID="'${target[0]}'" AND NodeID="'${target[1]}'";' | sqlite3 $dbpath
+	echo '   '$step' - final state: '$state
 	
  	let index+=1
 done
 
-cmdstate=5  # Done
-echo 'final state: '$cmdstate
+cmdstate="done"
+echo 'End of command; final state: '$cmdstate
 
-# set command state to "Done" or "Error" and set completion time stamp
-time=$(date +"%Y-%m-%d %H:%M:%S")
-echo "UPDATE CommandExecution SET Completed = '"$time"', State = '"$cmdstate"' WHERE TaskID = '$1';" | sqlite3 $2
-
+# set command state to "done" or "error" and set completion time stamp
+time=$(date +"%Y-%m-%d %H:%M:%S %z")
+echo "UPDATE Task SET Completed = '"$time"', State = '"$cmdstate"' WHERE TaskID = '$taskid';" | sqlite3 $dbpath
