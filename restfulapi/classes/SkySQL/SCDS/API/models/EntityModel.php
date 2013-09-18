@@ -319,7 +319,7 @@ abstract class EntityModel {
 	
 	protected static function getParam ($source, $name, $about) {
 		$request = Request::getInstance();
-		$data = $request->getParam($source, $name, $about['default']);
+		$data = isset($about['forced']) ? $about['forced'] : $request->getParam($source, $name, $about['default']);
 		if (@$about['validate']) {
 			$method = $about['validate'];
 			if (method_exists(__CLASS__, $method)) {

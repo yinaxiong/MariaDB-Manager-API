@@ -3,7 +3,25 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * 14 September 2013
+ * 18 September 2013, 17:15 BST
+ * 
+ * Numerous database changes - see email earlier today.
+ * Implement component properties.  Requires new table:
+ * create table ComponentProperties (
+ *	ComponentID	varchar(40),
+ *	Property	varchar(40),
+ *	Value		text
+ *	);
+ * Removed all references to Icon field, no longer required.  Removed all
+ * reference to UIGroup field, no longer required.  
+ * Changed node handling so ID is automatically generated and never reused.
+ * Calls to API are changed as a result.
+ * Added code for scheduling, but not ready for use yet.
+ * Bug fixes, including problem of PHP parsing of query strings performing 
+ * urldecode where not appropriate.
+ * 
+ * 
+ * 14 September 2013, 10:20 BST
  * 
  * When receiving PUT data fields, convert null to empty string.
  * Preparations for introducing Schedule entities; code preparatory to

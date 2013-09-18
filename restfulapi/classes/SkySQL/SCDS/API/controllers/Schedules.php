@@ -30,7 +30,7 @@ namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\models\Schedule;
 
-class Schedules extends ImplementAPI {
+class Schedules extends TaskScheduleCommon {
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
@@ -61,56 +61,5 @@ class Schedules extends ImplementAPI {
 			$this->setRunAt($schedule);
 			if ($schedule->isDue()) $this->execute($schedule);
 		}
-	}
-	
-	public function runCommand ($uriparts) {
-		Command::checkLegal('icalentry');
-		$command = urldecode($uriparts[1]);
-		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
-		foreach (array('LaunchCommand','RunCommand') as $script) {
-			if (!is_executable($scriptdir."/$script.sh")) {
-				$errors[] = "Script $scriptdir/$script.sh does not exist or is not executable";
-			}
-		}
-		if (isset($errors)) $this->sendErrorResponse($errors,500);
-		$task = new Task;
-		$task->insertOnCommand($command);
-		if ($task->icalentry) {
-			$this->setRunAt($task);
-			if (!$task->isDue()) $this->sendResponse(array('task' => $task));
-		}
-		$this->execute($task);
-		$this->sendResponse(array('task' => $task));
-	}
-	
-	public function runScheduledCommand ($uriparts) {
-		$taskid = (int) $uriparts[1];
-		$task = new Task($taskid);
-		$task->loadData();
-		$task->processCalendarEntry();
-		$this->setRunAt($task);
-		$this->execute($task);
-		exit;
-	}
-	
-	protected function setRunAt ($task) {
-		$pathtoapi = _API_BASE_FILE;
-		$php = $this->config['shell']['php'];
-		if (!is_executable($php)) $this->sendErrorResponse ("Configuration file api.ini says PHP is '$php' but this is not executable", 500);
-		$command = sprintf('%s %s \"POST\" \"task/%d\"', $php, $pathtoapi, $task->taskid);
-		$atcommand = sprintf('echo "%s" | at -t %s 2>&1', $command, date('YmdHi.s', strtotime($task->nextstart)));
-		$lastline = shell_exec($atcommand);
-		preg_match('/.*job ([0-9]+) at.*/', @$lastline, $matches);
-		if (@$matches[1]) $task->updateJobNumber($matches[1]);
-	}
-	
-	protected function execute ($task) {
-		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
-		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
-		$params = @$task->parameters;
-		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $task->taskid \"{$task->steps}\" \"{$this->config['shell']['hostname']}\" \"$params\" \"$task->privateip\" \"$logfile\"";
-       	$pid = exec($cmd);
-		$this->log("Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid\n");
-		$task->updatePIDandState($pid);
 	}
 }

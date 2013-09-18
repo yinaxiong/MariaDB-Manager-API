@@ -78,6 +78,10 @@ class Schedule extends EntityModel {
 		$this->atjobnumber = $number;
 	}
 	
+	public function makeTask () {
+		
+	}
+	
 	protected function validateInsert () {
 		$request = Request::getInstance();
 		foreach (array('systemid','nodeid','username') as $name) {

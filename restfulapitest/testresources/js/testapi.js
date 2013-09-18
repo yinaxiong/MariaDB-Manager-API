@@ -8,9 +8,6 @@ function setFields () {
 			else {
 				uripart = form.elements[arguments[i+1]].value;
 				uri = uri + '/' + encodeURIComponent(form.elements[arguments[i+1]].value);
-				form.elements[arguments[i+1]].blur();
-				form.elements[arguments[i+1]].value = "";
-				form.elements[arguments[i+1]].name = "";
 			}
 		}
 	}
@@ -37,7 +34,7 @@ function setAuth (uri, form) {
 	var oDate = new Date();
 	var d = GetRFC822Date(oDate);
 	form.elements['_authorization'].value = 'api-auth-' + localStorage.getItem("myKeyID") + '-' + hex_md5(uri.replace(/\/+$/, "") + localStorage.getItem("myKey") + d);
-	form.elements['_rfcdate'].value = encodeURIComponent(d);
+	form.elements['_rfcdate'].value = d;
 }
 function getPersistent (name) {
 	var key = localStorage.getItem(name);

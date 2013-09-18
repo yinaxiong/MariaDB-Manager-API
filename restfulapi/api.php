@@ -58,17 +58,7 @@ function T_ ($string) {
 class API {
 	private static $instance = null;
 	protected static $ipaddress = '';
-	
-	/*
-	public static $backupstates = array(
-		'scheduled' => array('description' => 'Scheduled', 'icon' => 'scheduled'),
-		'running' => array('description' => 'Running', 'icon' => 'running'),
-		'paused' => array('description' => 'Paused', 'icon' => 'paused'),
-		'stopped' => array('description' => 'Stopped', 'icon' => 'stopped'),
-		'done' => array('description' => 'Done', 'icon' => 'done'),
-		'error' => array('description' => 'Error', 'icon' => 'error')
-	);
-	*/
+	private static $keyname = '';
 	
 	public static $systemtypes = array(
 		'aws' => array(
@@ -80,12 +70,12 @@ class API {
 			),
 			'description' => 'Amazon AWS based System',
 			'nodestates' => array(
-				'master' => array('stateid' => 1, 'description' => 'Master', 'icon' => 'master'),
-				'slave' => array('stateid' => 2, 'description' => 'Slave Online', 'icon' => 'slave'),
-				'offline' => array('stateid' => 3, 'description' => 'Slave Offline', 'icon' => 'offline'),
-				'stopped' => array('stateid' => 5, 'description' => 'Slave Stopped', 'icon' => 'stopped'),
-				'error' => array('stateid' => 13, 'description' => 'Slave Error', 'icon' => 'error'),
-				'standalone' => array('stateid' => 18, 'description' => 'Standalone Database', 'icon' => 'node'),
+				'master' => array('stateid' => 1, 'description' => 'Master'),
+				'slave' => array('stateid' => 2, 'description' => 'Slave Online'),
+				'offline' => array('stateid' => 3, 'description' => 'Slave Offline'),
+				'stopped' => array('stateid' => 5, 'description' => 'Slave Stopped'),
+				'error' => array('stateid' => 13, 'description' => 'Slave Error'),
+				'standalone' => array('stateid' => 18, 'description' => 'Standalone Database'),
 			)
 		),
 		'galera' => array(
@@ -96,14 +86,14 @@ class API {
 			),
 			'description' => 'Galera multi-master System',
 			'nodestates' => array(
-				'down' => array('stateid' => 100, 'description' => 'Down', 'icon' => 'stopped'),
-				'open' => array('stateid' => 101, 'description' => 'Open', 'icon' => 'starting'),
-				'primary' => array('stateid' => 102, 'description' => 'Primary', 'icon' => 'master'),
-				'joiner' => array('stateid' => 103, 'description' => 'Joiner', 'icon' => 'promoting'),
-				'joined' => array('stateid' => 104, 'description' => 'Joined', 'icon' => 'master'),
-				'synced' => array('stateid' => 105, 'description' => 'Synced', 'icon' => 'master'),
-				'donor' => array('stateid' => 106, 'description' => 'Donor', 'icon' => 'master'),
-				'isolated' => array('stateid' => 99, 'description' => 'Isolated', 'icon' => 'isolated')
+				'down' => array('stateid' => 100, 'description' => 'Down'),
+				'open' => array('stateid' => 101, 'description' => 'Open'),
+				'primary' => array('stateid' => 102, 'description' => 'Primary'),
+				'joiner' => array('stateid' => 103, 'description' => 'Joiner'),
+				'joined' => array('stateid' => 104, 'description' => 'Joined'),
+				'synced' => array('stateid' => 105, 'description' => 'Synced'),
+				'donor' => array('stateid' => 106, 'description' => 'Donor'),
+				'isolated' => array('stateid' => 99, 'description' => 'Isolated')
 			)
 		)
 	);
@@ -118,48 +108,30 @@ class API {
 	);
 	
 	public static $commandstates = array(
-		'scheduled' => array('description' => 'Scheduled', 'icon' => 'scheduled'),
-		'running' => array('description' => 'Running', 'icon' => 'running'),
-		'paused' => array('description' => 'Paused', 'icon' => 'paused'),
-		'stopped' => array('description' => 'Stopped', 'icon' => 'stopped'),
-		'done' => array('description' => 'Done', 'icon' => 'done'),
-		'error' => array('description' => 'Error', 'icon' => 'error')
+		'running' => array('description' => 'Running'),
+		'paused' => array('description' => 'Paused'),
+		'stopped' => array('description' => 'Stopped'),
+		'done' => array('description' => 'Done'),
+		'error' => array('description' => 'Error')
 	);
 	
-	public static $nodestates = array(
-		'master' => array('stateid' => 1, 'description' => 'Master', 'icon' => 'master'),
-		'slave' => array('stateid' => 2, 'description' => 'Slave Online', 'icon' => 'slave'),
-		'offline' => array('stateid' => 3, 'description' => 'Slave Offline', 'icon' => 'offline'),
-		'stopping' => array('stateid' => 4, 'description' => 'Slave Stopping', 'icon' => 'stopping'),
-		'stopped' => array('stateid' => 5, 'description' => 'Slave Stopped', 'icon' => 'stopped'),
-		'isolating' => array('stateid' => 6, 'description' => 'Slave Isolating', 'icon' => 'isolating'),
-		'recovering' => array('stateid' => 7, 'description' => 'Slave Recovering', 'icon' => 'recovering'),
-		'restoring' => array('stateid' => 8, 'description' => 'Slave Restoring Backup', 'icon' => 'restoring'),
-		'backingup' => array('stateid' => 9, 'description' => 'Slave Backing Up', 'icon' => 'backingup'),
-		'starting' => array('stateid' => 10, 'description' => 'Slave Starting', 'icon' => 'starting'),
-		'promoting' => array('stateid' => 11, 'description' => 'Slave Promoting', 'icon' => 'promoting'),
-		'synchronizing' => array('stateid' => 12, 'description' => 'Slave Synchronizing', 'icon' => 'synchronizing'),
-		'error' => array('stateid' => 13, 'description' => 'Slave Error', 'icon' => 'error'),
-		'standalone' => array('stateid' => 18, 'description' => 'Standalone Database', 'icon' => 'node')
-	);
-
 	public static $systemstates = array(
-		'running' => array('description' => 'System Running', 'icon' => 'system'),
-		'stopping' => array('description' => 'System Stopping', 'icon' => 'sys_stopping'),
-		'stopped' => array('description' => 'System Stopped', 'icon' => 'sys_stopped'),
-		'starting' => array('description' => 'System Starting', 'icon' => 'sys_starting')
+		'running' => array('description' => 'System Running'),
+		'stopping' => array('description' => 'System Stopping'),
+		'stopped' => array('description' => 'System Stopped'),
+		'starting' => array('description' => 'System Starting')
 	);
 
 	public static $commandsteps = array(
-		'start' => array('icon' => 'starting', 'description' => 'Start node up, start replication'),
-		'stop' => array('icon' => 'stopping', 'description' => 'Stop replication, shut node down'),
-		'isolate' => array('icon' => 'isolating', 'description' => 'Take node out of replication'),
-		'recover' => array('icon' => 'recovering', 'description' => 'Put node back into replication'),
-		'promote' => array('icon' => 'promoting', 'description' => 'Promote a slave to master'),
-		'synchronize' => array('icon' => 'synchronizing', 'description' => 'Synchronize a node'),
-		'backup' => array('icon' => 'backingup', 'description' => 'Backup a node'),
-		'restore' => array('icon' => 'restoring', 'description' => 'Restore a node'),
-		'restart' => array('icon' => 'starting', 'description' => 'Restart a node from error state')
+		'start' => array('description' => 'Start node up, start replication'),
+		'stop' => array('description' => 'Stop replication, shut node down'),
+		'isolate' => array('description' => 'Take node out of replication'),
+		'recover' => array('description' => 'Put node back into replication'),
+		'promote' => array('description' => 'Promote a slave to master'),
+		'synchronize' => array('description' => 'Synchronize a node'),
+		'backup' => array('description' => 'Backup a node'),
+		'restore' => array('description' => 'Restore a node'),
+		'restart' => array('description' => 'Restart a node from error state')
 	);
 	
 	public static function getInstance () {
@@ -235,10 +207,11 @@ class API {
 	}
 
 	public static function merger ($data, $key) {
-		return array_merge(array('state' => (string) $key), $data);
+		return array_merge(array(self::$keyname => (string) $key), $data);
 	}
 	
-	public static function mergeStates ($states) {
+	public static function mergeStates ($states, $keyname='state') {
+		self::$keyname = $keyname;
 		return array_map(array(__CLASS__,'merger'), $states, array_keys($states));
 	}
 

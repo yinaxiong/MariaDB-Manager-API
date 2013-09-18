@@ -104,9 +104,13 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST'),
-		//array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
-		//array('class' => 'ComponentProperties', 'method' => 'setComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
-		//array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
+		array('class' => 'ComponentProperties', 'method' => 'setComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentProperties', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+', 'http' => 'GET'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperties', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/', 'http' => 'DELETE'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponents', 'uri' => 'system/[0-9]+/node/[0-9]+/component', 'http' => 'GET'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponents', 'uri' => 'system/[0-9]+/node/[0-9]+/component', 'http' => 'DELETE'),
 		array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/[0-9]+/node/[0-9]+/process', 'http' => 'GET'),
@@ -114,7 +118,8 @@ abstract class Request {
 		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/[0-9]+/node', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'PUT'),
+		array('class' => 'SystemNodes', 'method' => 'updateSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'POST'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
 		array('class' => 'UserTags', 'method' => 'getUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'GET'),
@@ -141,7 +146,7 @@ abstract class Request {
 		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
 		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/.+', 'http' => 'POST'),
-		array('class' => 'Tasks', 'method' => 'runScheduledCommand', 'uri' => 'task/[0-9]+', 'http' => 'POST'),
+		array('class' => 'Schedules', 'method' => 'runScheduledCommand', 'uri' => 'task/[0-9]+', 'http' => 'POST'),
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'getSelectedTasks', 'uri' => 'task/.+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
@@ -246,7 +251,16 @@ abstract class Request {
 		if ('true' == $this->getParam($this->requestmethod, 'suppress_response_codes')) $this->suppress = true;
 		$this->getQueryString();
 	}
-	
+
+	public function parse_str ($string, &$array) {
+		$array = array();
+		$parts = explode('&', $string);
+		foreach ($parts as $part) {
+			$assigns = explode('=', $part, 2);
+			if (2 == count($assigns)) $array[$assigns[0]] = $assigns[1];
+		}
+	}
+
 	protected function readAndCheckConfig () {
 		if (!is_readable(_API_INI_FILE_LOCATION)) {
 			$this->fatalError(sprintf('No readable API configuration file at %s', _API_INI_FILE_LOCATION));
@@ -275,7 +289,7 @@ abstract class Request {
 		$querystring = $this->getParam($this->requestmethod, 'querystring');
 		if ($querystring) {
 			$data = &$this->getArrayFromName($this->requestmethod);
-			parse_str($querystring, $newdata);
+			$this->parse_str($querystring, $newdata);
 			foreach ($newdata as $name=>$value) $data[$name] = $value;
 		}
 	}
@@ -425,7 +439,7 @@ abstract class Request {
 	public function getAllParamNames ($arrname) {
 		$arr = &$this->getArrayFromName($arrname);
 		return array_diff(array_keys($arr),
-			array('fields','limit','offset','suppress_response_codes','querystring','_method', '_accept', '_rfcdate', '_authorization'));
+			array('fields','limit','offset','suppress_response_codes','querystring','_method', '_accept', '_rfcdate', '_authorization', 'uri1', 'uri2', 'uri3', 'uri4'));
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -447,7 +461,7 @@ abstract class Request {
 	            $result = $arr[$name];
 	            if (!($mask&_MOS_NOTRIM)) $result = trim($result);
 	            if (!is_numeric($result)) {
-					$result = urldecode($result);
+					if ('GET' == $arrname AND !$this->requestviapost) $result = urldecode($result);
 	            	if (get_magic_quotes_gpc() AND !($mask & _MOS_NOSTRIP)) $result = stripslashes($result);
 	                if (!($mask&_MOS_ALLOWRAW) AND is_numeric($def)) $result = $def;
 	            }

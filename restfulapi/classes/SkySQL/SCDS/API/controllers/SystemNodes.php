@@ -99,23 +99,37 @@ class SystemNodes extends SystemNodeCommon {
 		list($node->taskid, $node->command) = $this->getCommand($node->nodeid);
 	}
 
-	public function putSystemNode ($uriparts) {
+	public function createSystemNode ($uriparts) {
+		Node::checkLegal();
+		$this->systemid = (int) $uriparts[1];
+		if ($this->validateSystem()) NodeManager::getInstance()->createNode($this->systemid);
+		else $this->sendErrorResponse('Create node request gave non-existent system ID '.$this->systemid, 400);
+	}
+	
+	public function updateSystemNode ($uriparts) {
 		Node::checkLegal('stateid');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) @$uriparts[3];
-		if ($this->validateSystem()) NodeManager::getInstance()->saveNode($this->systemid, $this->nodeid);
-		else $this->sendErrorResponse('Create node request gave non-existent system ID '.$this->systemid, 400);
+		if ($this->validateNode()) NodeManager::getInstance()->updateNode($this->systemid, $this->nodeid);
+		else $this->sendErrorResponse(sprintf("Update node, no node with system ID '%s' and node ID '%s'", $this->systemid, $this->nodeid), 400);
 	}
 	
 	public function deleteSystemNode ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
-		if ($this->validateSystem()) NodeManager::getInstance()->deleteNode($this->systemid, $this->nodeid);
+		if ($this->validateSystem()) {
+			NodeManager::getInstance()->deleteNode($this->systemid, $this->nodeid);
+			ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
+		}
 		else $this->sendErrorResponse('Delete node request gave non-existent system ID '.$this->systemid, 400);
 	}
 	
 	protected function validateSystem () {
 		return SystemManager::getInstance()->getByID($this->systemid) ? true : false;
+	}
+	
+	protected function validateNode () {
+		return NodeManager::getInstance()->getByID($this->systemid, $this->nodeid) ? true : false;
 	}
 	
 	protected function getCommand ($nodeid) {

@@ -55,14 +55,40 @@ class ComponentProperties extends SystemNodeCommon {
 	
 	public function getComponentProperty ($uriparts) {
 		$property = $this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
-		return ComponentPropertyManager::getInstance()->getComponentProperty($this->systemid, $this->nodeid, $this->component, $property);
+		ComponentPropertyManager::getInstance()->getComponentProperty($this->systemid, $this->nodeid, $this->component, $property);
+	}
+	
+	public function deleteComponentProperties ($uriparts) {
+		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
+		$counter = ComponentPropertyManager::getInstance()->deleteAllComponentProperties($this->systemid, $this->nodeid, $this->component);
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
+		else $this->sendErrorResponse("Delete $this->name property did not match any $this->name property", 404);
+	}
+	
+	public function getComponentProperties ($uriparts) {
+		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
+		$properties = ComponentPropertyManager::getInstance()->getAllComponentProperties($this->systemid, $this->nodeid, $this->component);
+		$this->sendResponse(array("{$this->name}properties" => $properties));
+	}
+	
+	public function deleteComponents ($uriparts) {
+		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
+		$counter = ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
+		if ($counter) $this->sendResponse(array('deletecount' => $counter));
+		else $this->sendErrorResponse("Delete $this->name property did not match any $this->name property", 404);
+	}
+	
+	public function getComponents ($uriparts) {
+		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
+		$components = ComponentPropertyManager::getInstance()->getAllComponents($this->systemid, $this->nodeid);
+		$this->sendResponse(array('components' => $components));
 	}
 	
 	protected function checkNodeIDGetProperty ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
-		$this->component = urldecode($uriparts[5]);
-		if (NodeManager::getInstance()->getByID($this->systemid, $this->nodeid)) return urldecode($uriparts[7]);
+		$this->component = urldecode(@$uriparts[5]);
+		if (NodeManager::getInstance()->getByID($this->systemid, $this->nodeid)) return urldecode(@$uriparts[7]);
 		$this->sendErrorResponse(sprintf("No node with System ID '%s' and Node ID '%s'", $this->systemid, $this->nodeid), 404);
 	}
 }

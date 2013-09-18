@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SkySQL Manager API</title>
+    <title>Manipulate Systems via SkySQL Manager API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -75,7 +75,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System</h3>
-	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -95,18 +95,46 @@
 			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>state</strong><br />
 			The state code to be given to the system, must be selected from valid system states (string).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbusername</strong><br />
+			The user name for the node database for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbpassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbpassword</strong><br />
+			The password for the node for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">repusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>repusername</strong><br />
+			The user name for the node database replication user (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">reppassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			The password for the node database replication user (text).
 			</span>
 			</a><br />
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemid" /><br />
 			<label for="type">System Type</label>
 			<input type="text" id="type" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'systemtype');" /><br />
 			<label for="name">System Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="username">DB User Name</label>
+			<input type="text" id="username" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbusername');" /><br />
+			<label for="passwd">DB Password</label>
+			<input type="text" id="passwd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbpassword');" /><br />
+			<label for="repusername">DB Repln Name</label>
+			<input type="text" id="repusername" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
+			<label for="reppasswd">DB Repln Password</label>
+			<input type="text" id="reppasswd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -117,7 +145,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System</h3>
-	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -126,7 +154,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidd">System ID</label>
-			<input type="text" name="systemid" id="systemidd" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidd" /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -137,7 +165,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Information</h3>
-	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -154,7 +182,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
-			<input type="text" name="systemid" id="systemidx" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidx" /><br />
 			<label for="fieldssi">Fields to return</label>
 			<input type="text" name="fields" id="fieldssi" /><br />
 			<input type="submit" class="submit" value="Information" />
@@ -167,7 +195,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Property</h3>
-	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -176,9 +204,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidpg">System ID</label>
-			<input type="text" name="systemid" id="systemidpg" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidpg" /><br />
 			<label for="propertynameg">Property Name</label>
-			<input type="text" name="property" id="propertynameg" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propertynameg" /><br />
 			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -189,7 +217,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a System Property</h3>
-	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -204,9 +232,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidp">System ID</label>
-			<input type="text" name="systemid" id="systemidp" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidp" /><br />
 			<label for="propertyname">Property Name</label>
-			<input type="text" name="property" id="propertyname" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propertyname" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
@@ -219,7 +247,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a System Property</h3>
-	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystemprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -228,9 +256,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemiddp">System ID</label>
-			<input type="text" name="systemid" id="systemiddp" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemiddp" /><br />
 			<label for="propertynamed">Property Name</label>
-			<input type="text" name="property" id="propertynamed" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propertynamed" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -241,7 +269,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Application Property</h3>
-	  <form action="" method="post" id="getapplicprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getapplicprop" target="apiresults" onsubmit="return(setFields(this.id,'application','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
@@ -250,9 +278,9 @@
 		</p>
 		<p class="formfields">
 			<label for="appidpg">Application ID</label>
-			<input type="text" name="appid" id="appidpg" onfocus="setNameURI(this.id,'appid');" /><br />
+			<input type="text" name="uri1" id="appidpg" /><br />
 			<label for="propertynameag">Property Name</label>
-			<input type="text" name="property" id="propertynameag" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propertynameag" /><br />
 			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -263,7 +291,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update an Application Property</h3>
-	  <form action="" method="post" id="putappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -278,9 +306,9 @@
 		</p>
 		<p class="formfields">
 			<label for="appidp">ApplicationID</label>
-			<input type="text" name="appid" id="appdp" onfocus="setNameURI(this.id,'appid');" /><br />
+			<input type="text" name="uri1" id="appdp" /><br />
 			<label for="propertynamea">Property Name</label>
-			<input type="text" name="property" id="propertynamea" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2y" id="propertynamea" /><br />
 			<label for="valueap">Value</label>
 			<input type="text" name="value" id="valueap" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
@@ -293,7 +321,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete an Application Property</h3>
-	  <form action="" method="post" id="delappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','appid','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delappnprop" target="apiresults" onsubmit="return(setFields(this.id,'application','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
@@ -302,9 +330,9 @@
 		</p>
 		<p class="formfields">
 			<label for="appiddp">Application ID</label>
-			<input type="text" name="appid" id="appiddp" onfocus="setNameURI(this.id,'appid');" /><br />
+			<input type="text" name="uri1" id="appiddp" /><br />
 			<label for="propertynamead">Property Name</label>
-			<input type="text" name="property" id="propertynamead" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propertynamead" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

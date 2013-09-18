@@ -101,6 +101,7 @@ abstract class PropertyManager extends EntityManager {
 		$delete = AdminDatabase::getInstance()->prepare($this->deleteAllSQL);
 		$delete->execute(array(':key' => $key));
 		$this->clearCache(true);
+		return $delete->rowCount();
 	}
 	
 	protected function makeBind ($key, $property) {

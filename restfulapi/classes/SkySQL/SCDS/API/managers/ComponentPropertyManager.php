@@ -29,6 +29,10 @@
 
 namespace SkySQL\SCDS\API\managers;
 
+use SkySQL\SCDS\API\Request;
+use SkySQL\COMMON\AdminDatabase;
+use StdClass;
+
 class ComponentPropertyManager extends PropertyManager {
 	
 	protected $name = 'component';
@@ -46,8 +50,8 @@ class ComponentPropertyManager extends PropertyManager {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
-	private function makeKey ($systemid, $nodeid, $name) {
-		return "$systemid|$nodeid|$name";
+	private function makeKey ($systemid, $nodeid, $name=null) {
+		return empty($name) ? "$systemid|$nodeid|%" : "$systemid|$nodeid|$name";
 	}
 	
 	public function setComponentProperty ($systemid, $nodeid, $name, $property, $value) {
@@ -62,7 +66,7 @@ class ComponentPropertyManager extends PropertyManager {
 	
 	public function getComponentProperty ($systemid, $nodeid, $name, $property) {
 		$key = $this->makeKey($systemid, $nodeid, $name);
-		return parent::getProperty($key, $property);
+		parent::getProperty($key, $property);
 	}
 	
 	public function getAllComponentProperties ($systemid, $nodeid, $name) {
@@ -72,6 +76,38 @@ class ComponentPropertyManager extends PropertyManager {
 	
 	public function deleteAllComponentProperties ($systemid, $nodeid, $name) {
 		$key = $this->makeKey($systemid, $nodeid, $name);
-		parent::deleteAllProperties($key);
+		$counter = parent::deleteAllProperties($key);
+		if ($counter) $this->clearCache(true);
+		return $counter;
+	}
+	
+	public function getAllComponents ($systemid, $nodeid) {
+		$key = $this->makeKey($systemid, $nodeid);
+		$select = AdminDatabase::getInstance()->prepare('SELECT * FROM ComponentProperties WHERE ComponentID LIKE :key ORDER BY ComponentId, Property');
+		$select->execute(array('key' => $key));
+		foreach ($select->fetchAll() as $property) {
+			$keyparts = explode('|', $property->ComponentID, 3);
+			if (3 == count($keyparts)) {
+				$name = $keyparts[2];
+				$components[$name][$property->Property] = $property->Value;
+			}
+		}
+		return isset($components) ? $components : new stdClass();
+	}
+	
+	public function deleteAllComponents ($systemid, $nodeid) {
+		return $this->deleteByKey($this->makeKey($systemid, $nodeid));
+	}
+	
+	public function deleteAllComponentsForSystem ($systemid) {
+		return $this->deleteByKey("$systemid|%");
+	}
+	
+	protected function deleteByKey ($key) {
+		$delete = AdminDatabase::getInstance()->prepare('DELETE FROM ComponentProperties WHERE ComponentID LIKE :key');
+		$delete->execute(array('key' => $key));
+		$counter = $delete->rowCount();
+		if ($counter) $this->clearCache(true);
+		return $counter;
 	}
 }

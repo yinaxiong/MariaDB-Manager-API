@@ -74,22 +74,17 @@ class NodeManager extends EntityManager {
 		return $node->nodeid;
 	}
 	
-	public function createNode () {
-		$node = new Node(null);
+	public function createNode ($system) {
+		$node = new Node($system);
 		$node->insert();
 	}
 	
 	public function updateNode ($system, $id) {
 		$node = new Node($system,$id);
-		$node->update();
-	}
-	
-	public function saveNode ($system, $id) {
-		$node = new Node($system,$id);
 		$request = Request::getInstance();
 		$stateid = $request->getParam($request->getMethod(), 'stateid', 0);
 		if ($stateid) $request->putParam($request->getMethod(), 'state', NodeStateManager::getInstance()->getByStateID($node->getSystemType(), $stateid));
-		$node->save();
+		$node->update();
 	}
 	
 	public function deleteNode ($system, $id=0) {
@@ -99,6 +94,8 @@ class NodeManager extends EntityManager {
 			$node->delete();
 		}
 		else {
+			// Must delete components before altering data about nodes
+			ComponentPropertyManager::deleteAllComponentsForSystem($system);
 			if (isset($this->nodes[$system])) unset($this->nodes[$system]);
 			Node::deleteAllForSystem($system);
 			$this->clearCache();

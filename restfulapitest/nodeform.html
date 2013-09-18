@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SkySQL Manager API</title>
+    <title>Manipulate Nodes via SkySQL Manager API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -55,7 +55,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Node States for System Type</h3>
-	  <form action="" method="post" id="getnodestate" target="apiresults" onsubmit="return(setFields(this.id,'nodestate','systemtype'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getnodestate" target="apiresults" onsubmit="return(setFields(this.id,'nodestate','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -72,7 +72,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemtype">System Type</label>
-			<input type="text" name="systemtype" id="systemtype" onfocus="setNameURI(this.id,'systemtype');" /><br />
+			<input type="text" name="uri1" id="systemtype" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="List State" />
@@ -85,7 +85,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get all Nodes for a System</h3>
-	  <form action="" method="post" id="getsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -107,7 +107,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidl" /><br />
 			<label for="statean">Node state</label>
 			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" id="statean" /><br />
 			<label for="fieldsan">Fields to return</label>
@@ -121,8 +121,115 @@
 	  </form>
 	  </div>
 	  <div class="section">
+	  <h3>Create a Node</h3>
+	  <form action="" method="post" id="postnode" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /system/{systemid}/node <br />
+			Parameters:
+			<a class="tooltip" href="#">name,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Name parameter" height="48" width="48" />
+			<strong>name</strong><br />
+			The name you want to give to the node (text).
+			</span></a>&nbsp;&nbsp;
+			<a class="tooltip" href="#">state,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>state</strong><br />
+			The state code to be given to the node, must be selected from valid node states (string).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">stateid,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>stateid</strong><br />
+			The state ID number (integer) that refers to the state to be given to the node.  It will only be
+			used if state is not provided.  The ID will be used to look up the state in the API
+			internal tables, and the number given must refer to a valid node state, or it will be 
+			ignored.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">hostname,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>hostname</strong><br />
+			The hostname for the node (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">publicip,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>publicip</strong><br />
+			The public IP address of the node in the usual form, e.g. 12.34.56.78
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">privateip,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>privateip</strong><br />
+			The private IP address of the node in the usual form, e.g. 23.45.67.89
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">port,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>port</strong><br />
+			The port number used to access the database on this node - empty or zero if the default is to be used.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">instanceid,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>instanceid</strong><br />
+			The ID number for the instance (integer).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbusername</strong><br />
+			The user name for the node database for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbpassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbpassword</strong><br />
+			The password for the node for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">repusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>repusername</strong><br />
+			The user name for the node database replication user (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">reppassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			The password for the node database replication user (text).
+			</span></a>
+		</p>
+		<p class="formfields">
+			<label for="systemidc">System ID</label>
+			<input type="text" name="uri1" id="systemidc" /><br />
+			<label for="namec">Node Name</label>
+			<input type="text" id="namec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
+			<label for="statec">State</label>
+			<input type="text" id="statec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="stateidc">State ID</label>
+			<input type="text" id="stateidc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stateid');" /><br />
+			<label for="hostnamec">Hostname</label>
+			<input type="text" id="hostnamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'hostname');" /><br />
+			<label for="publicipc">Public IP</label>
+			<input type="text" id="publicipc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'publicip');" /><br />
+			<label for="privateipc">Private IP</label>
+			<input type="text" id="privateipc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'privateip');" /><br />
+			<label for="portc">Port</label>
+			<input type="text" id="portc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'port');" /><br />
+			<label for="instanceidc">Instance ID</label>
+			<input type="text" id="instanceidc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'instanceid');" /><br />
+			<label for="usernamec">DB User Name</label>
+			<input type="text" id="usernamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbusername');" /><br />
+			<label for="passwdc">DB Password</label>
+			<input type="text" id="passwdc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbpassword');" /><br />
+			<label for="repusernamec">DB Repln Name</label>
+			<input type="text" id="repusernamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
+			<label for="reppasswdc">DB Repln Password</label>
+			<input type="text" id="reppasswdc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
+			<input type="submit" class="submit" value="Create or Update" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
 	  <h3>Create or Update a Node</h3>
-	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -173,20 +280,30 @@
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">dbusername,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
-			<strong>username</strong><br />
-			The user name for the node (text).
+			<strong>dbusername</strong><br />
+			The user name for the node database for general queries, process list etc. (text).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">dbpassword<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
-			<strong>passwd</strong><br />
-			The password for the node (text).
+			<strong>dbpassword</strong><br />
+			The password for the node for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">repusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>repusername</strong><br />
+			The user name for the node database replication user (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">reppassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			The password for the node database replication user (text).
 			</span></a>
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemid" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="nodeid" /><br />
 			<label for="name">Node Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="state">State</label>
@@ -207,6 +324,10 @@
 			<input type="text" id="username" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbusername');" /><br />
 			<label for="passwd">Password</label>
 			<input type="text" id="passwd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbpassword');" /><br />
+			<label for="repusername">DB Repln Name</label>
+			<input type="text" id="repusername" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
+			<label for="reppasswd">DB Repln Password</label>
+			<input type="text" id="reppasswd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
 			<input type="submit" class="submit" value="Create or Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -217,7 +338,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a Node</h3>
-	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -226,9 +347,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidd">System ID</label>
-			<input type="text" name="systemid" id="systemidd" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidd" /><br />
 			<label for="nodeidd">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidd" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="nodeidd" /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -239,7 +360,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Node Information</h3>
-	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="systeminfo" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -256,12 +377,190 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidx">System ID</label>
-			<input type="text" name="systemid" id="systemidx" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidx" /><br />
 			<label for="nodeidx">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidx" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="nodeidx" /><br />
 			<label for="fieldsi">Fields to return</label>
 			<input type="text" name="fields" id="fieldsi" /><br />
 			<input type="submit" class="submit" value="Information" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Component Property</h3>
+	  <form action="" method="post" id="getcomponentprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component','uri3','property','uri4'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component/{name}/property/{propertyname} <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemidpg">System ID</label>
+			<input type="text" name="uri1" id="systemidpg" /><br />
+			<label for="nodeidpg">Node ID</label>
+			<input type="text" name="uri2" id="nodeidpg" /><br />
+			<label for="compidpg">Component Name</label>
+			<input type="text" name="uri3" id="compidpg" /><br />
+			<label for="propertynameg">Property Name</label>
+			<input type="text" name="uri4" id="propertynameg" /><br />
+			<input type="submit" class="submit" value="Get Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Create or Update a Component Property</h3>
+	  <form action="" method="post" id="putcomponentprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component','uri3','property','uri4'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component/{name}/property/{propertyname} <br />
+			Parameter is 
+			<a class="tooltip" href="#">value 
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>value</strong><br />
+			The value you want to give to the property you are creating or updating.
+			</span>
+			</a><br />
+		</p>
+		<p class="formfields">
+			<label for="systemidp">System ID</label>
+			<input type="text" name="uri1" id="systemidp" /><br />
+			<label for="nodeidp">Node ID</label>
+			<input type="text" name="uri2" id="nodeidp" /><br />
+			<label for="compidp">Component Name</label>
+			<input type="text" name="uri3" id="compidp" /><br />
+			<label for="propertyname">Property Name</label>
+			<input type="text" name="uri4" id="propertyname" /><br />
+			<label for="value">Value</label>
+			<input type="text" name="value" id="value" /><br />
+			<input type="submit" class="submit" value="Create or Update Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete a Component Property</h3>
+	  <form action="" method="post" id="delcomponentprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component','uri3','property','uri4'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component/{name}/property/{propertyname} <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemiddp">System ID</label>
+			<input type="text" name="uri1" id="systemiddp" /><br />
+			<label for="nodeiddp">Node ID</label>
+			<input type="text" name="uri2" id="nodeiddp" /><br />
+			<label for="compiddp">Component Name</label>
+			<input type="text" name="uri3" id="compiddp" /><br />
+			<label for="propertynamed">Property Name</label>
+			<input type="text" name="uri4" id="propertynamed" /><br />
+			<input type="submit" class="submit" value="Delete Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Get All Component Properties</h3>
+	  <form action="" method="post" id="getallcomponentprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component','uri3'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component/{name} <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemidpga">System ID</label>
+			<input type="text" name="uri1" id="systemidpga" /><br />
+			<label for="nodeidpga">Node ID</label>
+			<input type="text" name="uri2" id="nodeidpga" /><br />
+			<label for="compidpga">Component Name</label>
+			<input type="text" name="uri3" id="compidpga" /><br />
+			<input type="submit" class="submit" value="Get Properties" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete all Component Properties</h3>
+	  <form action="" method="post" id="delallcomponentprop" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component','uri3'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component/{name} <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemiddpa">System ID</label>
+			<input type="text" name="uri1" id="systemiddpa" /><br />
+			<label for="nodeiddpa">Node ID</label>
+			<input type="text" name="uri2" id="nodeiddpa" /><br />
+			<label for="compiddpa">Component Name</label>
+			<input type="text" name="uri3" id="compiddpa" /><br />
+			<input type="submit" class="submit" value="Delete Properties" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Get All Components</h3>
+	  <form action="" method="post" id="getallcomponents" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemidpgac">System ID</label>
+			<input type="text" name="uri1" id="systemidpgac" /><br />
+			<label for="nodeidpgac">Node ID</label>
+			<input type="text" name="uri2" id="nodeidpgac" /><br />
+			<input type="submit" class="submit" value="Get Components" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="_rfcdate" /><br />
+			<input type="hidden" name="_authorization" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete all Components</h3>
+	  <form action="" method="post" id="delallcomponents" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemiddpac">System ID</label>
+			<input type="text" name="uri1" id="systemiddpac" /><br />
+			<label for="nodeiddpac">Node ID</label>
+			<input type="text" name="uri2" id="nodeiddpac" /><br />
+			<input type="submit" class="submit" value="Delete Components" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="_rfcdate" /><br />

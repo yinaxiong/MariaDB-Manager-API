@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SkySQL Manager API</title>
+    <title>Manipulate Tasks via SkySQL Manager API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -54,7 +54,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get all Command States</h3>
-	  <form action="" method="post" id="getcommandstates" target="apiresults" onsubmit="return(setFields(this.id,'command','state'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getcommandstates" target="apiresults" onsubmit="return(setFields(this.id,'command','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -62,7 +62,7 @@
 			Parameters: none <br />
 		</p>
 		<p class="formfields">
-			<input type="hidden" name="state" value="state" /><br />
+			<input type="hidden" name="uri1" value="state" /><br />
 			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -73,7 +73,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get all Command Steps</h3>
-	  <form action="" method="post" id="getcommandsteps" target="apiresults" onsubmit="return(setFields(this.id,'command','step'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getcommandsteps" target="apiresults" onsubmit="return(setFields(this.id,'command','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -81,7 +81,7 @@
 			Parameters: none <br />
 		</p>
 		<p class="formfields">
-			<input type="hidden" name="step" value="step" /><br />
+			<input type="hidden" name="uri1" value="step" /><br />
 			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -92,7 +92,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Run a Command</h3>
-	  <form action="" method="post" id="runcommand" target="apiresults" onsubmit="return(setFields(this.id,'command','command'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="runcommand" target="apiresults" onsubmit="return(setFields(this.id,'command','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
@@ -130,6 +130,17 @@
 			</span>
 			</a>
 			&nbsp;
+			<a class="tooltip" href="#">icalentry,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>icalentry</strong><br />
+			Must not be entered for an immediate command.  Required to create a scheduled command.
+			If it is entered, it should be an iCalendar entry, with newlines changed to |.  This
+			iCalendar entry will define a future schedule for running the command.  If the 
+			iCalendar entry indicates that the command should already have been run, it will run
+			immediately and then according to the schedule.
+			</span>
+			</a>
+			&nbsp;
 			<a class="tooltip" href="#">level,
 			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>level</strong><br />
@@ -157,7 +168,7 @@
 		</p>
 		<p class="formfields">
 			<label for="commandname">Command Name</label>
-			<select name="command" id="commandname" onfocus="setNameURI(this.id,'command');">
+			<select name="uri1" id="commandname">
 				<option value="backup">Backup</option>
 				<option value="restore">Restore</option>
 				<option value="start">Start</option>
@@ -175,6 +186,8 @@
 			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" id="statec" /><br />
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
+			<label for="icalentry">iCalEntry</label>
+			<input type="text" id="icalentry" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'icalentry');" /><br />
 			<label for="level">Level (backup)</label>
 			<input type="text" id="level" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'level');" /><br />
 			<label for="parentid">Parent ID (backup)</label>
@@ -191,7 +204,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get One Task</h3>
-	  <form action="" method="post" id="getjob" target="apiresults" onsubmit="return(setFields(this.id,'task','taskid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getjob" target="apiresults" onsubmit="return(setFields(this.id,'task','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -206,7 +219,7 @@
 		</p>
 		<p class="formfields">
 			<label for="task">Task ID</label>
-			<input type="text" name="taskid" id="taskid" onfocus="setNameURI(this.id,'taskid');" /><br />
+			<input type="text" name="uri1" id="taskid" /><br />
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Get Task" />
@@ -265,7 +278,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Update a Task</h3>
-	  <form action="" method="post" id="putjob" target="apiresults" onsubmit="return(setFields(this.id,'task','taskid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putjob" target="apiresults" onsubmit="return(setFields(this.id,'task','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -274,7 +287,7 @@
 		</p>
 		<p class="formfields">
 			<label for="tasku">Task ID</label>
-			<input type="text" name="taskid" id="taskidu" onfocus="setNameURI(this.id,'taskid');" /><br />
+			<input type="text" name="uri1" id="taskidu" /><br />
 			<label for="stateju">State</label>
 			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="pidju">Process ID (PID)</label>

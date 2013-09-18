@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SkySQL Manager API</title>
+    <title>Manipulate Backups via SkySQL Manager API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
   </head>
   <body>
@@ -45,7 +45,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Backups</h3>
-	  <form action="" method="post" id="getbackups" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getbackups" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -90,7 +90,7 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidl" /><br />
 			<label for="qsdl">Query String</label>
 			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'querystring');" id="qsdl"/><br />
 			<label for="from">From - Date+Time</label>
@@ -113,7 +113,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get One System Backup</h3>
-	  <form action="" method="post" id="getonebackup" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup','backupid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getonebackup" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','backup','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -130,9 +130,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidb">System ID</label>
-			<input type="text" name="systemid" id="systemidb" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidb" /><br />
 			<label for="backupidb">Backup ID</label>
-			<input type="text" name="backupid" id="backupidb" onfocus="setNameURI(this.id,'backupid');" /><br />
+			<input type="text" name="uri2" id="backupidb" /><br />
 			<input type="submit" class="submit" value="Show Backup" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -143,7 +143,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create a System Backup</h3>
-	  <form action="" method="post" id="createback" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="createback" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','backup'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
@@ -165,9 +165,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidc">System ID</label>
-			<input type="text" name="systemid" id="systemidc" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidc" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="nodeid" id="nodeid" /><br />
 			<label for="level">Level ID</label>
 			<input type="text" name="level" id="level" /><br />
 			<input type="submit" class="submit" value="Create Backup" />
@@ -180,7 +180,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Update a System Backup</h3>
-	  <form action="" method="post" id="updateback" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','backup','backupid'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="updateback" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','backup','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -237,9 +237,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidu">System ID</label>
-			<input type="text" name="systemid" id="systemidu" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidu" /><br />
 			<label for="backupid">Backup ID</label>
-			<input type="text" name="backupid" id="backupid" onfocus="setNameURI(this.id,'backupid');" /><br />
+			<input type="text" name="uri2" id="backupid" /><br />
 			<label for="state">State</label>
 			<input type="text" id="state" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
 			<label for="updated">Updated</label>

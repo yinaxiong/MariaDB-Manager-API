@@ -56,6 +56,7 @@ class Monitor extends EntityModel {
 		'name' => array('sqlname' => 'Name', 'default' => ''),
 		'sql' => array('sqlname' => 'SQL', 'default' => ''),
 		'description' => array('sqlname' => 'Description', 'default' => ''),
+		'mapping' => array('sqlname' => 'Mapping', 'default' => ''),
 		'charttype' => array('sqlname' => 'ChartType', 'default' => ''),
 		'delta' => array('sqlname' => 'delta', 'default' => 0),
 		'monitortype' => array('sqlname' => 'MonitorType', 'default' => ''),

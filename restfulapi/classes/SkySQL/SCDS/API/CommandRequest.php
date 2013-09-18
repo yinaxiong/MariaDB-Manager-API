@@ -57,7 +57,7 @@ final class CommandRequest extends Request {
 		$this->requestmethod = @$argv[1];
 		$this->requestviapost = true;
 		if (isset($argv[3])) {
-			parse_str($argv[3], $_POST);
+			$this->parse_str($argv[3], $_POST);
 	        $_POST['suppress_response_codes'] = 'true';
 		}
 		if (isset($argv[4])) $this->inifile = $argv[4];

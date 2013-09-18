@@ -55,7 +55,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Add or Update a User</h3>
-	  <form action="" method="post" id="putuser" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putuser" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -76,7 +76,7 @@
 		</p>
 		<p class="formfields">
 			<label for="username">Username</label>
-			<input type="text" name="username" id="username" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="username" /><br />
 			<label for="name">Personal Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="password">Password</label>
@@ -91,7 +91,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a User</h3>
-	  <form action="" method="post" id="deluser" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="deluser" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -100,7 +100,7 @@
 		</p>
 		<p class="formfields">
 			<label for="usernamed">Username</label>
-			<input type="text" name="username" id="usernamed" onfocus="setNameURI(this.id,'username');"  /><br />
+			<input type="text" name="uri1" id="usernamed"  /><br />
 			<input type="submit" class="submit" value="Delete" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -111,7 +111,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get User Information</h3>
-	  <form action="" method="post" id="userinfo" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="userinfo" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -120,7 +120,7 @@
 		</p>
 		<p class="formfields">
 			<label for="usernamex">Username</label>
-			<input type="text" name="username" id="usernamex" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernamex" /><br />
 			<input type="submit" class="submit" value="Information" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -131,7 +131,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Authenticate User</h3>
-	  <form action="" method="post" id="userlog" target="apiresults" onsubmit="return(setFields(this.id,'user','username'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="userlog" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
@@ -146,7 +146,7 @@
 		</p>
 		<p class="formfields">
 			<label for="usernamel">Username</label>
-			<input type="text" name="username" id="usernamel" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernamel" /><br />
 			<label for="passwordl">Password</label>
 			<input type="text" name="password" id="passwordl" /><br />
 			<input type="submit" class="submit" value="Authenticate" />
@@ -159,7 +159,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Add or Update a User Property</h3>
-	  <form action="" method="post" id="putuserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="putuserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -174,9 +174,9 @@
 		</p>
 		<p class="formfields">
 			<label for="usernamepp">Username</label>
-			<input type="text" name="username" id="usernamepp" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernamepp" /><br />
 			<label for="propname">Property Name</label>
-			<input type="text" name="property" id="propname" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propname" /><br />
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Add or Update Property" />
@@ -189,7 +189,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a User Property</h3>
-	  <form action="" method="post" id="deluserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','username','property','property'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="deluserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -198,9 +198,9 @@
 		</p>
 		<p class="formfields">
 			<label for="usernamepd">Username</label>
-			<input type="text" name="username" id="usernamepd" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernamepd" /><br />
 			<label for="propnamde">Property Name</label>
-			<input type="text" name="property" id="propnamed" onfocus="setNameURI(this.id,'property');" /><br />
+			<input type="text" name="uri2" id="propnamed" /><br />
 			<input type="submit" class="submit" value="Delete Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -211,7 +211,7 @@
 		</div>
 	  <div class="section">
 	  <h3>Add a User Tag</h3>
-	  <form action="" method="post" id="addusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag','tagname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="addusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','monitortag','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
@@ -221,9 +221,9 @@
 		</p>
 		<p class="formfields">
 			<label for="usernameta">Username</label>
-			<input type="text" name="username" id="usernameta" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernameta" /><br />
 			<label for="tagnameta">Tag Name</label>
-			<input type="text" name="tagname" id="tagnameta" onfocus="setNameURI(this.id,'tagname');" /><br />
+			<input type="text" name="uri2" id="tagnameta" /><br />
 			<label for="systemidta">System ID</label>
 			<input type="text" name="systemid" id="systemidta" /><br />
 			<label for="nodeidta">Node ID</label>
@@ -240,7 +240,7 @@
 		</div>
 	  <div class="section">
 	  <h3>Get Named User Tags</h3>
-	  <form action="" method="post" id="getusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag','tagname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','monitortag','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -249,9 +249,9 @@
 		</p>
 		<p class="formfields">
 			<label for="usernametg">Username</label>
-			<input type="text" name="username" id="usernametg" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernametg" /><br />
 			<label for="tagnametg">Tag Name</label>
-			<input type="text" name="tagname" id="tagnametag" onfocus="setNameURI(this.id,'tagname');" /><br />
+			<input type="text" name="uri2" id="tagnametag" /><br />
 			<input type="submit" class="submit" value="Get Tags" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -262,7 +262,7 @@
 		</div>
 	  <div class="section">
 	  <h3>Get All User Tags</h3>
-	  <form action="" method="post" id="getallusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getallusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','monitortag'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -271,7 +271,7 @@
 		</p>
 		<p class="formfields">
 			<label for="usernametga">Username</label>
-			<input type="text" name="username" id="usernametga" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernametga" /><br />
 			<input type="submit" class="submit" value="Get Tags" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -282,7 +282,7 @@
 		</div>
 	  <div class="section">
 	  <h3>Delete Named User Tags</h3>
-	  <form action="" method="post" id="delusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag','tagname'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','monitortag','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -291,9 +291,9 @@
 		</p>
 		<p class="formfields">
 			<label for="usernametd">Username</label>
-			<input type="text" name="username" id="usernametd" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernametd" /><br />
 			<label for="tagnametd">Tag Name</label>
-			<input type="text" name="tagname" id="tagnametd" onfocus="setNameURI(this.id,'tagname');" /><br />
+			<input type="text" name="uri2" id="tagnametd" /><br />
 			<input type="submit" class="submit" value="Delete Tags" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -304,7 +304,7 @@
 		</div>
 	  <div class="section">
 	  <h3>Delete All User Tags</h3>
-	  <form action="" method="post" id="delallusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','username','monitortag'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="delallusertag" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','monitortag'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -313,7 +313,7 @@
 		</p>
 		<p class="formfields">
 			<label for="usernametda">Username</label>
-			<input type="text" name="username" id="usernametda" onfocus="setNameURI(this.id,'username');" /><br />
+			<input type="text" name="uri1" id="usernametda" /><br />
 			<input type="submit" class="submit" value="Delete Tags" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

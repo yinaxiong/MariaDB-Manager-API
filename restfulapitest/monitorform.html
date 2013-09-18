@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Users via SkySQL Manager API</title>
+    <title>Manipulate Monitors via SkySQL Manager API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
 	<meta http-equiv="Content-type" content="text/html;charset=UTF-8"></meta>
   </head>
@@ -28,7 +28,7 @@
       <h2>Monitor Management via SkySQL Manager API</h2>
 	  <div class="section">
 	  <h3>Get Monitor Classes</h3>
-	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','systemtype','key','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','uri1','key','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -47,9 +47,9 @@
 	</p>
 		<p class="formfields">
 			<label for="systemtype">System Type</label>
-			<input type="text" id="systemtype" onfocus="setNameURI(this.id,'systemtype');" /><br />
+			<input type="text" name="uri1" id="systemtype" /><br />
 			<label for="monitorid">Monitor Key</label>
-			<input type="text" name="monitor" id="monitorid" onfocus="setNameURI(this.id,'monitor');" /><br />
+			<input type="text" name="uri2" id="monitorid" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="Fetch Classes" />
@@ -62,7 +62,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Create or Update a Monitor Class</h3>
-	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','systemtype','key','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="createmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','uri1','key','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
@@ -82,6 +82,14 @@
 			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
 			<strong>description</strong><br />
 			A description of the monitor class (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">mapping,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
+			<strong>mapping</strong><br />
+			The mapping for a non-numeric monitor (should be empty otherwise).
+			For non-numeric monitors, this should be similar to a query string, and
+			provide a mapping between numbers and names e.g.
+			1=something&amp;2=anotherthing&amp;3=somethingelse
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">type,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Chart Type parameter" height="48" width="48" />
@@ -117,15 +125,17 @@
 	</p>
 		<p class="formfields">
 			<label for="systemtypep">System Type</label>
-			<input type="text" name="systemtype" id="systemtypep" onfocus="setNameURI(this.id,'systemtype');" /><br />
+			<input type="text" name="uri1" id="systemtypep" /><br />
 			<label for="monitoridp">Monitor Key</label>
-			<input type="text" name="monitor" id="monitoridp" onfocus="setNameURI(this.id,'monitor');" /><br />
+			<input type="text" name="uri2" id="monitoridp" /><br />
 			<label for="name">Name</label>
 			<input type="text" id="name" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
 			<label for="sql">SQL</label>
 			<input type="text" id="sql" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'sql');" /><br />
 			<label for="description">Description</label>
 			<input type="text" id="description" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'description');" /><br />
+			<label for="mapping">Mapping</label>
+			<input type="text" id="mapping" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'mapping');" /><br />
 			<label for="type">Type</label>
 			<input type="text" id="type" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'type');" /><br />
 			<label for="delta">Delta</label>
@@ -148,7 +158,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Delete a Monitor Class</h3>
-	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','systemtype','key','monitor'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="deletemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','uri1','key','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
@@ -157,9 +167,9 @@
 	</p>
 		<p class="formfields">
 			<label for="systemtyped">System Type</label>
-			<input type="text" name="systemtype" id="systemtyped" onfocus="setNameURI(this.id,'systemtype');" /><br />
+			<input type="text" name="uri1" id="systemtyped" /><br />
 			<label for="monitoridd">Monitor Key</label>
-			<input type="text" name="monitor" id="monitoridd" onfocus="setNameURI(this.id,'monitor');" /><br />
+			<input type="text" name="uri2" id="monitoridd" /><br />
 			<input type="submit" class="submit" value="Delete Class" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -170,7 +180,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Store Node Monitor Data</h3>
-	  <form action="" method="post" id="storedata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="storedata" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','monitor','uri3','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
@@ -194,11 +204,11 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidw">System ID</label>
-			<input type="text" name="systemid" id="systemidw" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidw" /><br />
 			<label for="nodeidw">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidw" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="nodeidw" /><br />
 			<label for="monitoridw">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridw" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri3" id="monitoridw" /><br />
 			<label for="value">Observation value</label>
 			<input type="text" name="value" id="value" /><br />
 			<label for="timestamp">Time stamp</label>
@@ -254,7 +264,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Node Monitor Data</h3>
-	  <form action="" method="post" id="getdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getdata" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','monitor','uri3','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -300,11 +310,11 @@
 		</p>
 		<p class="formfields">
 			<label for="systemid">System ID</label>
-			<input type="text" name="systemid" id="systemid" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemid" /><br />
 			<label for="nodeid">Node ID</label>
-			<input type="text" name="nodeid" id="nodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="nodeid" /><br />
 			<label for="monitoridg">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridg" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri3" id="monitoridg" /><br />
 			<label for="monitorstart">Start (unix) time</label>
 			<input type="text" name="start" id="monitorstart" /><br />
 			<label for="monitorfinish">Finish (unix) time</label>
@@ -325,7 +335,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Raw Node Monitor Data</h3>
-	  <form action="" method="post" id="getrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','monitor','uri3','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -361,11 +371,11 @@
 		</p>
 		<p class="formfields">
 			<label for="rsystemid">System ID</label>
-			<input type="text" name="systemid" id="rsystemid" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="rsystemid" /><br />
 			<label for="rnodeid">Node ID</label>
-			<input type="text" name="nodeid" id="rnodeid" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="rnodeid" /><br />
 			<label for="rmonitoridg">Monitor Key</label>
-			<input type="text" name="monitorid" id="rmonitoridg" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri3" id="rmonitoridg" /><br />
 			<label for="rmonitorstart">Start (unix) time</label>
 			<input type="text" name="start" id="rmonitorstart" /><br />
 			<label for="rmonitorfinish">Finish (unix) time</label>
@@ -384,7 +394,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Monitor Data</h3>
-	  <form action="" method="post" id="getsysdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','monitor','monitorid','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getsysdata" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','monitor','uri2','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -430,9 +440,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemids">System ID</label>
-			<input type="text" name="systemid" id="systemids" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemids" /><br />
 			<label for="monitoridgs">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridgs" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri2" id="monitoridgs" /><br />
 			<label for="monitorstarts">Start (unix) time</label>
 			<input type="text" name="start" id="monitorstarts" /><br />
 			<label for="monitorfinishs">Finish (unix) time</label>
@@ -453,7 +463,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Raw System Monitor Data</h3>
-	  <form action="" method="post" id="getsysrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','monitor','monitorid','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getsysrawdata" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','monitor','uri2','rawdata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -489,9 +499,9 @@
 		</p>
 		<p class="formfields">
 			<label for="rsystemids">System ID</label>
-			<input type="text" name="systemid" id="rsystemids" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="rsystemids" /><br />
 			<label for="rmonitoridgs">Monitor Key</label>
-			<input type="text" name="monitorid" id="rmonitoridgs" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri2" id="rmonitoridgs" /><br />
 			<label for="rmonitorstarts">Start (unix) time</label>
 			<input type="text" name="start" id="rmonitorstarts" /><br />
 			<label for="rmonitorfinishs">Finish (unix) time</label>
@@ -510,7 +520,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get Node Monitor Latest Data</h3>
-	  <form action="" method="post" id="getlatest" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','node','nodeid','monitor','monitorid','latest'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getlatest" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','monitor','uri3','latest'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -520,11 +530,11 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidl">System ID</label>
-			<input type="text" name="systemid" id="systemidl" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidl" /><br />
 			<label for="nodeidl">Node ID</label>
-			<input type="text" name="nodeid" id="nodeidl" onfocus="setNameURI(this.id,'nodeid');" /><br />
+			<input type="text" name="uri2" id="nodeidl" /><br />
 			<label for="monitoridl">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridl" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri3" id="monitoridl" /><br />
 			<input type="submit" class="submit" value="Get Latest" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -535,7 +545,7 @@
 	  </div>
 	  <div class="section">
 	  <h3>Get System Monitor Latest Data</h3>
-	  <form action="" method="post" id="getSyslatest" target="apiresults" onsubmit="return(setFields(this.id,'system','systemid','monitor','monitorid','latest'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <form action="" method="post" id="getSyslatest" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','monitor','uri2','latest'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
@@ -545,9 +555,9 @@
 		</p>
 		<p class="formfields">
 			<label for="systemidls">System ID</label>
-			<input type="text" name="systemid" id="systemidls" onfocus="setNameURI(this.id,'systemid');" /><br />
+			<input type="text" name="uri1" id="systemidls" /><br />
 			<label for="monitoridls">Monitor Key</label>
-			<input type="text" name="monitorid" id="monitoridls" onfocus="setNameURI(this.id,'monitorid');" /><br />
+			<input type="text" name="uri2" id="monitoridls" /><br />
 			<input type="submit" class="submit" value="Get Latest" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

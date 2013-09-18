@@ -62,13 +62,16 @@ class Node extends EntityModel {
 	protected static $fields = array(
 		'name' => array('sqlname' => 'NodeName', 'default' => ''),
 		'state' => array('sqlname' => 'State', 'default' => ''),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime'),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicip' => array('sqlname' => 'PublicIP', 'default' => '', 'validate' => 'ipaddress'),
 		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'validate' => 'ipaddress'),
 		'port' => array('sqlname' => 'Port', 'default' => 0),
 		'instanceid' => array('sqlname' => 'InstanceID', 'default' => ''),
-		'dbusername' => array('sqlname' => 'DBUserName', 'default' => ''),
-		'dbpassword' => array('sqlname' => 'DBPassword', 'default' => '')
+		'dbusername' => array('sqlname' => 'DBUserName', 'desc' => 'Node system override for database user name', 'default' => ''),
+		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'Node system override for database password', 'default' => ''),
+		'repusername' => array('sqlname' => 'RepUserName', 'desc' => 'Node system override for replication user name', 'default' => ''),
+		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '')
 	);
 	
 	protected static $derived = array(
@@ -89,7 +92,7 @@ class Node extends EntityModel {
 	}
 
 	public function getCommands () {
-		$query = AdminDatabase::getInstance()->prepare('SELECT Command AS command, Description AS description, Icon AS icon, Steps AS steps 
+		$query = AdminDatabase::getInstance()->prepare('SELECT Command AS command, Description AS description, Steps AS steps 
 			FROM NodeCommands WHERE SystemType = :systemtype AND State = :state  ORDER BY UIOrder');
 		$query->execute(array(
 			':systemtype' => $this->getSystemType(),

@@ -33,7 +33,7 @@ use SkySQL\SCDS\API\models\Command;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\managers\NodeManager;
 
-class Tasks extends ImplementAPI {
+class Tasks extends TaskScheduleCommon {
 	
 	public function getMultipleTasks () {
 		Task::checkLegal();
@@ -57,15 +57,6 @@ class Tasks extends ImplementAPI {
 		Task::checkLegal();
 		$task = new Task((int) $uriparts[1]);
 		$task->update();
-		
-		// Remaining code relates to scheduling
-		$task->loadData();
-		if ($task->atjobnumber) exec ("atrm $task->atjobnumber");
-		$task->update(false);
-		if ($task->icalentry) {
-			$this->setRunAt($task);
-			if ($task->isDue()) $this->execute($task);
-		}
 	}
 	
 	public function runCommand ($uriparts) {
@@ -84,48 +75,24 @@ class Tasks extends ImplementAPI {
 			}
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
+		if (empty($command->icalentry)) $this->immediateCommand ($command);
+		else $this->scheduledCommand($command);
+	}
+	
+	protected function scheduledCommand ($command) {
+		$schedule = new Schedule;
+		// insertOnCommand also fixes dates as RFC
+		$schedule->insertOnCommand($command->command);
+		$this->setRunAt($schedule);
+		if ($schedule->isDue()) $this->runScheduledCommand($schedule);
+		$this->sendResponse(array('schedule' => $schedule));
+	}
+	
+	protected function immediateCommand ($command) {
 		$task = new Task;
 		// insertOnCommand also fixes dates as RFC
 		$task->insertOnCommand($command->command);
-		//if ($task->icalentry) {
-		//	$this->setRunAt($task);
-		//	if (!$task->isDue()) $this->sendResponse(array('task' => $task));
-		//}
 		$this->execute($task);
 		$this->sendResponse(array('task' => $task));
-	}
-	
-	// To do with scheduling - may need to be moved
-	public function runScheduledCommand ($uriparts) {
-		$taskid = (int) $uriparts[1];
-		$task = new Task($taskid);
-		$task->loadData();
-		$task->processCalendarEntry();
-		$this->setRunAt($task);
-		$this->execute($task);
-		exit;
-	}
-	
-	// Internal to scheduling
-	protected function setRunAt ($task) {
-		$pathtoapi = _API_BASE_FILE;
-		$php = @$this->config['shell']['php'];
-		if (!is_executable($php)) $this->sendErrorResponse ("Configuration file api.ini says PHP is '$php' but this is not executable", 500);
-		$command = sprintf('%s %s \"POST\" \"task/%d\"', $php, $pathtoapi, $task->taskid);
-		$atcommand = sprintf('echo "%s" | at -t %s 2>&1', $command, date('YmdHi.s', strtotime($task->nextstart)));
-		$lastline = shell_exec($atcommand);
-		preg_match('/.*job ([0-9]+) at.*/', @$lastline, $matches);
-		if (@$matches[1]) $task->updateJobNumber($matches[1]);
-	}
-	
-	protected function execute ($task) {
-		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
-		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
-		$params = @$task->parameters;
-		$hostname = @$this->config['shell']['hostname'];
-		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $task->taskid \"{$task->steps}\" \"$hostname\" \"$params\" \"$task->privateip\" \"$logfile\"";
-       	$pid = exec($cmd);
-		$this->log("Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid\n");
-		$task->updatePIDandState($pid);
 	}
 }

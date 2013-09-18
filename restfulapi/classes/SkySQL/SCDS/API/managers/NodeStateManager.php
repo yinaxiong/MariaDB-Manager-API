@@ -59,11 +59,4 @@ class NodeStateManager {
 			if ($stateid == $properties['stateid']) return $state;
 		}
 	}
-	
-	public function getAllLike ($selector) {
-		foreach (API::$nodestates as $state=>$nodestate) {
-			if (0 == strncasecmp($selector, $nodestate['description'], strlen($selector))) $results[$state] = $nodestate;
-		}
-		return API::mergeStates((array) @$results);
-	}
 }
