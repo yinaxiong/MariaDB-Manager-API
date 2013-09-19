@@ -57,16 +57,17 @@ abstract class PropertyManager extends EntityManager {
 		if (0 == $counter) {
 			$insert = $database->prepare($this->insertSQL);
 			$insert->execute($bind);
-			$this->finalise();
+			$this->finalise($key);
 			$request->sendResponse(array('updatecount' => 0,  'insertkey' => $property));
 		}
-		$this->finalise();
+		$this->finalise($key);
 		$request->sendResponse(array('updatecount' => $counter, 'insertkey' => ''));
 	}
 	
-	protected function finalise () {
+	protected function finalise ($key) {
 		AdminDatabase::getInstance()->commitTransaction();
 		$this->clearCache(true);
+		$this->wasModified($key);
 	}
 	
 	public function deleteProperty ($key, $property) {
@@ -76,6 +77,7 @@ abstract class PropertyManager extends EntityManager {
 		$request = Request::getInstance();
 		if ($counter) {
 			$this->clearCache(true);
+			$this->wasModified($key);
 			$request->sendResponse(array('deletecount' => $counter));
 		}
 		else $request->sendErrorResponse("Delete $this->name property did not match any $this->name property", 404);
@@ -100,8 +102,12 @@ abstract class PropertyManager extends EntityManager {
 	public function deleteAllProperties ($key) {
 		$delete = AdminDatabase::getInstance()->prepare($this->deleteAllSQL);
 		$delete->execute(array(':key' => $key));
-		$this->clearCache(true);
-		return $delete->rowCount();
+		$counter = $delete->rowCount();
+		if ($counter) {
+			$this->clearCache(true);
+			$this->wasModified($key);
+		}
+		return $counter;
 	}
 	
 	protected function makeBind ($key, $property) {
@@ -110,4 +116,6 @@ abstract class PropertyManager extends EntityManager {
 			':property' => $property
 		);
 	}
+	
+	protected function wasModified ($key) {}
 }

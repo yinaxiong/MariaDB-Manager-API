@@ -39,6 +39,8 @@ abstract class ImplementAPI {
 	protected $limit = 10;
 	protected $offset = 0;
 	protected $keydata = array();
+	protected $ifmodifiedsince = 0;
+	protected $modified = false;
 
 	public function __construct ($requestor) {
 		$this->db = AdminDatabase::getInstance();
@@ -49,6 +51,8 @@ abstract class ImplementAPI {
 		$filter = $this->getParam('GET', 'fields');
 		if ($filter) $this->fieldnames = array_map('trim', explode(',', $filter));
 		$this->setLimits();
+		$ifmodifiedheader = $this->requestor->getHeader('If-Modified-Since');
+		if ($ifmodifiedheader) $this->ifmodifiedsince = strtotime($ifmodifiedheader);
 	}
 	
 	protected function getParam ($arrname, $name, $def=null, $mask=0) {

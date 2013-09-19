@@ -33,8 +33,8 @@ function unsetName (id) {
 function setAuth (uri, form) {
 	var oDate = new Date();
 	var d = GetRFC822Date(oDate);
-	form.elements['_authorization'].value = 'api-auth-' + localStorage.getItem("myKeyID") + '-' + hex_md5(uri.replace(/\/+$/, "") + localStorage.getItem("myKey") + d);
-	form.elements['_rfcdate'].value = d;
+	form.elements['HTTP_AUTHORIZATION'].value = 'api-auth-' + localStorage.getItem("myKeyID") + '-' + hex_md5(uri.replace(/\/+$/, "") + localStorage.getItem("myKey") + d);
+	form.elements['HTTP_DATE'].value = d;
 }
 function getPersistent (name) {
 	var key = localStorage.getItem(name);

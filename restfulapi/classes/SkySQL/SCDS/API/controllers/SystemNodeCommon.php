@@ -39,6 +39,7 @@ use SkySQL\COMMON\MonitorDatabase;
 abstract class SystemNodeCommon extends ImplementAPI {
 	protected $systemid = 0;
 	protected $monitorquery = null;
+	protected $modified = false;
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
@@ -53,8 +54,8 @@ abstract class SystemNodeCommon extends ImplementAPI {
 			$monitorlatest->$property = null;
 		}
 		if (empty($this->monitorquery)) $this->monitorquery = MonitorDatabase::getInstance()->prepare(
-			'SELECT MonitorID AS monitorid, Value AS value, MAX(Stamp) 
-			FROM MonitorData WHERE SystemID = :systemid AND NodeID = :nodeid GROUP BY MonitorID');
+			'SELECT MonitorID AS monitorid, Value AS value, MAX(Stamp) AS updated FROM MonitorData 
+				WHERE SystemID = :systemid AND NodeID = :nodeid AND Repeats = 0 GROUP BY MonitorID');
 		// AS m INNER JOIN Monitor AS c ON c.MonitorID = m.MonitorID AND s.SystemType = c.SystemType 
 		//	INNER JOIN System AS s ON s.SystemID = m.SystemID
 			
@@ -67,6 +68,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 			if ($monitor) {
 				$property = $monitor->monitor;
 				$monitorlatest->$property = $data->value;
+				if ($this->ifmodifiedsince < $monitor->updated) $this->modified = true;
 			}
 		}
 		return $monitorlatest;

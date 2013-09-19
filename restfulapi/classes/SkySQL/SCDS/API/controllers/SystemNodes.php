@@ -66,7 +66,12 @@ class SystemNodes extends SystemNodeCommon {
 		$this->nodeid = (int) $uriparts[3];
 		$node = NodeManager::getInstance()->getByID($this->systemid, $this->nodeid);
 		if ($node) {
+			if ($this->ifmodifiedsince < strtotime($node->updated)) $this->modified = true;
 			$this->extraNodeData($node);
+			if ($this->ifmodifiedsince AND !$this->modified) {
+				header (HTTP_PROTOCOL.' 304 Not Modified');
+				exit;
+			}
 			$this->sendResponse(array('node' => $this->filterSingleResult($node)));
 		}
 		else $this->sendErrorResponse("No matching node for system ID $this->systemid and node ID $this->nodeid", 404);
@@ -133,10 +138,11 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function getCommand ($nodeid) {
-		$query = $this->db->prepare("SELECT TaskID, Command FROM Task 
-			WHERE SystemID = :systemid AND NodeID = :nodeid AND State = 'running'");
+		$query = $this->db->prepare("SELECT TaskID, Command, State, MAX(Updated) AS LastChange FROM Task 
+			WHERE SystemID = :systemid AND NodeID = :nodeid");
 		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => (int) $nodeid));
 		$row = $query->fetch();
-		return $row ? array($row->TaskID, $row->Command) : array(null, null);
+		if ($this->ifmodifiedsince AND $this->ifmodifiedsince < strtotime($row->LastChange)) $this->modified = true;
+		return ($row AND 'running' == $row->State) ? array($row->TaskID, $row->Command) : array(null, null);
 	}
 }

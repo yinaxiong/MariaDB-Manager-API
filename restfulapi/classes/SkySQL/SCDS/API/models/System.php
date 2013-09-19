@@ -28,7 +28,7 @@
 
 namespace SkySQL\SCDS\API\models;
 
-use SkySQL\SCDS\API\managers\SystemManager;
+use SkySQL\COMMON\AdminDatabase;
 
 class System extends EntityModel {
 	protected static $setkeyvalues = true;
@@ -91,6 +91,16 @@ class System extends EntityModel {
 	protected function validateUpdate () {
 		$this->setCorrectFormatDate('started');
 		$this->setCorrectFormatDate('lastaccess');
+	}
+
+	public function markUpdated ($stamp=0) {
+		if (0 == $stamp) $stamp = time();
+		$query = AdminDatabase::getInstance()->prepare('UPDATE System SET Updated = :updated 
+			WHERE SystemID = :systemid');
+		$query->execute(array(
+			':updated' => date('Y-m-d H:i:s', $stamp),
+			':systemid' => $this->systemid
+		));
 	}
 
 	protected function insertedKey ($insertid) {

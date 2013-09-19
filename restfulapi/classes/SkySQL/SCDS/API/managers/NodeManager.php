@@ -76,6 +76,7 @@ class NodeManager extends EntityManager {
 	
 	public function createNode ($system) {
 		$node = new Node($system);
+		SystemManager::getInstance()->markUpdated($system);
 		$node->insert();
 	}
 	
@@ -87,10 +88,17 @@ class NodeManager extends EntityManager {
 		$node->update();
 	}
 	
+	public function markUpdated ($system, $id, $stamp=0) {
+		$node = new Node($system, $id);
+		$node->markUpdated($stamp);
+		$this->clearCache(true);
+	}
+	
 	public function deleteNode ($system, $id=0) {
 		if ($id) {
 			$node = new Node($system,$id);
 			if (isset($this->nodes[$system][$id])) unset($this->nodes[$system][$id]);
+			SystemManager::getInstance()->markUpdated($system);
 			$node->delete();
 		}
 		else {

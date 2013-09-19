@@ -60,7 +60,6 @@ final class CommandRequest extends Request {
 			$this->parse_str($argv[3], $_POST);
 	        $_POST['suppress_response_codes'] = 'true';
 		}
-		if (isset($argv[4])) $this->inifile = $argv[4];
 		parent::__construct();
 	}
 
@@ -69,7 +68,16 @@ final class CommandRequest extends Request {
 	}
 
 	protected function getHeaders () {
-		// Do nothing when called from command line or script
+		if (isset($argv[4])) {
+			$headers = explode('|', $argv[4]);
+			foreach ($headers as $header) {
+				$parts = explode(':', $header);
+				if (2 == count($parts)) {
+					$key = str_replace(" ","-",ucwords(strtolower(str_replace("-"," ",$parts[0]))));
+					$this->headers[$key] = trim($parts[1]);
+				}
+			}
+		}
 	}
 
 	public function sendHeaders ($status) {

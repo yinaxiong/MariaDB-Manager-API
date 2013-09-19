@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 19 September 2013, 12:30 BST
+ * 
+ * Implement If-Modified-Since for single system, node, task entities.
+ * 
+ * 
  * 18 September 2013, 17:15 BST
  * 
  * Numerous database changes - see email earlier today.

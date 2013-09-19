@@ -58,6 +58,12 @@ class SystemManager extends EntityManager {
 		// Above method does not return - sends a response and exits
 	}
 	
+	public function markUpdated ($system, $stamp=0) {
+		$system = new System($system);
+		$system->markUpdated($stamp);
+		$this->clearCache(true);
+	}
+	
 	public function deleteSystem ($id) {
 		$system = new System($id);
 		if (isset($this->systems[$id])) unset($this->systems[$id]);

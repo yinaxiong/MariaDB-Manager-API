@@ -44,4 +44,8 @@ class SystemPropertyManager extends PropertyManager {
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
+	
+	protected function wasModified($key) {
+		SystemManager::getInstance()->markUpdated($key);
+	}
 }

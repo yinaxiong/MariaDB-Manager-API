@@ -115,7 +115,6 @@ abstract class Request {
 		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/[0-9]+/node/[0-9]+/process', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'putSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
 		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/[0-9]+/node', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'updateSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
@@ -222,8 +221,6 @@ abstract class Request {
 	protected $requestmethod = '';
 	protected $requestviapost = false;
 	protected $putdata = '';
-	protected $rfcdate = '';
-	protected $authorization = '';
 	protected $accept = '';
 	protected $suffix = '';
 	protected $suppress = false;
@@ -294,12 +291,16 @@ abstract class Request {
 		}
 	}
 	
+	public function getHeader ($name) {
+		return isset($this->headers[$name]) ? $this->headers[$name] : null;
+	}
+	
 	protected function fatalError ($error, $status=500) {
-			error_log($error);
-			$this->log($error);
-			$this->sendHeaders($status);
-			echo $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '').' - '.$error;
-			exit;
+		error_log($error);
+		$this->log($error);
+		$this->sendHeaders($status);
+		echo $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '').' - '.$error;
+		exit;
 	}
 	
 	protected function getURI () {
@@ -393,21 +394,21 @@ abstract class Request {
 	}
 	
 	protected function checkSecurity () {
-		$headertime = strtotime($this->rfcdate);
+		$headertime = isset($this->headers['Date']) ? strtotime($this->headers['Date']) : 0;
 		if ($headertime > time()+300 OR $headertime < time()-900) {
 			$this->log('Header time: '.($headertime ? $headertime : '*zero*').' actual time: '.time()."\n");
-			$this->sendErrorResponse('Date header out of range '.(empty($this->rfcdate) ? '*empty*' : $this->rfcdate).', current '.date('r'), 401);
+			$this->sendErrorResponse('Date header out of range '.(empty($this->headers['Date']) ? '*empty*' : $this->headers['Date']).', current '.date('r'), 401);
 		}
 		$matches = array();
-		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', $this->authorization, $matches)) {
+		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
 				if (isset($this->config['apikeys'][$matches[1]])) {
-					$checkstring = \md5($this->uri.$this->config['apikeys'][@$matches[1]].$this->rfcdate);
+					$checkstring = \md5($this->uri.$this->config['apikeys'][@$matches[1]].$this->headers['Date']);
 					if ($matches[2] == $checkstring) return;
 				}
 			}
 		}
-		$this->log('Header authorization: '.$this->authorization.' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->rfcdate."\n");
+		$this->log('Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->headers['Date']."\n");
 		$this->sendErrorResponse('Invalid Authorization header', 401);
 	}
 	
@@ -439,7 +440,7 @@ abstract class Request {
 	public function getAllParamNames ($arrname) {
 		$arr = &$this->getArrayFromName($arrname);
 		return array_diff(array_keys($arr),
-			array('fields','limit','offset','suppress_response_codes','querystring','_method', '_accept', '_rfcdate', '_authorization', 'uri1', 'uri2', 'uri3', 'uri4'));
+			array('fields','limit','offset','suppress_response_codes','querystring','_method', '_accept', 'uri1', 'uri2', 'uri3', 'uri4'));
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {

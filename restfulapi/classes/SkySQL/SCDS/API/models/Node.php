@@ -134,7 +134,19 @@ class Node extends EntityModel {
 	protected function validateUpdate () {
 		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
 	}
+
+	public function markUpdated ($stamp=0) {
+		if (0 == $stamp) $stamp = time();
+		$query = AdminDatabase::getInstance()->prepare('UPDATE Node SET Updated = :updated 
+			WHERE SystemID = :systemid AND NodeID = :nodeid');
+		$query->execute(array(
+			':updated' => date('Y-m-d H:i:s', $stamp),
+			':systemid' => $this->systemid,
+			':nodeid' => $this->nodeid
+		));
+	}
 	
+	// Only used when system is being deleted, so no need to mark system updated
 	public static function deleteAllForSystem ($systemid) {
 		$delete = AdminDatabase::getInstance()->prepare('DELETE FROM Node WHERE SystemID = :systemid');
 		$delete->execute(array(':systemid' => $systemid));

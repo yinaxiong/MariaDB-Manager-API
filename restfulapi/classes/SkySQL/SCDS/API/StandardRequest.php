@@ -67,7 +67,5 @@ final class StandardRequest extends Request {
 	
 	protected function getHeaders () {
 		$this->headers = apache_request_headers();
-		$this->rfcdate = @$this->headers['Date'];
-		$this->authorization = @$this->headers['Authorization'];
 	}
 }

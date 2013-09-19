@@ -57,7 +57,12 @@ final class TunnelRequest extends Request {
 	}
 
 	protected function getHeaders () {
-		$this->rfcdate = $this->getParam($this->requestmethod, '_rfcdate');
-		$this->authorization = $this->getParam($this->requestmethod, '_authorization');
+		foreach ($_POST as $key=>$value) {
+			if ('HTTP_' == substr($key,0,5)) {
+				$nicekey = str_replace(" ","-",ucwords(strtolower(str_replace("_"," ",substr($key,5)))));
+				$this->headers[$nicekey] = trim($value);
+				unset($_POST[$key]);
+			}
+		}
 	}
 }

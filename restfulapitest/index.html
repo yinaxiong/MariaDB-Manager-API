@@ -356,7 +356,7 @@ RewriteRule ^(/some/directory/.*) /some/directory/api.php [L]
 		  CGI, this requires something like:
 	  </p>
 	  <pre>
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+RewriteRule .* - [E=HTTPHTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteRule .* - [E=HTTP_IF_MODIFIED_SINCE:%{HTTP:If-Modified-Since}]
 RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
 	  </pre>
