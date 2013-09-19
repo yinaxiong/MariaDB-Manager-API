@@ -39,7 +39,6 @@ use SkySQL\COMMON\MonitorDatabase;
 abstract class SystemNodeCommon extends ImplementAPI {
 	protected $systemid = 0;
 	protected $monitorquery = null;
-	protected $modified = false;
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
@@ -68,7 +67,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 			if ($monitor) {
 				$property = $monitor->monitor;
 				$monitorlatest->$property = $data->value;
-				if ($this->ifmodifiedsince < $monitor->updated) $this->modified = true;
+				if ($this->ifmodifiedsince < $data->updated) $this->modified = true;
 			}
 		}
 		return $monitorlatest;
