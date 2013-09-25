@@ -60,6 +60,7 @@ class SingletonObjectCache extends BasicCache {
 }
 
 abstract class CachedSingleton {
+	protected $timestamp = 0;
 
 	protected function __clone () { /* Enforce singleton */ }
 
@@ -70,6 +71,7 @@ abstract class CachedSingleton {
 			$object = new $class();
 			$objectcache->store($object);
 		}
+		$object->timestamp = $objectcache->getTimeStamp();
 		return $object;
 	}
 
@@ -81,10 +83,16 @@ abstract class CachedSingleton {
 			$instancevar = $classname.'::$instance';
 			eval("$instancevar = '$classname';");
 		}
+		$this->timestamp = time();
 	}
 	
 	public function cacheNow () {
+		$this->timestamp = time();
 		SingletonObjectCache::getInstance()->store($this);
+	}
+	
+	public function timeStamp () {
+		return $this->timestamp;
 	}
 	
 	public static function deleteAll () {

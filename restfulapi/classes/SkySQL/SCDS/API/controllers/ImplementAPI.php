@@ -136,7 +136,7 @@ abstract class ImplementAPI {
 		return $this->requestor->sendErrorResponse($errors, $status, $content_type);
 	}
 	
-	protected function log ($data) {
-		$this->requestor->log($data);
+	protected function log ($severity, $message) {
+		$this->requestor->log($severity, $message);
 	}
 }

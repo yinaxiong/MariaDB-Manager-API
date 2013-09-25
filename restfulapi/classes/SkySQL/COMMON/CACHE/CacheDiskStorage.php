@@ -37,6 +37,7 @@ define ('_BLOCK_PHP_EXECUTION_HEADER', "<?php die('Cache is private') ?>");
 abstract class aliroCacheStorage {
 	protected $sizelimit = 0;
 	protected $timeout = 0;
+	protected $stamp = 0;
 
 	public function __construct ($sizelimit, $timeout) {
 		$this->sizelimit = $sizelimit;
@@ -58,6 +59,10 @@ abstract class aliroCacheStorage {
 	public function setTimeout ($timeout) {
 		$this->timeout = $timeout;
 	}
+	
+	public function getTimeStamp () {
+		return abs($this->stamp);
+	}
 
 	protected function T_ ($string) {
 		return function_exists('T_') ? T_($string) : $string;
@@ -77,8 +82,8 @@ abstract class aliroCacheStorage {
 		$object = ($s AND (md5($s) == substr($string, -32))) ? unserialize($s) : null;
 		if (is_object($object)) {
 			$time_limit = $time_limit ? $time_limit : $this->timeout;
-			$stamp = @$object->aliroCacheTimer;
-			if ((time() - abs($stamp)) <= $time_limit) return $stamp > 0 ? $object : @$object->aliroCacheData;
+			$this->stamp = @$object->aliroCacheTimer;
+			if ((time() - abs($this->stamp)) <= $time_limit) return $this->stamp > 0 ? $object : @$object->aliroCacheData;
 		}
 		return null;
 	}

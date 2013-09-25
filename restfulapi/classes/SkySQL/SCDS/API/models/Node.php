@@ -60,7 +60,7 @@ class Node extends EntityModel {
 
 	protected static $fields = array(
 		'name' => array('sqlname' => 'NodeName', 'default' => ''),
-		'state' => array('sqlname' => 'State', 'default' => ''),
+		'state' => array('sqlname' => 'State', 'default' => 'created'),
 		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime'),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicip' => array('sqlname' => 'PublicIP', 'default' => '', 'validate' => 'ipaddress'),
@@ -115,7 +115,9 @@ class Node extends EntityModel {
 	}
 	
 	protected function validateState () {
-		return NodeStateManager::getInstance()->getByState($this->getSystemType(), @$this->state) ? true : false;
+		$nsm = NodeStateManager::getInstance();
+		if ($nsm->isProvisioningState(@$this->state)) return true;
+		return $nsm->getByState($this->getSystemType(), @$this->state) ? true : false;
 	}
 	
 	protected function validateInsert () {

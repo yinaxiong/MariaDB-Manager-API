@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 25 September 2013, 17:15 BST
+ * 
+ * Bug fixes.  Added provisioning node states; added system states.
+ * Finite state machine to model provisioning states and police transitions.
+ * 
+ * 
  * 25 September 2013, 09:30 BST
  * 
  * Moved logging to syslog. Placed restriction on simultaneous commands.

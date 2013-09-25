@@ -83,7 +83,7 @@ class Systems extends SystemNodeCommon {
 		if (!SystemManager::getInstance()->getByID($this->systemid)) {
 			$this->sendErrorResponse(sprintf("Cannot update system with ID '%s' - does not exist", $this->systemid), 400);
 		}
-		SystemManager::getInstance()->putSystem($this->systemid);
+		SystemManager::getInstance()->updateSystem($this->systemid);
 	}
 	
 	public function deleteSystem ($uriparts) {

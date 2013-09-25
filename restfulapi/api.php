@@ -70,7 +70,12 @@ class API {
 				'not running' => 'stopped'
 			),
 			'description' => 'Amazon AWS based System',
+			'systemstates' => array(
+				'created' => array('description' => 'Initial state of new system'),
+				'running' => array('description' => 'Normally running system')
+			),
 			'nodestates' => array(
+				'provisioned' => array('stateid' => 10001, 'description' => 'Has agent, scripts, database'),
 				'master' => array('stateid' => 1, 'description' => 'Master'),
 				'slave' => array('stateid' => 2, 'description' => 'Slave Online'),
 				'offline' => array('stateid' => 3, 'description' => 'Slave Offline'),
@@ -87,7 +92,16 @@ class API {
 				'not runnng' => 'stopped'
 			),
 			'description' => 'Galera multi-master System',
+			'systemstates' => array(
+				'created' => array('description' => 'Initial state of new system'),
+				'down' => array('description' => 'No nodes within system are joined'),
+				'running' => array('description' => 'Cluster with 3 or more nodes, and all nodes are joined'),
+				'available' => array('description' => 'Cluster has 3 or more joined nodes, none incorrectly joined'),
+				'limited' => array('description' => 'System has 1 or 2 nodes that are joined'),
+				'inconsistent' => array('description' => 'System has one or more nodes incorrectly joined')
+			),
 			'nodestates' => array(
+				'provisioned' => array('stateid' => 10001, 'description' => 'Has agent, scripts, database'),
 				'down' => array('stateid' => 100, 'description' => 'Down'),
 				'open' => array('stateid' => 101, 'description' => 'Open'),
 				'primary' => array('stateid' => 102, 'description' => 'Primary'),
@@ -99,6 +113,15 @@ class API {
 			),
 			'onecommandpersystem' => true
 		)
+	);
+	
+	public static $provisionstates = array(
+		'created' => array('description' => 'Initial state of node'),
+		'connected' => array('description' => 'Has agent installed'),
+		'unconnected' => array('description' => 'Agent installation failed'),
+		'unprovisioned' => array('description' => 'No database installed'),
+		'incompatible' => array('description' => 'Automatic provisioning blocked'),
+		'unmanaged' => array('description' => 'Has database but no agent'),
 	);
 	
 	public static $backupstates = array(

@@ -52,6 +52,10 @@ abstract class BasicCache {
 	protected function getBasePath () {
 		return $this->handler->getBasePath();
 	}
+	
+	public function getTimeStamp () {
+		return $this->handler->getTimeStamp();
+	}
 
 	abstract protected function getCachePath ($name);
 

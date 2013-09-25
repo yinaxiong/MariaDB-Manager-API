@@ -59,4 +59,8 @@ class NodeStateManager {
 			if ($stateid == $properties['stateid']) return $state;
 		}
 	}
+	
+	public function isProvisioningState ($state) {
+		return isset(API::$provisionstates[$state]);
+	}
 }
