@@ -28,17 +28,15 @@
 
 namespace SkySQL\SCDS\API\managers;
 
-use SkySQL\COMMON\AdminDatabase;
-
 class ApplicationPropertyManager extends PropertyManager {
 	
 	protected $name = 'application';
 	
-	protected $updateSQL = 'UPDATE ApplicationProperties SET Value = :value WHERE ApplicationID = :key AND Property = :property';
-	protected $insertSQL = 'INSERT INTO ApplicationProperties (ApplicationID, Property, Value) VALUES (:key, :property, :value)';
+	protected $updateSQL = "UPDATE ApplicationProperties SET Value = :value, Updated = datetime('now', 'localtime') WHERE ApplicationID = :key AND Property = :property";
+	protected $insertSQL = "INSERT INTO ApplicationProperties (ApplicationID, Property, Updated, Value) VALUES (:key, :property, datetime('now', 'localtime') :value)";
 	protected $deleteSQL = 'DELETE FROM ApplicationProperties WHERE ApplicationID = :key AND Property = :property';
 	protected $selectSQL = 'SELECT Value FROM ApplicationProperties WHERE ApplicationID = :key AND Property = :property';
-	protected $selectAllSQL = 'SELECT ApplicationID AS key, Property AS property, Value AS value FROM ApplicationProperties';
+	protected $selectAllSQL = 'SELECT ApplicationID AS key, Property AS property, Value AS value, Updated AS updated FROM ApplicationProperties';
 	
 	protected static $instance = null;
 	

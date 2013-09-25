@@ -44,6 +44,7 @@ abstract class Property extends EntityModel {
 	);
 
 	protected static $fields = array(
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime'),
 		'value' => array('sqlname' => 'Value', 'type' => 'text', 'desc' => 'Value of a property', 'default' => '')
 	);
 	

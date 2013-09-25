@@ -34,12 +34,12 @@ class UserPropertyManager extends PropertyManager {
 	
 	protected $name = 'user';
 	
-	protected $updateSQL = 'UPDATE UserProperties SET Value = :value WHERE UserName = :key AND Property = :property';
-	protected $insertSQL = 'INSERT INTO UserProperties (UserName, Property, Value) VALUES (:key, :property, :value)';
+	protected $updateSQL = "UPDATE UserProperties SET Value = :value, Updated = datetime('now', 'localtime') WHERE UserName = :key AND Property = :property";
+	protected $insertSQL = "INSERT INTO UserProperties (UserName, Property, Value, Updated) VALUES (:key, :property, :value, datetime('now', 'localtime'))";
 	protected $deleteSQL = 'DELETE FROM UserProperties WHERE UserName = :key AND Property = :property';
 	protected $deleteAllSQL = 'DELETE FROM UserProperties WHERE UserName = :key';
 	protected $selectSQL = 'SELECT Value FROM UserProperties WHERE UserName = :key AND Property = :property';
-	protected $selectAllSQL = 'SELECT UserName AS key, Property AS property, Value AS value FROM UserProperties';
+	protected $selectAllSQL = 'SELECT UserName AS key, Property AS property, Value AS value, Updated AS updated FROM UserProperties';
 	
 	protected static $instance = null;
 	

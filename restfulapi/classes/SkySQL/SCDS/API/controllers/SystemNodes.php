@@ -29,8 +29,8 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use PDO;
 use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeStateManager;
@@ -101,17 +101,19 @@ class SystemNodes extends SystemNodeCommon {
 	protected function extraNodeData (&$node) {
 		$node->commands = ($this->isFilterWord('commands') AND $node->state) ? $node->getCommands() : null;
 		$node->monitorlatest = $this->getMonitorData($node->nodeid);
-		list($node->taskid, $node->command) = $this->getCommand($node->nodeid);
+		$node->task = Task::latestForNode($node);
 	}
 
 	public function createSystemNode ($uriparts) {
 		Node::checkLegal();
+		$this->db->beginImmediateTransaction();
 		$this->systemid = (int) $uriparts[1];
 		if ($this->validateSystem()) NodeManager::getInstance()->createNode($this->systemid);
 		else $this->sendErrorResponse('Create node request gave non-existent system ID '.$this->systemid, 400);
 	}
 	
 	public function updateSystemNode ($uriparts) {
+		$this->db->beginImmediateTransaction();
 		Node::checkLegal('stateid');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) @$uriparts[3];
@@ -135,14 +137,5 @@ class SystemNodes extends SystemNodeCommon {
 	
 	protected function validateNode () {
 		return NodeManager::getInstance()->getByID($this->systemid, $this->nodeid) ? true : false;
-	}
-	
-	protected function getCommand ($nodeid) {
-		$query = $this->db->prepare("SELECT TaskID, Command, State, MAX(Updated) AS LastChange FROM Task 
-			WHERE SystemID = :systemid AND NodeID = :nodeid");
-		$query->execute(array(':systemid' => $this->systemid, ':nodeid' => (int) $nodeid));
-		$row = $query->fetch();
-		if ($this->ifmodifiedsince AND $this->ifmodifiedsince < strtotime($row->LastChange)) $this->modified = true;
-		return ($row AND 'running' == $row->State) ? array($row->TaskID, $row->Command) : array(null, null);
 	}
 }

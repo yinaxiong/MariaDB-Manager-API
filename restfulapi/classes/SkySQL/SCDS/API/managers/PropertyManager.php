@@ -36,12 +36,14 @@ use stdClass;
 abstract class PropertyManager extends EntityManager {
 	
 	protected $properties = array();
+	protected $updates = array();
 
 	protected function __construct () {
 		$selectall = AdminDatabase::getInstance()->prepare($this->selectAllSQL);
 		$selectall->execute();
 		foreach ($selectall->fetchALL() as $property) {
 			$this->properties[$property->key][$property->property] = $property->value;
+			$this->updates[$property->key][$property->property] = date('r', strtotime($property->updated));
 		}
 	}
 	
@@ -87,6 +89,14 @@ abstract class PropertyManager extends EntityManager {
 		$request = Request::getInstance();
 		if (isset($this->properties[$key][$property])) {
 			$request->sendResponse(array("{$this->name}property" => array($property => $this->properties[$key][$property])));
+		}
+		else $request->sendErrorResponse("Unable to find $this->name property called $property for $this->name $key", 404);
+	}
+	
+	public function getPropertyUpdated ($key, $property) {
+		$request = Request::getInstance();
+		if (isset($this->updates[$key][$property])) {
+			$request->sendResponse(array("{$this->name}propertyupdate" => array($property => $this->updates[$key][$property])));
 		}
 		else $request->sendErrorResponse("Unable to find $this->name property called $property for $this->name $key", 404);
 	}

@@ -73,7 +73,7 @@ class System extends EntityModel {
 		'monitorlatest' => array('type' => 'object', 'desc' => 'Latest value for system for each monitor')
 	);
 	
-	public function __construct ($systemid) {
+	public function __construct ($systemid=0) {
 		$this->systemid = $systemid;
 	}
 	
@@ -84,10 +84,24 @@ class System extends EntityModel {
 	}
 
 	protected function validateInsert () {
+		AdminDatabase::getInstance()->beginImmediateTransaction();
 		$this->setCorrectFormatDateWithDefault('started');
 		$this->setCorrectFormatDateWithDefault('lastaccess');
 	}
-	
+
+	protected function insertedKey ($insertid) {
+		$this->systemid = $insertid;
+		if (empty($this->name)) {
+			$this->name = 'System '.sprintf('%06d', $insertid);
+			$update = AdminDatabase::getInstance()->prepare(sprintf(self::$updateSQL, 'SystemName = :name'));
+			$update->execute(array(
+				':systemid' => $this->systemid,
+				':name' => $this->name
+			));
+		}
+		return $insertid;
+	}
+
 	protected function validateUpdate () {
 		$this->setCorrectFormatDate('started');
 		$this->setCorrectFormatDate('lastaccess');
@@ -101,9 +115,5 @@ class System extends EntityModel {
 			':updated' => date('Y-m-d H:i:s', $stamp),
 			':systemid' => $this->systemid
 		));
-	}
-
-	protected function insertedKey ($insertid) {
-		return $this->systemid;
 	}
 }

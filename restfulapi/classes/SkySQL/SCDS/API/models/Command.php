@@ -40,7 +40,7 @@ class Command extends EntityModel {
 	protected static $getAllCTO = array('command');
 	
 	protected static $keys = array(
-		'command' => array('sqlname' => 'Command', 'type'  => 'int')
+		'command' => array('sqlname' => 'Command', 'type'  => 'varchar')
 	);
 	
 	protected static $fields = array(
@@ -51,6 +51,7 @@ class Command extends EntityModel {
 		'level' => array('sqlname' => 'Level', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'parentid' => array('sqlname' => 'ParentID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
+		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'varchar', 'default' => '', 'insertonly' => true),
 		'state' => array('sqlname' => 'State', 'type' => 'int', 'default' => ''),
 		'step' => array('sqlname' => 'Step', 'type' => 'int', 'default' => 0)
 	);

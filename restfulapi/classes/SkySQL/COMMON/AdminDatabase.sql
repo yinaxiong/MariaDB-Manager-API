@@ -65,18 +65,18 @@ insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Step
 */
 
 create table System (
-	SystemID		int PRIMARY KEY,				/* SystemID allocated by provisioning */
-	SystemType		varchar(20),					/* Type of system e.g. galera or aws */
-	SystemName		varchar(80),					/* User defined system name */
-	InitialStart	datetime,						/* Time of first system boot */
-	LastAccess		datetime,						/* Last time admin access to system */
-	Updated			datetime,						/* Last time System record was updated */
-	State			varchar(20),					/* The current state of the system */
+	SystemID		integer PRIMARY KEY AUTOINCREMENT,	/* SystemID allocated by provisioning */
+	SystemType		varchar(20),						/* Type of system e.g. galera or aws */
+	SystemName		varchar(80),						/* User defined system name */
+	InitialStart	datetime,							/* Time of first system boot */
+	LastAccess		datetime,							/* Last time admin access to system */
+	Updated			datetime,							/* Last time System record was updated */
+	State			varchar(20),						/* The current state of the system */
 	/* The User Name and Password pairs here are system wide defaults that can be overriden in individual nodes */
-	DBUserName	varchar(50),						/* DB User Name for general queries, processlist etc */
-	DBPassword	varchar(50),						/* DB Password for general queries, processlist etc */
-	RepUserName	varchar(50),						/* DB User Name for replication */
-	RepPassword	varchar(50)							/* DB Password for replication */
+	DBUserName	varchar(50),							/* DB User Name for general queries, processlist etc */
+	DBPassword	varchar(50),							/* DB Password for general queries, processlist etc */
+	RepUserName	varchar(50),							/* DB User Name for replication */
+	RepPassword	varchar(50)								/* DB Password for replication */
 );
 
 /*
@@ -85,8 +85,9 @@ create table System (
 */
 create table SystemProperties (
 	SystemID 	int,								/* SystemID allocated by provisioning */
-	Property	varchar(40),
-	Value		text
+	Property	varchar(40),						/* Name of property */
+	Updated		datetime,							/* Date/time stamp for last updated */
+	Value		text								/* Property value */
 );
 create unique index SystemPropertyIDX ON SystemProperties (SystemID, Property);
 
@@ -94,22 +95,23 @@ create unique index SystemPropertyIDX ON SystemProperties (SystemID, Property);
 ** An application property table for storing arbitrary application data
 */
 CREATE TABLE ApplicationProperties (
-	ApplicationID int, /* ApplicationID allocated by System Manager */ 
-	Property varchar(40), 
-	Value text
+	ApplicationID int,								/* ApplicationID allocated by System Manager */ 
+	Property varchar(40),							/* Name of property */
+	Updated		datetime,							/* Date/time stamp for last updated */
+	Value text										/* Property value */
 );
 create unique index ApplicationPropertyIDX on ApplicationProperties (ApplicationID, Property);
 
-insert into ApplicationProperties values (1, 'maxBackupCount', '1,3,5,10');
-insert into ApplicationProperties values (1, 'maxBackupSize', '5,10,15,20,25');
-insert into ApplicationProperties values (1, 'monitorInterval', '5,10,15,30,60,120,300');
+insert into ApplicationProperties values (1, 'maxBackupCount', datetime('now', 'localtime'), '1,3,5,10');
+insert into ApplicationProperties values (1, 'maxBackupSize', datetime('now', 'localtime'), '5,10,15,20,25');
+insert into ApplicationProperties values (1, 'monitorInterval', datetime('now', 'localtime'), '5,10,15,30,60,120,300');
 
 /*
 ** Set of rows, one per node within the system. Created by the provisioning system
 ** at first boot of the system.
 */
 create table Node (
-	NodeID		integer PRIMARY KEY autoincrement,			/* Node Id within system */
+	NodeID		integer PRIMARY KEY AUTOINCREMENT,			/* Node Id within system */
 	SystemID	int,										/* Which system ID is this node in */
 	NodeName	varchar(80),								/* User defined system name */
 	State		varchar(20),								/* Current state of the node */
@@ -140,11 +142,12 @@ update Node set PublicIP = new.PublicIP, PrivateIP = new.PrivateIP where SystemI
 end;
 
 create table ComponentProperties (
-	ComponentID	varchar(40),
-	Property	varchar(40),
-	Value		text
+	ComponentID	varchar(40),						/* ComponentID allocated by System Manager */ 
+	Property	varchar(40),						/* Name of property */
+	Updated		datetime,							/* Date/time stamp for last updated */
+	Value		text								/* Value of property */
 );
-
+create unique index ComponentPropertyIDX on ComponentProperties (ComponentID, Property);
 
 /*
 ** Log of commands executed on a node.
@@ -154,6 +157,7 @@ create table Task (
 	SystemID		int,					/* SystemID of the system */
 	NodeID			int,					/* NodeID executed on */
 	PrivateIP		varchar(45),			/* Private IP address of the node when task was started*/
+	ScheduleID		int,					/* Zero or the ID of the schedule that caused the task */
 	BackupID		int,					/* For backup, the ID of the backup record */
 	UserName		varchar(40),			/* UserName that requested the command execution */
 	Command			varchar(40),			/* Command executed */
@@ -188,7 +192,7 @@ create table Schedule (
 );
 
 create table Monitor (
-	MonitorID		integer PRIMARY KEY autoincrement,		/* ID for Monitor */
+	MonitorID		integer PRIMARY KEY AUTOINCREMENT,		/* ID for Monitor */
 	SystemType		varchar(20),				/* System type handled - e.g. aws or galera */
 	Monitor			varchar(40),				/* Short name of monitor */
 	Name			varchar(80),				/* Displayed name of this monitor */
@@ -221,7 +225,7 @@ insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, Char
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'availability', 'Availability', 2, 'select 100;', '', 'LineChart', 0, 'SQL', 1, 30, '%');
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'capacity', 'Capacity', 2, 'select round(((select variable_value from global_status where variable_name = "THREADS_CONNECTED") * 100) / variable_value) from global_variables where variable_name = "MAX_CONNECTIONS";', '', null, 0, 'SQL', 1, 30, '%');
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'hoststate', 'Host State', 0, '', '', null, 0, 'PING', 0, 30, null);
-insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'nodestate', 'NodeState', 0, 'select 100 + variable_value from global_status where variable_name = "WSREP_LOCAL_STATE" union select 107 limit 1;', '', null, 0, 'SQL_NODE_STATE', 1, 30, null);
+insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'nodestate', 'NodeState', 0, 'select 100 + variable_value from global_status where variable_name = "WSREP_LOCAL_STATE" union select 99 limit 1;', '', null, 0, 'SQL_NODE_STATE', 1, 30, null);
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'clustersize', 'Cluster Size', 0, 'select variable_value from global_status where variable_name = "WSREP_CLUSTER_SIZE";', 'Number of nodes in the cluster', 'LineChart', 0, 'SQL', 1, 30, null);
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'reppaused', 'Replication Paused', 2, 'select variable_value * 100 from global_status where variable_name = "WSREP_FLOW_CONTROL_PAUSED";', 'Percentage of time for which replication was paused', 'LineChart', 0, 'SQL', 1, 30, '%');
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'parallelism', 'Parallelism', 0, 'select variable_value from global_status where variable_name = "WSREP_CERT_DEPS_DISTANCE";', 'Average No. of parallel transactions', 'LineChart', 0, 'SQL', 1, 30, null);
@@ -230,7 +234,7 @@ insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, Char
 insert into Monitor (SystemType, Monitor, Name, Decimals, SQL, Description, ChartType, delta, MonitorType, SystemAverage, Interval, Unit) values ('galera', 'sendqueue', 'Avg Send Queue', 0, 'select variable_value from global_status where variable_name = "WSREP_LOCAL_SEND_QUEUE_AVG";', 'Average length of send queue', 'LineChart', 0, 'SQL', 1, 30, null);
 
 create table User (
-	UserID		integer PRIMARY KEY autoincrement,
+	UserID		integer PRIMARY KEY AUTOINCREMENT,
 	UserName	varchar(40),
 	Name		varchar (100),
 	Password	varchar(60)
@@ -238,10 +242,12 @@ create table User (
 create unique index UserNameIDX on User (UserName);
 
 create table UserProperties (
-	UserName	varchar(40),
-	Property	varchar(40),
-	Value		text
+	UserName	varchar(40),						/* UserName of user whose property it is */ 
+	Property	varchar(40),						/* Name of property */
+	Updated		datetime,							/* Date/time stamp for last updated */
+	Value		text								/* Value of property */
 );
+create unique index UserPropertyIDX on UserProperties (UserName, Property);
 
 create table UserTag (
 	UserName	varchar (40),
@@ -272,19 +278,19 @@ create index RoleType on Permissions (role, action, subject_type, subject_id);
 create index SubAction on Permissions (subject_type, action, subject_id);
 
 create table Backup (
-	BackupID	integer,		/* Unique identifier for the backup within System ID */
-	SystemID	int,			/* System backup was taken on */
-	NodeID		int,			/* Node backup was taken on */
-	BackupLevel	smallint,		/* full=1 or incremental=2 backup */
-	ParentID	int,			/* Parent from which this is incremental */
-	State		varchar(20),	/* Backup state */
-	Started		datetime,		/* Date when backup was started */
-	Updated		datetime,		/* Date of last update of this record during backup */
-	Restored	datetime,		/* Date of last restore from this backup */
-	Size		int,			/* Size of backup */
-	Storage		text,			/* Path to storage location */
-	BinLog		text,			/* Binlog of backup */
-	Log			text			/* URL to Log of backup */
+	BackupID	integer PRIMARY KEY AUTOINCREMENT,		/* Unique identifier for the backup within System ID */
+	SystemID	int,									/* System backup was taken on */
+	NodeID		int,									/* Node backup was taken on */
+	BackupLevel	smallint,								/* full=1 or incremental=2 backup */
+	ParentID	int,									/* Parent from which this is incremental */
+	State		varchar(20),							/* Backup state */
+	Started		datetime,								/* Date when backup was started */
+	Updated		datetime,								/* Date of last update of this record during backup */
+	Restored	datetime,								/* Date of last restore from this backup */
+	Size		int,									/* Size of backup */
+	BackupURL	text,									/* URL fro backup storage location */
+	BinLog		text,									/* Binlog of backup */
+	Log			text									/* URL to Log of backup */
 );
 
 create unique index SystemBackupIDX ON Backup (SystemID, BackupID);

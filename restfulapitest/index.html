@@ -165,7 +165,7 @@
 	  <p>
 		  There is a configuration file that provides some basic information
 		  for the API and allows some defaults to be set.  It is located in
-		  /etc/scdsapi/api.ini and as distributed contains the following
+		  /etc/skysqlmgr/api.ini and as distributed contains the following
 		  information:
 	  </p>
 	  <pre>
@@ -177,24 +177,22 @@
 ; the parameters are the path to the SQLite file and the PDO
 ; connection string for the SQLite DB.  User and password are
 ; not currently used, and are included only in case a different
-; database might be used in future.
+; database might be used in future.  A separate database is used
+; for monitor data, and requires monconnect to be set.
 [database]
 pdoconnect = "sqlite:/usr/local/skysql/SQLite/AdminConsole/admin"
+monconnect = "sqlite:/usr/local/skysql/SQLite/AdminConsole/monitor"
 user = ""
 password = ""
+monuser = ""
+monpassword = ""
 ; 
 ; The logging section controls how the API will log information
 ; 
-; The directory is for the API's own log.  If it is provided and
-; the stated directory is writeable by the API, then the API will write an
-; access log called api.log into the specified directory.
-; (Note that the API is run by the Apache web server, so the user
-; that runs the API scripts and needs to write the log depends on
-; the configuration of Apache).
+; The API writes log messages to syslog.
 ; The error email address, if specified, will be used to notify errors.
 ; More information will be logged if verbose is set to yes.
 [logging]
-directory = "/usr/local/skysql/log"
 erroremail = "someone@example.com"
 verbose = "no"
 ;
@@ -206,6 +204,7 @@ verbose = "no"
 ;
 [shell]
 path = "/usr/local/skysql/scripts/api/"
+php = "/usr/bin/php5-cgi"
 hostname = "localhost"
 ;
 ; Monitor defaults determines how many readings and what intervals the
@@ -216,6 +215,11 @@ hostname = "localhost"
 [monitor-defaults]
 interval = 1800
 count = 15
+;
+; Resultset defaults determines how many data items will be returned for 
+; potentially large result sets.
+[resultset-defaults]
+limit = 10
 ;
 ; The cache section provides configuration details for data caching
 ;
@@ -264,7 +268,7 @@ sizelimit = 500000
 	  </p>
 	  <p>
 		  The Authorization header is just a little more complicated.  One element is
-		  the use of an API key.  The API has a configuration file, /etc/scdsapi/api.ini.
+		  the use of an API key.  The API has a configuration file, /etc/skysqlmgr/api.ini.
 		  Within the configuration file is an apikeys section which contains one or more
 		  integers to which are assigned long random strings.  Typically, these are
 		  32 character strings created by applying MD5 to some random text string.  But
@@ -316,7 +320,7 @@ sizelimit = 500000
 		  There is a configuration file called api.ini.  This is in the root of the
 		  structure in the repository.  It should be checked and modified to suit local
 		  requirements.  In particular, the API keys should be changed in order to secure
-		  the API.  The file must be moved to /etc/scdsapi/api.ini so that it cannot be
+		  the API.  The file must be moved to /etc/skysqlmgr/api.ini so that it cannot be
 		  served to the web and so that it can be found by the API.
 	  </p>
 	  <p>

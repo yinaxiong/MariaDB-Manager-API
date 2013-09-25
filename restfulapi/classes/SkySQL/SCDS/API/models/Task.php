@@ -28,8 +28,12 @@
 
 namespace SkySQL\SCDS\API\models;
 
+use PDO;
+use stdClass;
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\COMMON\AdminDatabase;
+use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
 
 class Task extends EntityModel {
@@ -146,6 +150,39 @@ class Task extends EntityModel {
 			}
 			$this->bind[':stepindex'] = 0;
 		}
+	}
+	
+	public static function latestForNode ($node) {
+		$latest = AdminDatabase::getInstance()->prepare("SELECT TaskID FROM Task WHERE SystemID = :systemid AND NodeID = :nodeid ORDER BY Updated");
+		$latest->execute(array(
+			':systemid' => $node->systemid,
+			':nodeid' => $node->nodeid
+		));
+		$taskid = $latest->fetch(PDO::FETCH_COLUMN);
+		if ($taskid) {
+			$task = new self($taskid);
+			$task->loadData();
+			return $task;
+		}
+		else return new stdClass();
+	}
+	
+	public static function tasksNotFinished ($node) {
+		$system = SystemManager::getInstance()->getByID($node->systemid);
+		if (!isset(API::$systemtypes[$system->systemtype])) Request::getInstance()->sendErrorResponse(sprintf("System with ID '%s' does not have valid system type", $node->systemid), 500);
+		$onepersystem = API::$systemtypes[$system->systemtype]['onecommandpersystem'];
+		$unfinished = API::unfinishedCommandStates();
+		$where[] = "State IN ($unfinished)";
+		$where[] = "SystemID = :systemid";
+		$bind[':systemid'] = $node->systemid;
+		if (!$onepersystem) {
+			$where[] = "NodeID = :nodeid";
+			$bind[':nodeid'] = $node->nodeid;
+		}
+		$conditions = implode(' AND ', $where);
+		$count = AdminDatabase::getInstance()->prepare("SELECT COUNT(*) FROM Task WHERE $conditions");
+		$count->execute($bind);
+		return $count->fetch(PDO::FETCH_COLUMN) ? true : false;
 	}
 
 	// Optional parameters are fromdate and todate, comma separated, in $args[0]

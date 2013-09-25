@@ -3,6 +3,16 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 25 September 2013, 09:30 BST
+ * 
+ * Moved logging to syslog. Placed restriction on simultaneous commands.
+ * Made SystemID automatically allocated, change create method to POST.
+ * Added last updated date/time stamp for all properties.  Added ScheduleID
+ * to Task record.  Renamed Storage to BackupURL in Backup record.
+ * Changed data returned for systems to provide complete last Task instead
+ * of current TaskID and Command.  Bug fixes.
+ * 
+ * 
  * 19 September 2013, 12:30 BST
  * 
  * Implement If-Modified-Since for single system, node, task entities.

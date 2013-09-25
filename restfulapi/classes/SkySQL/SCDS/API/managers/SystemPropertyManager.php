@@ -32,12 +32,12 @@ class SystemPropertyManager extends PropertyManager {
 	
 	protected $name = 'system';
 	
-	protected $updateSQL = 'UPDATE SystemProperties SET Value = :value WHERE SystemID = :key AND Property = :property';
-	protected $insertSQL = 'INSERT INTO SystemProperties (SystemID, Property, Value) VALUES (:key, :property, :value)';
+	protected $updateSQL = "UPDATE SystemProperties SET Value = :value, Updated = datetime('now', 'localtime') WHERE SystemID = :key AND Property = :property";
+	protected $insertSQL = "INSERT INTO SystemProperties (SystemID, Property, Updated, Value) VALUES (:key, :property, datetime('now', 'localtime'), :value)";
 	protected $deleteSQL = 'DELETE FROM SystemProperties WHERE SystemID = :key AND Property = :property';
 	protected $deleteAllSQL = 'DELETE FROM SystemProperties WHERE SystemID = :key';
 	protected $selectSQL = 'SELECT Value FROM SystemProperties WHERE SystemID = :key AND Property = :property';
-	protected $selectAllSQL = 'SELECT SystemID AS key, Property AS property, Value AS value FROM SystemProperties';
+	protected $selectAllSQL = 'SELECT SystemID AS key, Property AS property, Updated AS updated, Value AS value FROM SystemProperties';
 	
 	protected static $instance = null;
 	

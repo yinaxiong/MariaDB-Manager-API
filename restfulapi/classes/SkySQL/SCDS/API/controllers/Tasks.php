@@ -29,6 +29,7 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\models\Task;
+use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Command;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\managers\NodeManager;
@@ -80,7 +81,12 @@ class Tasks extends TaskScheduleCommon {
 			}
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
-		if (empty($command->icalentry)) $this->immediateCommand ($command);
+		if (empty($command->icalentry)) {
+			if (Task::tasksNotFinished($node)) {
+				$this->sendErrorResponse(sprintf('Command on node (%d, %d) but at least one command is already running there', $node->systemid, $node->nodeid), 409);
+			}
+			$this->immediateCommand ($command);
+		}
 		else $this->scheduledCommand($command);
 	}
 	
@@ -90,7 +96,7 @@ class Tasks extends TaskScheduleCommon {
 		$schedule->insertOnCommand($command->command);
 		$this->setRunAt($schedule);
 		if ($schedule->isDue()) $this->runScheduledCommand($schedule);
-		$this->sendResponse(array('schedule' => $schedule));
+		$this->sendResponse(array('schedule' => $schedule->withDateFix()));
 	}
 	
 	protected function immediateCommand ($command) {
@@ -98,6 +104,6 @@ class Tasks extends TaskScheduleCommon {
 		// insertOnCommand also fixes dates as RFC
 		$task->insertOnCommand($command->command);
 		$this->execute($task);
-		$this->sendResponse(array('task' => $task));
+		$this->sendResponse(array('task' => $task->withDateFix()));
 	}
 }

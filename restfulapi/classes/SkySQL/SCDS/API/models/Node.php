@@ -30,7 +30,6 @@ namespace SkySQL\SCDS\API\models;
 
 use PDO;
 use SkySQL\COMMON\AdminDatabase;
-use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\managers\NodeStateManager;
 use SkySQL\SCDS\API\managers\SystemManager;
@@ -101,25 +100,18 @@ class Node extends EntityModel {
 		return $query->fetchAll();
 	}
 	
-	protected function keyComplete () {
-		return $this->nodeid ? true : false;
-	}
-	
-	protected function makeNewKey () {
-		$highest = AdminDatabase::getInstance()->prepare('SELECT MAX(NodeID) FROM Node WHERE SystemID = :systemid');
-		$highest->execute(array(':systemid' => $this->systemid));
-		$this->nodeid = 1 + (int) $highest->fetch(PDO::FETCH_COLUMN);
-		$this->bind[':nodeid'] = $this->nodeid;
-	}
-	
-	protected function setDefaults () {
-		if (empty($this->bind[':name'])) {
-			$this->setInsertValue('name', 'Node '.sprintf('%06d', $this->nodeid));
-		}
-	}
-
 	protected function insertedKey ($insertid) {
-		return $this->nodeid;
+		$this->nodeid = $insertid;
+		if (empty($this->name)) {
+			$this->name = 'Node '.sprintf('%06d', $insertid);
+			$update = AdminDatabase::getInstance()->prepare(sprintf(self::$updateSQL, 'NodeName = :name'));
+			$update->execute(array(
+				':systemid' => $this->systemid,
+				':nodeid' => $this->nodeid,
+				':name' => $this->name
+			));
+		}
+		return $insertid;
 	}
 	
 	protected function validateState () {

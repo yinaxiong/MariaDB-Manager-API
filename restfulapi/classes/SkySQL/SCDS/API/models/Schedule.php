@@ -28,6 +28,11 @@
 
 namespace SkySQL\SCDS\API\models;
 
+use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\COMMON\WHEN\When;
+use SkySQL\COMMON\AdminDatabase;
+
 class Schedule extends EntityModel {
 	protected static $setkeyvalues = false;
 	
@@ -35,7 +40,15 @@ class Schedule extends EntityModel {
 
 	protected $ordinaryname = 'command';
 	protected static $headername = 'Command';
-	
+
+	protected static $updateSQL = 'UPDATE Schedule SET %s WHERE ScheduleID = :scheduleid';
+	protected static $countSQL = 'SELECT COUNT(*) FROM Schedule WHERE ScheduleID = :scheduleid';
+	protected static $countAllSQL = 'SELECT COUNT(*) FROM Schedule';
+	protected static $insertSQL = 'INSERT INTO Schedule (%s) VALUES (%s)';
+	protected static $deleteSQL = 'DELETE FROM Schedule WHERE ScheduleID = :scheduleid';
+	protected static $selectSQL = 'SELECT %s FROM Schedule WHERE ScheduleID = :scheduleid';
+	protected static $selectAllSQL = 'SELECT %s FROM Schedule %s ORDER BY ScheduleID';
+
 	protected static $getAllCTO = array('command');
 	
 	protected static $keys = array(
@@ -45,16 +58,19 @@ class Schedule extends EntityModel {
 	protected static $fields = array(
 		'systemid' => array('sqlname' => 'SystemID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
-		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
+		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => ''),
 		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
-		'level' => array('sqlname' => 'BackupLevel', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
-		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
+		'level' => array('sqlname' => 'BackupLevel', 'type'  => 'int', 'default' => 0),
+		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => ''),
 		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'text', 'default' => 'running'),
-		'nextstart' => array('sqlname' => 'NextStart', 'default' => '', 'insertonly' => true),
+		'nextstart' => array('sqlname' => 'NextStart', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
 		'atjobnumber' => array('sqlname' => 'ATJobNumber', 'default' => 0, 'insertonly' => true),
-		'created' => array('sqlname' => 'Created', 'insertonly' => true),
-		'updated' => array('sqlname' => 'Updated', 'insertonly' => true)
+		'created' => array('sqlname' => 'Created', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime')
 	);
+	
+	protected $runatonce = false;
+	protected $node = null;
 	
 	public function __construct ($scheduleid=0) {
 		$this->scheduleid = $scheduleid;
@@ -121,6 +137,10 @@ class Schedule extends EntityModel {
 		$event->recur($dtstart)->rrule($rrule);
 		$this->nextstart = date('Y-m-d H:i:s', $event->nextAfter()->getTimeStamp());
 		$this->runatonce = $event->alreadyDue();
+	}
+	
+	public function isDue () {
+		return $this->runatonce;
 	}
 	
 	// Optional parameters are fromdate and todate, comma separated, in $args[0]

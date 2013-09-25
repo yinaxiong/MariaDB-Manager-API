@@ -44,7 +44,8 @@ use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','0.8');
-define ('_API_CODE_ISSUE_DATE', '14 September 2013');
+define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
+define ('_API_CODE_ISSUE_DATE', '25 September 2013');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 
@@ -76,7 +77,8 @@ class API {
 				'stopped' => array('stateid' => 5, 'description' => 'Slave Stopped'),
 				'error' => array('stateid' => 13, 'description' => 'Slave Error'),
 				'standalone' => array('stateid' => 18, 'description' => 'Standalone Database'),
-			)
+			),
+			'onecommandpersystem' => false
 		),
 		'galera' => array(
 			'nodetranslator' => array(
@@ -94,7 +96,8 @@ class API {
 				'synced' => array('stateid' => 105, 'description' => 'Synced'),
 				'donor' => array('stateid' => 106, 'description' => 'Donor'),
 				'isolated' => array('stateid' => 99, 'description' => 'Isolated')
-			)
+			),
+			'onecommandpersystem' => true
 		)
 	);
 	
@@ -108,11 +111,11 @@ class API {
 	);
 	
 	public static $commandstates = array(
-		'running' => array('description' => 'Running'),
-		'paused' => array('description' => 'Paused'),
-		'stopped' => array('description' => 'Stopped'),
-		'done' => array('description' => 'Done'),
-		'error' => array('description' => 'Error')
+		'running' => array('description' => 'Running', 'finished' => false),
+		'paused' => array('description' => 'Paused', 'finished' => false),
+		'stopped' => array('description' => 'Stopped', 'finished' => false),
+		'done' => array('description' => 'Done', 'finished' => true),
+		'error' => array('description' => 'Error', 'finished' => true)
 	);
 	
 	public static $systemstates = array(
@@ -151,9 +154,12 @@ class API {
 		
 		// Set up a simple class autoloader
 		spl_autoload_register(array(__CLASS__, 'simpleAutoload'));
+		openlog(_API_SYSTEM_NAME, LOG_ODELAY, LOG_USER);
 	}
 	
 	public function startup ($runController=false) {
+		
+		// date_default_timezone_set('UTC');
 
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 
@@ -213,6 +219,11 @@ class API {
 	public static function mergeStates ($states, $keyname='state') {
 		self::$keyname = $keyname;
 		return array_map(array(__CLASS__,'merger'), $states, array_keys($states));
+	}
+	
+	public static function unfinishedCommandStates () {
+		foreach (self::$commandstates as $state=>$about) if (!$about['finished']) $unfinished[] = $state;
+		return isset($unfinished) ? "'".implode("','", $unfinished)."'" : '';
 	}
 
 	public static function simpleAutoload ($classname) {

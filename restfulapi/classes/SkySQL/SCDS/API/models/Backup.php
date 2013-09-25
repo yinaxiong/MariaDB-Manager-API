@@ -65,7 +65,7 @@ class Backup extends EntityModel {
 		'updated' => array('sqlname' => 'Updated', 'validate' => 'datetime', 'desc' => 'Date and time backup updated', 'default' => ''),
 		'restored' => array('sqlname' => 'Restored', 'validate' => 'datetime', 'desc' => 'Date and time backup restored', 'default' => ''),
 		'size' => array('sqlname' => 'Size', 'desc' => 'Size of the backup', 'default' => 0),
-		'storage' => array('sqlname' => 'Storage', 'default' => ''),
+		'backupurl' => array('sqlname' => 'BackupURL', 'default' => ''),
 		'binlog' => array('sqlname' => 'BinLog', 'default' => ''),
 		'log' => array('sqlname' => 'Log', 'default' => '')
 	);
@@ -79,21 +79,6 @@ class Backup extends EntityModel {
 		return API::mergeStates(API::$backupstates);
 	}
 	
-	protected function keyComplete () {
-		return $this->backupid ? true : false;
-	}
-	
-	protected function makeNewKey () {
-		$highest = AdminDatabase::getInstance()->prepare('SELECT MAX(BackupID) FROM Backup WHERE SystemID = :systemid');
-		$highest->execute(array(':systemid' => $this->systemid));
-		$this->backupid = 1 + (int) $highest->fetch(PDO::FETCH_COLUMN);
-		$this->bind[':backupid'] = $this->backupid;
-	}
-
-	protected function insertedKey ($insertid) {
-		return $this->backupid;
-	}
-
 	protected function validateInsert () {
 		$this->setCorrectFormatDateWithDefault('started');
 		if (empty($this->bind[':nodeid'])) $errors[] = 'No value provided for node when requesting system backup';

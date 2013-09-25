@@ -29,20 +29,18 @@
 
 namespace SkySQL\SCDS\API\managers;
 
-use SkySQL\SCDS\API\Request;
 use SkySQL\COMMON\AdminDatabase;
-use StdClass;
 
 class ComponentPropertyManager extends PropertyManager {
 	
 	protected $name = 'component';
 	
-	protected $updateSQL = 'UPDATE ComponentProperties SET Value = :value WHERE ComponentID = :key AND Property = :property';
-	protected $insertSQL = 'INSERT INTO ComponentProperties (ComponentID, Property, Value) VALUES (:key, :property, :value)';
+	protected $updateSQL = "UPDATE ComponentProperties SET Value = :value, Updated = datetime('now', 'localtime') WHERE ComponentID = :key AND Property = :property";
+	protected $insertSQL = "INSERT INTO ComponentProperties (ComponentID, Property, Value, Updated) VALUES (:key, :property, :value, datetime('now', 'localtime'))";
 	protected $deleteSQL = 'DELETE FROM ComponentProperties WHERE ComponentID = :key AND Property = :property';
 	protected $deleteAllSQL = 'DELETE FROM ComponentProperties WHERE ComponentID = :key';
 	protected $selectSQL = 'SELECT Value FROM ComponentProperties WHERE ComponentID = :key AND Property = :property';
-	protected $selectAllSQL = 'SELECT ComponentID AS key, Property AS property, Value AS value FROM ComponentProperties';
+	protected $selectAllSQL = 'SELECT ComponentID AS key, Property AS property, Value AS value, Updated AS updated FROM ComponentProperties';
 	
 	protected static $instance = null;
 	
@@ -67,6 +65,11 @@ class ComponentPropertyManager extends PropertyManager {
 	public function getComponentProperty ($systemid, $nodeid, $name, $property) {
 		$key = $this->makeKey($systemid, $nodeid, $name);
 		parent::getProperty($key, $property);
+	}
+	
+	public function getComponentPropertyUpdated ($systemid, $nodeid, $name, $property) {
+		$key = $this->makeKey($systemid, $nodeid, $name);
+		parent::getPropertyUpdated($key, $property);
 	}
 	
 	public function getAllComponentProperties ($systemid, $nodeid, $name) {

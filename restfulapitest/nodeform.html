@@ -219,7 +219,7 @@
 			<input type="text" id="repusernamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
 			<label for="reppasswdc">DB Repln Password</label>
 			<input type="text" id="reppasswdc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
-			<input type="submit" class="submit" value="Create or Update" />
+			<input type="submit" class="submit" value="Create" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
@@ -228,7 +228,7 @@
 		</form>
 	  </div>
 	  <div class="section">
-	  <h3>Create or Update a Node</h3>
+	  <h3>Update a Node</h3>
 	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
@@ -328,7 +328,7 @@
 			<input type="text" id="repusername" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
 			<label for="reppasswd">DB Repln Password</label>
 			<input type="text" id="reppasswd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
-			<input type="submit" class="submit" value="Create or Update" />
+			<input type="submit" class="submit" value="Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
@@ -409,6 +409,32 @@
 			<label for="propertynameg">Property Name</label>
 			<input type="text" name="uri4" id="propertynameg" /><br />
 			<input type="submit" class="submit" value="Get Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Component Property Time Stamp</h3>
+	  <form action="" method="post" id="getcomponentpropup" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','component','uri3','property','uri4','updated'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system/{systemid}/node/{nodeid}/component/{name}/property/{propertyname}/updated <br />
+			No parameters <br />
+		</p>
+		<p class="formfields">
+			<label for="systemidpgu">System ID</label>
+			<input type="text" name="uri1" id="systemidpgu" /><br />
+			<label for="nodeidpgu">Node ID</label>
+			<input type="text" name="uri2" id="nodeidpgu" /><br />
+			<label for="compidpgu">Component Name</label>
+			<input type="text" name="uri3" id="compidpgu" /><br />
+			<label for="propertynamegu">Property Name</label>
+			<input type="text" name="uri4" id="propertynamegu" /><br />
+			<input type="submit" class="submit" value="Get Time Stamp" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />

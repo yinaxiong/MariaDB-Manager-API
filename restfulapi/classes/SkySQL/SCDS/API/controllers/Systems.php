@@ -72,9 +72,17 @@ class Systems extends SystemNodeCommon {
 		else $this->sendErrorResponse("No system with ID of $this->systemid was found", 404);
 	}
 	
-	public function putSystem ($uriparts) {
+	public function createSystem () {
+		$this->db->beginImmediateTransaction();
+		SystemManager::getInstance()->createSystem();
+	}
+	
+	public function updateSystem ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
-		if (!$this->systemid) $this->sendErrorResponse('Creating a system with ID of zero is not permitted', 400);
+		$this->db->beginImmediateTransaction();
+		if (!SystemManager::getInstance()->getByID($this->systemid)) {
+			$this->sendErrorResponse(sprintf("Cannot update system with ID '%s' - does not exist", $this->systemid), 400);
+		}
 		SystemManager::getInstance()->putSystem($this->systemid);
 	}
 	

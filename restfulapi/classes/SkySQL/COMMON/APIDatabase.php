@@ -87,13 +87,17 @@ abstract class APIDatabase {
 	}
 	
 	public function beginImmediateTransaction () {
-		$this->query('BEGIN IMMEDIATE TRANSACTION');
-		$this->transact = true;
+		if (!$this->transact) {
+			$this->query('BEGIN IMMEDIATE TRANSACTION');
+			$this->transact = true;
+		}
 	}
 	
 	public function beginExclusiveTransaction () {
-		$this->query('BEGIN EXCLUSIVE TRANSACTION');
-		$this->transact = true;
+		if (!$this->transact) {
+			$this->query('BEGIN EXCLUSIVE TRANSACTION');
+			$this->transact = true;
+		}
 	}
 	
 	public function commitTransaction () {

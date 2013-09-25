@@ -78,12 +78,16 @@ abstract class EntityModel {
 		return $entity;
 	}
 	
+	public function withDateFix () {
+		return self::fixDate($this);
+	}
+	
 	public function loadData () {
 		$loader = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
 		foreach (array_keys(static::$keys) as $key) $bind[":$key"] = $this->$key; 
 		$loader->execute((array) @$bind);
 		$data = $loader->fetch();
-		foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
+		if ($data) foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
 		self::fixDate($this);
 	}
 
@@ -138,7 +142,6 @@ abstract class EntityModel {
 	
 	public function insert ($alwaysrespond=true) {
 		$this->settersAndBinds(__FUNCTION__);
-		if (!$this->keyComplete()) $this->makeNewKey();
 		$this->setDefaults();
 		$this->validateInsert();
 		$fields = implode(',',$this->insname);
@@ -146,9 +149,9 @@ abstract class EntityModel {
 		$database = AdminDatabase::getInstance();
 		$insert = $database->prepare(sprintf(static::$insertSQL, $fields, $values));
 		$insert->execute($this->bind);
+		$insertkey = $this->insertedKey($database->lastInsertId());
 		$database->commitTransaction();
 		$this->clearCache(true);
-		$insertkey = $this->insertedKey($database->lastInsertId());
 		if ($alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => 0,  'insertkey' => $insertkey));
 		else return $insertkey;
 	}
@@ -157,13 +160,11 @@ abstract class EntityModel {
 		$this->settersAndBinds(__FUNCTION__);
 		$database = AdminDatabase::getInstance();
 		$database->beginImmediateTransaction();
-		if ($this->keyComplete()) {
-			if (!empty($this->setter)) $counter = $this->update(false);
-			else {
-				$update = $database->prepare(static::$countSQL);
-				$update->execute($this->bind);
-				$counter = $update->fetch(PDO::FETCH_COLUMN);
-			}
+		if (!empty($this->setter)) $counter = $this->update(false);
+		else {
+			$update = $database->prepare(static::$countSQL);
+			$update->execute($this->bind);
+			$counter = $update->fetch(PDO::FETCH_COLUMN);
 		}
 		if (empty($counter)) $this->insert();
 		else Request::getInstance()->sendResponse(array('updatecount' => (empty($this->setter) ? 0: $counter), 'insertkey' => null));
@@ -210,12 +211,6 @@ abstract class EntityModel {
 		$this->setDefaultDate($name);
 	}
 	
-	protected function keyComplete () {
-		return true;
-	}
-	
-	protected function makeNewKey () {}
-	
 	protected function setDefaults () {}
 	
 	protected function insertedKey ($insertid) {
@@ -251,7 +246,7 @@ abstract class EntityModel {
 				$bindname = ":$name";
 				$this->insvalue[] = $bindname;
 				if ('insert' == $caller OR empty($about['insertonly'])) {
-					if ('insert' == $caller OR !$request->paramEmpty($source, $name)) {
+					if ('insert' == $caller OR !$request->paramEmpty($source, $name) OR !empty($this->$name)) {
 						$this->setter[] = $about['sqlname'].' = '.$bindname;
 						if (empty($this->$name)) {
 							$this->bind[$bindname] = self::getParam($source, $name, $about);
@@ -264,11 +259,11 @@ abstract class EntityModel {
 			if (count(self::$validationerrors)) $request->sendErrorResponse(self::$validationerrors, 400);
 		}
 		if (!isset(static::$setkeyvalues)) $request->sendErrorResponse('All entity classes must set the static variable $setkeyvalues',500);
-		if (static::$setkeyvalues OR 'insert' != $caller) foreach (static::$keys as $name=>$about) {
+		if (static::$setkeyvalues OR 'insert' != $caller) foreach (static::$keys as $name=>$about) if (!empty($this->$name)) {
 			$this->insname[] = $about['sqlname'];
 			$bindname = ":$name";
 			$this->insvalue[] = $bindname;
-			if (isset($this->$name)) $this->bind[$bindname] = $this->$name;
+			$this->bind[$bindname] = $this->$name;
 		}
 	}
 	

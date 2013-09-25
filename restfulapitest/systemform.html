@@ -74,8 +74,76 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Create or Update a System</h3>
-	  <form action="" method="post" id="putsystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <h3>Create a System</h3>
+	  <form action="" method="post" id="createsystem" target="apiresults" onsubmit="return(setFields(this.id,'system'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" class="httpmethod" readonly="readonly" /><br />
+			Request URI will be /system <br />
+			Parameters:
+			<a class="tooltip" href="#">systemtype,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Type parameter" height="48" width="48" />
+			<strong>systemtype</strong><br />
+			The type of the system e.g. galera or aws (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">name,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Name parameter" height="48" width="48" />
+			<strong>name</strong><br />
+			The name you want to give to the system (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">state 
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>state</strong><br />
+			The state code to be given to the system, must be selected from valid system states (string).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbusername</strong><br />
+			The user name for the node database for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbpassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbpassword</strong><br />
+			The password for the node for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">repusername,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>repusername</strong><br />
+			The user name for the node database replication user (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">reppassword<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			The password for the node database replication user (text).
+			</span>
+			</a><br />
+		</p>
+		<p class="formfields">
+			<label for="typec">System Type</label>
+			<input type="text" id="typec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'systemtype');" /><br />
+			<label for="namec">System Name</label>
+			<input type="text" id="namec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
+			<label for="statec">State</label>
+			<input type="text" id="statec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="usernamec">DB User Name</label>
+			<input type="text" id="usernamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbusername');" /><br />
+			<label for="passwdc">DB Password</label>
+			<input type="text" id="passwdc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbpassword');" /><br />
+			<label for="repusernamec">DB Repln Name</label>
+			<input type="text" id="repusernamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
+			<label for="reppasswdc">DB Repln Password</label>
+			<input type="text" id="reppasswdc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
+			<input type="submit" class="submit" value="Create" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Update a System</h3>
+	  <form action="" method="post" id="updatesystem" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
@@ -135,7 +203,7 @@
 			<input type="text" id="repusername" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
 			<label for="reppasswd">DB Repln Password</label>
 			<input type="text" id="reppasswd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
-			<input type="submit" class="submit" value="Create or Update" />
+			<input type="submit" class="submit" value="Update" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />

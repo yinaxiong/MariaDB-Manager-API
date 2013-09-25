@@ -51,11 +51,17 @@ class SystemManager extends EntityManager {
 	public function getAll () {
 		return array_values($this->systems);
 	}
+
+	public function createSystem () {
+		$system = new System();
+		$system->insert();
+		// Above method does not return - clears cache, sends a response and exits
+	}
 	
-	public function putSystem ($id) {
+	public function updateSystem ($id) {
 		$system = new System($id);
-		$system->save();
-		// Above method does not return - sends a response and exits
+		$system->update();
+		// Above method does not return - clears cache, sends a response and exits
 	}
 	
 	public function markUpdated ($system, $stamp=0) {

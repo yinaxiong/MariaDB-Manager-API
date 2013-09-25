@@ -104,6 +104,7 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentPropertyUpdated', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+/updated', 'http' => 'GET'),
 		array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
 		array('class' => 'ComponentProperties', 'method' => 'setComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
 		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
@@ -136,7 +137,8 @@ abstract class Request {
 		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getSystemProcesses', 'uri' => 'system/[0-9]+/process', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/[0-9]+', 'http' => 'GET'),
-		array('class' => 'Systems', 'method' => 'putSystem', 'uri' => 'system/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'Systems', 'method' => 'updateSystem', 'uri' => 'system/[0-9]+', 'http' => 'PUT'),
+		array('class' => 'Systems', 'method' => 'createSystem', 'uri' => 'system', 'http' => 'POST'),
 		array('class' => 'Systems', 'method' => 'deleteSystem', 'uri' => 'system/[0-9]+', 'http' => 'DELETE'),
 		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET'),
 		array('class' => 'Systems', 'method' => 'getSystemTypes', 'uri' => 'systemtype', 'http' => 'GET'),
@@ -224,10 +226,12 @@ abstract class Request {
 	protected $accept = '';
 	protected $suffix = '';
 	protected $suppress = false;
+	protected $clientip = '';
 	
 	protected function __construct() {
 		$this->timer = new aliroProfiler();
 		$this->micromarker = $this->timer->getMicroSeconds();
+		$this->clientip = API::getIP();
 		if (!self::$uriTablePrepared) {
 			foreach (self::$uriTable as &$uridata) {
 				$parts = explode('/', trim($uridata['uri'],'/'));
@@ -297,7 +301,7 @@ abstract class Request {
 	
 	protected function fatalError ($error, $status=500) {
 		error_log($error);
-		$this->log($error);
+		$this->log(LOG_CRIT, $error);
 		$this->sendHeaders($status);
 		echo $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '').' - '.$error;
 		exit;
@@ -353,11 +357,11 @@ abstract class Request {
 	}
 
 	public function doControl () {
-		$this->log(date('Y-m-d H:i:s')." $this->requestmethod request on /$this->uri\n".($this->suffix ? ' with suffix '.$this->suffix : ''));
+		$this->log(LOG_INFO, "$this->requestmethod /$this->uri".($this->suffix ? '.'.$this->suffix : ''));
 		if ('yes' == @$this->config['logging']['verbose']) {
-			if (count($_POST)) $this->log(print_r($_POST,true));
-			if (count($_GET)) $this->log(print_r($_GET,true));
-			if (!empty($this->putdata)) $this->log(print_r($this->putdata,true));
+			if (count($_POST)) $this->log(LOG_DEBUG, print_r($_POST,true));
+			if (count($_GET)) $this->log(LOG_DEBUG, print_r($_GET,true));
+			if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
 		}
 		$uriparts = explode('/', $this->uri);
 		if ('metadata' != $uriparts[0]) $this->checkSecurity();
@@ -396,7 +400,7 @@ abstract class Request {
 	protected function checkSecurity () {
 		$headertime = isset($this->headers['Date']) ? strtotime($this->headers['Date']) : 0;
 		if ($headertime > time()+300 OR $headertime < time()-900) {
-			$this->log('Header time: '.($headertime ? $headertime : '*zero*').' actual time: '.time()."\n");
+			$this->log(LOG_ERR, 'Auth error - Header time: '.($headertime ? $headertime : '*zero*').' actual time: '.time());
 			$this->sendErrorResponse('Date header out of range '.(empty($this->headers['Date']) ? '*empty*' : $this->headers['Date']).', current '.date('r'), 401);
 		}
 		$matches = array();
@@ -408,7 +412,7 @@ abstract class Request {
 				}
 			}
 		}
-		$this->log('Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->headers['Date']."\n");
+		$this->log(LOG_ERR, 'Auth error - Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->headers['Date']);
 		$this->sendErrorResponse('Invalid Authorization header', 401);
 	}
 	
@@ -499,9 +503,10 @@ abstract class Request {
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
 		if ($this->suppress) $body['httpcode'] = $status;
+		//if ('yes' == @$this->config['logging']['verbose']) $this->log(LOG_INFO, print_r($body, true));
 		if (count((array) $this->warnings)) {
 			$body['warnings'] = (array) $this->warnings;
-			foreach ((array) $this->warnings as $warning) $this->log($warning."\n");
+			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 		}
 		$this->sendHeaders($status);
 		echo 'application/json' == $this->accept ? json_encode($body) : print_r($body, true);
@@ -509,7 +514,7 @@ abstract class Request {
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
-		foreach ((array) $errors as $error) $this->log($error."\n");
+		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);
 		$this->sendHeaders($status);
 		if ('text/html' == $this->accept) {
 			$statusname = @self::$codes[$status];
@@ -518,7 +523,7 @@ abstract class Request {
 			$text = "<p>Error(s) accompanying return code $status $statusname:<br />$errortext</p>";
 			if (count((array) $this->warnings)) {
 				$text .= '<p>Warning(s) noted:<br />'.implode('<br />', (array) $this->warnings);
-				foreach ((array) $this->warnings as $warning) $this->log($warning."\n");
+				foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 			}
 		}
 		$recorder = ErrorRecorder::getInstance();
@@ -528,7 +533,7 @@ abstract class Request {
 			if ($this->suppress) $body['httpcode'] = $status;
 			if (count($this->warnings)) {
 				$body['warnings'] = (array) $this->warnings;
-				foreach ((array) $this->warnings as $warning) $this->log($warning."\n");
+				foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 			}
 			echo json_encode($body);
 		}
@@ -537,21 +542,16 @@ abstract class Request {
 	}
 	
 	public function sendHeaders ($status) {
-		$this->log("Time to handle request {$this->timer->mark('seconds')}\n");
-		$this->log("HTTP Response: $status\n");
-		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '')));
+		$report = $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
+		$this->log(LOG_INFO, "$this->requestmethod completed $report - time taken {$this->timer->mark('seconds')}");
+		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $report));
 		header('Content-type: '.$this->accept);
 		header('Cache-Control: no-store');
 		header('X-SkySQL-API-Version: '._API_VERSION_NUMBER);
 	}
 	
-	public function log ($data) {
-		if (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) {
-			$logfile = $this->config['logging']['directory']."/api.log";
-			if (!file_exists($logfile) OR is_writeable($logfile)) {
-				if (!is_string($data)) $data = serialize($data);
-				file_put_contents($logfile, "[$this->micromarker] $data", FILE_APPEND);
-			}
-		}
+	public function log ($severity, $message) {
+		$prefix = "[$this->clientip] [$this->micromarker] ";
+		syslog($severity, $prefix.$message);
 	}
 }

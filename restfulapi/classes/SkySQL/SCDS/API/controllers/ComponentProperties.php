@@ -58,6 +58,11 @@ class ComponentProperties extends SystemNodeCommon {
 		ComponentPropertyManager::getInstance()->getComponentProperty($this->systemid, $this->nodeid, $this->component, $property);
 	}
 	
+	public function getComponentPropertyUpdated ($uriparts) {
+		$property = $this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
+		ComponentPropertyManager::getInstance()->getComponentPropertyUpdated($this->systemid, $this->nodeid, $this->component, $property);
+	}
+	
 	public function deleteComponentProperties ($uriparts) {
 		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		$counter = ComponentPropertyManager::getInstance()->deleteAllComponentProperties($this->systemid, $this->nodeid, $this->component);
