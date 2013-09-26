@@ -141,6 +141,7 @@ class API {
 		'error' => array('description' => 'Error', 'finished' => true)
 	);
 	
+	// To be removed - system state is now type dependent
 	public static $systemstates = array(
 		'running' => array('description' => 'System Running'),
 		'stopping' => array('description' => 'System Stopping'),

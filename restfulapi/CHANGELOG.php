@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 26 September 2013, 09:30 BST
+ * 
+ * Bug fix for clearing caches on new database.  Suppress system state
+ * checking - needs new code to handle system type dependency.
+ * 
  * 25 September 2013, 17:15 BST
  * 
  * Bug fixes.  Added provisioning node states; added system states.

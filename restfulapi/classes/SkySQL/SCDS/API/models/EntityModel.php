@@ -333,7 +333,8 @@ abstract class EntityModel {
 	
 	// Validation method for System State
 	protected static function systemstate ($data) {
-		return isset(API::$systemstates[$data]);
+		// return isset(API::$systemstates[$data]);
+		return true;
 	}
 	
 	// Validation method for IP address
