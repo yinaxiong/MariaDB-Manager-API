@@ -50,7 +50,7 @@ class Task extends EntityModel {
 	protected static $insertSQL = 'INSERT INTO Task (%s) VALUES (%s)';
 	protected static $deleteSQL = 'DELETE FROM Task WHERE TaskID = :taskid';
 	protected static $selectSQL = 'SELECT %s FROM Task WHERE TaskID = :taskid';
-	protected static $selectAllSQL = 'SELECT %s FROM Task %s ORDER BY TaskID';
+	protected static $selectAllSQL = 'SELECT %s FROM Task %s ORDER BY Updated DESC';
 	
 	protected static $getAllCTO = array('taskid');
 	
@@ -153,7 +153,7 @@ class Task extends EntityModel {
 	}
 	
 	public static function latestForNode ($node) {
-		$latest = AdminDatabase::getInstance()->prepare("SELECT TaskID FROM Task WHERE SystemID = :systemid AND NodeID = :nodeid ORDER BY Updated");
+		$latest = AdminDatabase::getInstance()->prepare("SELECT TaskID FROM Task WHERE SystemID = :systemid AND NodeID = :nodeid ORDER BY Updated DESC");
 		$latest->execute(array(
 			':systemid' => $node->systemid,
 			':nodeid' => $node->nodeid

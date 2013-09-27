@@ -29,7 +29,6 @@
 namespace SkySQL\SCDS\API\managers;
 
 use SkySQL\SCDS\API\API;
-use SkySQL\SCDS\API\models\NodeState;
 use stdClass;
 
 class NodeStateManager {
@@ -46,7 +45,9 @@ class NodeStateManager {
 	}
 	
 	public function getAllForType ($type) {
-		return isset(API::$systemtypes[$type]) ? API::mergeStates(API::$systemtypes[$type]['nodestates']) : array();
+		$pstates = API::mergeStates(API::$provisionstates);
+		$nstates = isset(API::$systemtypes[$type]) ? API::mergeStates(API::$systemtypes[$type]['nodestates']) : array();
+		return array_merge($pstates, $nstates);
 	}
 	
 	public function getByState ($systemtype, $state) {

@@ -47,7 +47,7 @@ class Backup extends EntityModel {
 	protected static $insertSQL = 'INSERT INTO Backup (%s) VALUES (%s)';
 	protected static $deleteSQL = 'DELETE FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
 	protected static $selectSQL = 'SELECT %s FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
-	protected static $selectAllSQL = 'SELECT %s FROM Backup %s ORDER BY SystemID, BackupID';
+	protected static $selectAllSQL = 'SELECT %s FROM Backup %s ORDER BY Started DESC';
 	
 	protected static $getAllCTO = array('backupid');
 	
