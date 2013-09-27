@@ -1,0 +1,85 @@
+<?php
+
+/*
+ ** Part of the SkySQL Manager API.
+ * 
+ * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * software: you can redistribute it and/or modify it under the terms of the
+ * GNU General Public License as published by the Free Software Foundation,
+ * version 2.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ * 
+ * Copyright 2013 (c) SkySQL Ab
+ * 
+ * Author: Martin Brampton
+ * Date: September 2013
+ * 
+ * The CachedSystems class provides a cached version of the response to a 
+ * ../system request
+ * 
+ */
+
+namespace SkySQL\SCDS\API\caches;
+
+use SkySQL\COMMON\CACHE\CachedSingleton;
+use SkySQL\SCDS\API\managers\SystemManager;
+use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\API;
+use stdClass;
+
+class CachedProvisionedNodes extends CachedSingleton {
+	protected static $instance = null;
+	
+	protected static $nodefields = array(
+		'systemid',
+		'nodeid',
+		'name',
+		'hostname',
+		'privateip',
+		'dbusername',
+		'dbpassword'
+	);
+	
+	protected $nodes = array();
+	protected $types = array();
+	
+	public static function getInstance () {
+		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
+	}
+	
+	protected function __construct () {
+		$this->nodes = $this->getProvisionedNodes();
+	}
+	
+	public function getIfChangedSince ($unixtime) {
+		$pnodes = $this->getProvisionedNodes();
+		if ($pnodes != $this->nodes) {
+			$this->nodes = $pnodes;
+			$this->cacheNow();
+		}
+		return $this->timeStamp() < $unixtime ? null : $this->nodes;
+	}
+	
+	protected function getProvisionedNodes () {
+		foreach (SystemManager::getInstance()->getAll() as $system) {
+			$this->types[$system->systemid] = $system->systemtype;
+		}
+		$nodes = NodeManager::getInstance()->getAll();
+		if ($nodes) foreach ($nodes as $node) {
+			if (isset(API::$provisionstates[$node->state])) continue;
+			$pnode = new stdClass();
+			foreach (self::$nodefields as $field) $pnode->$field = @$node->$field;
+			$pnode->systemtype = @$this->types[$node->systemid];
+			$pnodes[] = $pnode;
+		}
+		return (array) @$pnodes;
+	}
+}

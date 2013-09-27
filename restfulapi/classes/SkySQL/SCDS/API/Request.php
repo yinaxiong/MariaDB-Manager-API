@@ -122,6 +122,7 @@ abstract class Request {
 		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'POST'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
 		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
+		array('class' => 'SystemNodes', 'method' => 'getProvisionedNodes', 'uri' => 'provisionednode', 'http' => 'GET'),
 		array('class' => 'UserTags', 'method' => 'getUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'GET'),
 		array('class' => 'UserTags', 'method' => 'getAllUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'GET'),
 		array('class' => 'UserTags', 'method' => 'addUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'POST'),

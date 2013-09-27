@@ -51,7 +51,9 @@ class NodeManager extends EntityManager {
 	}
 	
 	public function getAll () {
-		return array_values($this->nodes);
+		$merged = array();
+		foreach ($this->nodes as $systemnodes) $merged = array_merge($merged, $systemnodes);
+		return array_values($merged);
 	}
 	
 	public function getAllForSystem ($system, $state='') {

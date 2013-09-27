@@ -37,6 +37,7 @@ use SkySQL\SCDS\API\models\NodeNullState;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeStateManager;
+use SkySQL\SCDS\API\caches\CachedProvisionedNodes;
 
 class SystemNodes extends SystemNodeCommon {
 	protected $nodeid = 0;
@@ -62,6 +63,14 @@ class SystemNodes extends SystemNodeCommon {
 		$nodes = NodeManager::getInstance()->getAllForSystem($this->systemid, $this->getParam('GET', 'state'));
 		foreach ($nodes as $node) $this->extraNodeData($node);
 		$this->sendResponse(array('nodes' => $this->filterResults($nodes)));
+	}
+	
+	public function getProvisionedNodes () {
+		$pnodescache = CachedProvisionedNodes::getInstance();
+		$nodes = $pnodescache->getIfChangedSince($this->ifmodifiedsince);
+		if ($nodes) $this->sendResponse(array('provisionednodes' => $nodes));
+		header (HTTP_PROTOCOL.' 304 Not Modified');
+		exit;
 	}
 	
 	public function getSystemNode ($uriparts) {

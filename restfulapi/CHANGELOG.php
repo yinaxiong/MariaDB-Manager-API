@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 27 September 2013, 15:30 BST
+ * 
+ * Fix bug in return of last task for a system.  Change sequence of return
+ * of backups and tasks to be newest first.
+ * 
+ * 
  * 26 September 2013, 09:30 BST
  * 
  * Bug fix for clearing caches on new database.  Suppress system state
