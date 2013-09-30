@@ -310,6 +310,26 @@
 	  </form>
 	  </div>
 	  <div class="section">
+	  <h3>Cancel a Task</h3>
+	  <form action="" method="post" id="canceljob" target="apiresults" onsubmit="return(setFields(this.id,'task','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /task/{taskid} <br />
+			Parameters: none<br />
+		</p>
+		<p class="formfields">
+			<label for="taskd">Task ID</label>
+			<input type="text" name="uri1" id="taskd" /><br />
+			<input type="submit" class="submit" value="Update Task" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
 	  <h3>Get One Schedule</h3>
 	  <form action="" method="post" id="getschedule" target="apiresults" onsubmit="return(setFields(this.id,'schedule','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">

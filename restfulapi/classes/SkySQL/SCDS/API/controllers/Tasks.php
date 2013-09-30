@@ -55,6 +55,16 @@ class Tasks extends TaskScheduleCommon {
 		$this->sendResponse(array('task' => $this->filterSingleResult($task)));
 	}
 	
+	public function cancelOneTask ($uriparts) {
+		Task::checkLegal();
+		$task = Task::getByID(array('taskid' => (int) $uriparts[1]));
+		if ($task) {
+			$counter = $task->updateState('cancelled');
+			$this->sendResponse(array('deletecount' => $counter));
+		}
+		$this->sendErrorResponse(sprintf("Attempt to cancel task ID '%d' but ID does not match any task", (int) $uriparts[1]), 404);
+	}
+	
 	public function getSelectedTasks ($uriparts) {
 		Task::checkLegal();
 		list($total, $tasks) = Task::select($this, trim(urldecode($uriparts[1])));

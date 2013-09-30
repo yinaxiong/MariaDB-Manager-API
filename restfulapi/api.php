@@ -109,7 +109,8 @@ class API {
 				'joined' => array('stateid' => 104, 'description' => 'Joined'),
 				'synced' => array('stateid' => 105, 'description' => 'Synced'),
 				'donor' => array('stateid' => 106, 'description' => 'Donor'),
-				'isolated' => array('stateid' => 99, 'description' => 'Isolated')
+				'isolated' => array('stateid' => 99, 'description' => 'Isolated'),
+				'incorrectly-joined' => array('stateid' => 98, 'description' => 'Incorrectly Joined')
 			),
 			'onecommandpersystem' => true
 		)
@@ -120,8 +121,7 @@ class API {
 		'connected' => array('description' => 'Has agent installed'),
 		'unconnected' => array('description' => 'Agent installation failed'),
 		'unprovisioned' => array('description' => 'No database installed'),
-		'incompatible' => array('description' => 'Automatic provisioning blocked'),
-		'unmanaged' => array('description' => 'Has database but no agent'),
+		'incompatible' => array('description' => 'Automatic provisioning blocked')
 	);
 	
 	public static $backupstates = array(
@@ -138,7 +138,8 @@ class API {
 		'paused' => array('description' => 'Paused', 'finished' => false),
 		'stopped' => array('description' => 'Stopped', 'finished' => false),
 		'done' => array('description' => 'Done', 'finished' => true),
-		'error' => array('description' => 'Error', 'finished' => true)
+		'error' => array('description' => 'Error', 'finished' => true),
+		'cancelled' => array('description' => 'Cancelled', 'finished' => true)
 	);
 	
 	// To be removed - system state is now type dependent

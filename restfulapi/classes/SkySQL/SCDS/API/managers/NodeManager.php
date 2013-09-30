@@ -105,7 +105,7 @@ class NodeManager extends EntityManager {
 		}
 		else {
 			// Must delete components before altering data about nodes
-			ComponentPropertyManager::deleteAllComponentsForSystem($system);
+			ComponentPropertyManager::getInstance()->deleteAllComponentsForSystem($system);
 			if (isset($this->nodes[$system])) unset($this->nodes[$system]);
 			Node::deleteAllForSystem($system);
 			$this->clearCache();

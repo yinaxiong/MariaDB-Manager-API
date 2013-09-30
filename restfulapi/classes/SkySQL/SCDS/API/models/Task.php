@@ -102,6 +102,14 @@ class Task extends EntityModel {
 		$this->state = 'running';
 	}
 	
+	public function updateState ($state) {
+		$database = AdminDatabase::getInstance();
+		$update = $database->prepare("UPDATE Task SET State = :state WHERE TaskID = :taskid");
+		$update->execute(array(':state' => $state, ':taskid' => $this->taskid));
+		$this->state = $state;
+		return $update->rowCount();
+	}
+	
 	public function markErrorCompletion () {
 		$database = AdminDatabase::getInstance();
 		$this->completed = date('Y-m-d H:i:s');

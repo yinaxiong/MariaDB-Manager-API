@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 30 September 2013, 18:05 BST
+ * 
+ * Added option to cancel a task by calling ../task/{taskid} with DELETE
+ * request.  Added incorrectly-joined state.  Fixed bug.
+ * 
  * 30 September 2013, 14:00 BST
  * 
  * Fix bugs.  Put correct steps for provisioning commands.  Add ErrorMessage
