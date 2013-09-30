@@ -154,7 +154,7 @@ abstract class Request {
 		array('class' => 'Schedules', 'method' => 'getSelectedSchedules', 'uri' => 'schedule/.+', 'http' => 'GET'),
 		array('class' => 'Schedules', 'method' => 'getSelectedSchedules', 'uri' => 'schedule', 'http' => 'GET'),
 		array('class' => 'Schedules', 'method' => 'updateSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'Schedules', 'method' => 'getMultipleSchedules', 'uri' => 'task', 'http' => 'GET'),
+		array('class' => 'Schedules', 'method' => 'getMultipleSchedules', 'uri' => 'schedule', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'getSelectedTasks', 'uri' => 'task/.+', 'http' => 'GET'),
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),

@@ -286,7 +286,7 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
 			URI will be /task/{taskid} <br />
-			Parameters: state, pid, stepindex, completed<br />
+			Parameters: state, pid, stepindex, completed, errormessage<br />
 		</p>
 		<p class="formfields">
 			<label for="tasku">Task ID</label>
@@ -299,6 +299,8 @@
 			<input type="text" id="stepjus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stepindex');" /><br />
 			<label for="completedjus">Completed</label>
 			<input type="text" id="completedjus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'completed');" /><br />
+			<label for="messagejus">Error Message</label>
+			<input type="text" id="messagejus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'errormessage');" /><br />
 			<input type="submit" class="submit" value="Update Task" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

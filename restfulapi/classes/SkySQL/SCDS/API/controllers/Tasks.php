@@ -45,10 +45,12 @@ class Tasks extends TaskScheduleCommon {
 	public function getOneTask ($uriparts) {
 		Task::checkLegal();
 		$task = Task::getByID(array('taskid' => (int) $uriparts[1]));
-		if ($this->ifmodifiedsince < strtotime($task->updated)) $this->modified = true;
-		if ($this->ifmodifiedsince AND !$this->modified) {
-			header (HTTP_PROTOCOL.' 304 Not Modified');
-			exit;
+		if ($task) {
+			if ($this->ifmodifiedsince < strtotime($task->updated)) $this->modified = true;
+			if ($this->ifmodifiedsince AND !$this->modified) {
+				header (HTTP_PROTOCOL.' 304 Not Modified');
+				exit;
+			}
 		}
 		$this->sendResponse(array('task' => $this->filterSingleResult($task)));
 	}

@@ -68,7 +68,7 @@ abstract class NodeNullState implements NodeProvisioningState {
 	public static function create ($state) {
 		$class = __NAMESPACE__.'\\Node'.ucfirst($state);
 		if (class_exists($class, false)) return new $class();
-		else throw new LogicException("No state called $state exists, cannot start from it");
+		else throw new LogicException("No provisioning state called $state exists, cannot start from it");
 	}
 	
 	public function stateName () {

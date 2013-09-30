@@ -30,6 +30,7 @@
 namespace SkySQL\SCDS\API\managers;
 
 use SkySQL\COMMON\AdminDatabase;
+use stdClass;
 
 class ComponentPropertyManager extends PropertyManager {
 	

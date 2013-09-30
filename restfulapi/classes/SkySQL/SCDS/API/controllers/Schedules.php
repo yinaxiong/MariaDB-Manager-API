@@ -44,6 +44,13 @@ class Schedules extends TaskScheduleCommon {
 	
 	public function getOneSchedule ($uriparts) {
 		$schedule = Schedule::getByID(array('scheduleid' => (int) $uriparts[1]));
+		if ($schedule) {
+			if ($this->ifmodifiedsince < strtotime($schedule->updated)) $this->modified = true;
+			if ($this->ifmodifiedsince AND !$this->modified) {
+				header (HTTP_PROTOCOL.' 304 Not Modified');
+				exit;
+			}
+		}
 		$this->sendResponse(array('schedule' => $this->filterSingleResult($schedule)));
 	}
 	

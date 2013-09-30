@@ -24,11 +24,11 @@ CREATE TABLE NodeCommands (
 	Steps		varchar(255)	/* Comma separated list of step IDs */ 
 );
 
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'created', 'Set up communications to node', 1, 'connect');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'unconnected', 'Set up communications to node', 1, 'connect');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'created', 'Set up communications to node', 1, 'setup-ssh, register, install-agent');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'unconnected', 'Set up communications to node', 1, 'setup-ssh, register, install-agent');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('probe', 'provision', 'connected', 'Probe node to determine software configuration', 1, 'probe');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('probe', 'provision', 'incompatible', 'Probe node to determine software configuration', 1, 'probe');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('provision', 'provision', 'unprovisioned', 'Install a database on the node', 1, 'probe');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('provision', 'provision', 'unprovisioned', 'Install a database on the node', 1, 'install-packages, configure');
 
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'aws', 'master', 'Stop Master Node', 2, 'stop');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'aws', 'slave', 'Stop Slave Node', 2, 'stop');
@@ -177,7 +177,8 @@ create table Task (
 											* NULL for commands that are in progress
 											*/
 	StepIndex		smallint default 0,		/* Index of step being executed - refers to the internal commandsteps table */
-	State			varchar(20)				/* Command state */
+	State			varchar(20),			/* Command state */
+	ErrorMessage	text					/* Message to explain an error condition, if any */
 );
 
 /*

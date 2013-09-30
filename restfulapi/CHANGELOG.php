@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 30 September 2013, 14:00 BST
+ * 
+ * Fix bugs.  Put correct steps for provisioning commands.  Add ErrorMessage
+ * field into Task record.  Add If-Modified-Since for Schedules.
+ * 
+ * 
  * 30 September 2013, 11:15 BST
  * 
  * Provide for 'connect', 'probe', 'provision' commands in the API logic

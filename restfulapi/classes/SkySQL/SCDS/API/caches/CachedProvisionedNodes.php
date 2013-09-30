@@ -83,7 +83,7 @@ class CachedProvisionedNodes extends CachedSingleton {
 			$writecache = true;
 		}
 		if ($writecache) $this->cacheNow();
-		return $this->timeStamp() < $unixtime ? null : $this->nodes;
+		return $this->timeStamp() < $unixtime ? array() : $this->nodes;
 	}
 	
 	protected function getProvisionedNodes () {

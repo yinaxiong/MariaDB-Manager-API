@@ -68,7 +68,7 @@ class SystemNodes extends SystemNodeCommon {
 	public function getProvisionedNodes () {
 		$pnodescache = CachedProvisionedNodes::getInstance();
 		$nodes = $pnodescache->getIfChangedSince($this->ifmodifiedsince);
-		if ($nodes) $this->sendResponse(array('provisionednodes' => $nodes));
+		if (count($nodes) OR !$this->ifmodifiedsince) $this->sendResponse(array('provisionednodes' => $nodes));
 		header (HTTP_PROTOCOL.' 304 Not Modified');
 		exit;
 	}
