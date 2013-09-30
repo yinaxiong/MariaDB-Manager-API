@@ -35,6 +35,7 @@ use SkySQL\SCDS\API\Request;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\managers\UserManager;
 
 class Task extends EntityModel {
 	protected static $setkeyvalues = false;
@@ -131,6 +132,9 @@ class Task extends EntityModel {
 		if (isset($errors)) $request->sendErrorResponse($errors, 400);
 		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
 		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
+		if (!UserManager::getInstance()->getByName($this->bind[':username'])) {
+			$request->sendErrorResponse(sprintf("User name '%s' for command not a valid user", $this->bind[':username']), 400);
+		}
 		$this->privateip = $this->node->privateip;
 		$this->getSteps();
 		foreach (array('command','privateip', 'steps') as $name) {

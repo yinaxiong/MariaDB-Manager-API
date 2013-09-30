@@ -3,6 +3,18 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 30 September 2013, 10:15 BST
+ * 
+ * Provide read, update, delete capabilities for Schedule records.
+ * Extend cached monitor data provision for the monitor to cater for system
+ * level changes.  Add validation of username submitted with a command.
+ * Adjust HTML to allow schedule handling, remove state from node creation.
+ * 
+ * 27 September 2013, 18:00 BST
+ * 
+ * Provide /provisionednode for the monitor, with If-Modified-Since behaviour.
+ * 
+ * 
  * 27 September 2013, 15:30 BST
  * 
  * Fix bug in return of last task for a system.  Change sequence of return

@@ -220,8 +220,8 @@
 		<p class="formfields">
 			<label for="task">Task ID</label>
 			<input type="text" name="uri1" id="taskid" /><br />
-			<label for="fields1">Fields to return</label>
-			<input type="text" name="fields" id="fields1" /><br />
+			<label for="fields1s">Fields to return</label>
+			<input type="text" name="fields" id="fields1s" /><br />
 			<input type="submit" class="submit" value="Get Task" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -262,12 +262,12 @@
 			<br />
 		</p>
 		<p class="formfields">
-			<label for="statejm">State</label>
-			<input type="text" id="statejm" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
-			<label for="nodejs">Node ID</label>
-			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
-			<label for="fieldsm">Fields to return</label>
-			<input type="text" name="fields" id="fieldsm" /><br />
+			<label for="statejms">State</label>
+			<input type="text" id="statejms" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="nodejss">Node ID</label>
+			<input type="text" id="nodejss" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
+			<label for="fieldsms">Fields to return</label>
+			<input type="text" name="fields" id="fieldsms" /><br />
 			<input type="submit" class="submit" value="Get Tasks" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -288,15 +288,123 @@
 		<p class="formfields">
 			<label for="tasku">Task ID</label>
 			<input type="text" name="uri1" id="taskidu" /><br />
-			<label for="stateju">State</label>
-			<input type="text" id="stateju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
-			<label for="pidju">Process ID (PID)</label>
-			<input type="text" id="pidju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'pid');" /><br />
-			<label for="stepju">Step index</label>
-			<input type="text" id="stepju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stepindex');" /><br />
-			<label for="completedju">Completed</label>
-			<input type="text" id="completedju" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'completed');" /><br />
+			<label for="statejus">State</label>
+			<input type="text" id="statejus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
+			<label for="pidjus">Process ID (PID)</label>
+			<input type="text" id="pidjus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'pid');" /><br />
+			<label for="stepjus">Step index</label>
+			<input type="text" id="stepjus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stepindex');" /><br />
+			<label for="completedjus">Completed</label>
+			<input type="text" id="completedjus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'completed');" /><br />
 			<input type="submit" class="submit" value="Update Task" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get One Schedule</h3>
+	  <form action="" method="post" id="getschedule" target="apiresults" onsubmit="return(setFields(this.id,'schedule','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /schedule/{scheduleid} <br />
+			Parameters:
+			<a class="tooltip" href="#">fields<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="schedule">Schedule ID</label>
+			<input type="text" name="uri1" id="scheduleid" /><br />
+			<label for="fields1">Fields to return</label>
+			<input type="text" name="fields" id="fields1" /><br />
+			<input type="submit" class="submit" value="Get Schedule" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Multiple Schedules</h3>
+	  <form action="" method="post" id="getschedules" target="apiresults" onsubmit="return(setFields(this.id,'schedule'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /schedule <br />
+			Parameters: 
+			<a class="tooltip" href="#">nodeid,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>nodeid</strong><br />
+			Optional Node ID to filter results, with only schedules run on the
+			specified node being returned.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">fields<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="nodejs">Node ID</label>
+			<input type="text" id="nodejs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'nodeid');" /><br />
+			<label for="fieldsm">Fields to return</label>
+			<input type="text" name="fields" id="fieldsm" /><br />
+			<input type="submit" class="submit" value="Get Schedules" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Update a Schedule</h3>
+	  <form action="" method="post" id="putschedule" target="apiresults" onsubmit="return(setFields(this.id,'schedule','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
+			URI will be /schedule/{scheduleid} <br />
+			Parameters: icalentry, parameters<br />
+		</p>
+		<p class="formfields">
+			<label for="scheduleu">Schedule ID</label>
+			<input type="text" name="uri1" id="scheduleidu" /><br />
+			<label for="icalentryu">iCalEntry</label>
+			<input type="text" id="icalentryu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'icalentry');" /><br />
+			<label for="parametersu">Parameters</label>
+			<input type="text" id="parametersu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parameters');" /><br />
+			<input type="submit" class="submit" value="Update Schedule" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Delete a Schedule</h3>
+	  <form action="" method="post" id="delschedule" target="apiresults" onsubmit="return(setFields(this.id,'schedule','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
+			URI will be /schedule/{scheduleid} <br />
+			Parameters: none<br />
+		</p>
+		<p class="formfields">
+			<label for="scheduled">Schedule ID</label>
+			<input type="text" name="uri1" id="scheduleidd" /><br />
+			<input type="submit" class="submit" value="Delete Schedule" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />

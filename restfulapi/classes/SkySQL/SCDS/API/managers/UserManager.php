@@ -44,8 +44,8 @@ class UserManager extends EntityManager {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
-	public function getByName ($name) {
-		return isset($this->users[$name]) ? $this->users[$name] : null;
+	public function getByName ($username) {
+		return isset($this->users[$username]) ? $this->users[$username] : null;
 	}
 	
 	public function authenticate ($username, $password) {

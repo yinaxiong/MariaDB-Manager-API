@@ -38,6 +38,13 @@ use stdClass;
 class CachedProvisionedNodes extends CachedSingleton {
 	protected static $instance = null;
 	
+	protected static $systemfields = array(
+		'dbusername',
+		'dbpassword',
+		'repusername',
+		'reppassword'
+	);
+	
 	protected static $nodefields = array(
 		'systemid',
 		'nodeid',
@@ -48,6 +55,7 @@ class CachedProvisionedNodes extends CachedSingleton {
 		'dbpassword'
 	);
 	
+	protected $systems = array();
 	protected $nodes = array();
 	protected $types = array();
 	
@@ -56,22 +64,29 @@ class CachedProvisionedNodes extends CachedSingleton {
 	}
 	
 	protected function __construct () {
+		// Systems call must be first
+		$this->systems = $this->getRelevantSystemData();
 		$this->nodes = $this->getProvisionedNodes();
 	}
 	
 	public function getIfChangedSince ($unixtime) {
+		$writecache = false;
+		// Systems call must be first
+		$psystems = $this->getRelevantSystemData();
+		if ($psystems != $this->systems) {
+			$this->systems = $psystems;
+			$writecache = true;
+		}
 		$pnodes = $this->getProvisionedNodes();
 		if ($pnodes != $this->nodes) {
 			$this->nodes = $pnodes;
-			$this->cacheNow();
+			$writecache = true;
 		}
+		if ($writecache) $this->cacheNow();
 		return $this->timeStamp() < $unixtime ? null : $this->nodes;
 	}
 	
 	protected function getProvisionedNodes () {
-		foreach (SystemManager::getInstance()->getAll() as $system) {
-			$this->types[$system->systemid] = $system->systemtype;
-		}
 		$nodes = NodeManager::getInstance()->getAll();
 		if ($nodes) foreach ($nodes as $node) {
 			if (isset(API::$provisionstates[$node->state])) continue;
@@ -81,5 +96,15 @@ class CachedProvisionedNodes extends CachedSingleton {
 			$pnodes[] = $pnode;
 		}
 		return (array) @$pnodes;
+	}
+	
+	protected function getRelevantSystemData () {
+		foreach (SystemManager::getInstance()->getAll() as $system) {
+			$this->types[$system->systemid] = $system->systemtype;
+			$psystem = new stdClass();
+			foreach (self::$systemfields as $field) $psystem->$field = @$system->$field;
+			$psystems[] = $psystem;
+		}
+		return (array) @$psystems;
 	}
 }

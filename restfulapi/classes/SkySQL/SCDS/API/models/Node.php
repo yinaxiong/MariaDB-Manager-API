@@ -122,7 +122,7 @@ class Node extends EntityModel {
 	
 	protected function validateInsert () {
 		if (empty($this->privateip)) Request::getInstance()->sendErrorResponse('Private IP must be provided to create a node', 400);
-		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
+		if (!empty($this->state) AND 'created' != $this->state) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not permitted for new node", @$this->state), 400);
 	}
 	
 	protected function validateUpdate () {

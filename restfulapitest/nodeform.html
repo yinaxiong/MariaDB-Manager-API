@@ -132,19 +132,6 @@
 			<img src="testresources/images/Info.png" alt="Name parameter" height="48" width="48" />
 			<strong>name</strong><br />
 			The name you want to give to the node (text).
-			</span></a>&nbsp;&nbsp;
-			<a class="tooltip" href="#">state,<span class="custom info">
-			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
-			<strong>state</strong><br />
-			The state code to be given to the node, must be selected from valid node states (string).
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">stateid,<span class="custom info">
-			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
-			<strong>stateid</strong><br />
-			The state ID number (integer) that refers to the state to be given to the node.  It will only be
-			used if state is not provided.  The ID will be used to look up the state in the API
-			internal tables, and the number given must refer to a valid node state, or it will be 
-			ignored.
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">hostname,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -197,10 +184,6 @@
 			<input type="text" name="uri1" id="systemidc" /><br />
 			<label for="namec">Node Name</label>
 			<input type="text" id="namec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'name');" /><br />
-			<label for="statec">State</label>
-			<input type="text" id="statec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" /><br />
-			<label for="stateidc">State ID</label>
-			<input type="text" id="stateidc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'stateid');" /><br />
 			<label for="hostnamec">Hostname</label>
 			<input type="text" id="hostnamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'hostname');" /><br />
 			<label for="publicipc">Public IP</label>

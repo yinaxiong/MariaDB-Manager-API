@@ -48,18 +48,25 @@ class Schedules extends TaskScheduleCommon {
 	}
 	
 	public function getSelectedSchedules ($uriparts) {
-		list($total, $schedules) = Schedule::select($this, trim(urldecode($uriparts[1])));
+		list($total, $schedules) = Schedule::select($this, trim(urldecode(@$uriparts[1])));
 		$this->sendResponse(array('total' => $total, 'schedules' => $this->filterResults($schedules)));
 	}
 	
 	public function updateSchedule ($uriparts) {
+		$oldschedule = new Schedule((int) $uriparts[1]);
+		$oldschedule->loadData();
+		if ($oldschedule->atjobnumber) exec ("atrm $oldschedule->atjobnumber");
 		$schedule = new Schedule((int) $uriparts[1]);
-		$schedule->loadData();
-		if ($schedule->atjobnumber) exec ("atrm $schedule->atjobnumber");
-		$schedule->update(false);
+		$counter = $schedule->update(false);
 		if ($schedule->icalentry) {
 			$this->setRunAt($schedule);
 			if ($schedule->isDue()) $this->execute($schedule);
 		}
+		$this->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
+	}
+	
+	public function deleteOneSchedule ($uriparts) {
+		$schedule = new Schedule((int) $uriparts[1]);
+		$schedule->delete();
 	}
 }

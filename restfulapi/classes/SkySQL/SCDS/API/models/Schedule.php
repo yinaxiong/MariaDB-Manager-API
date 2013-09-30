@@ -52,7 +52,7 @@ class Schedule extends EntityModel {
 	protected static $getAllCTO = array('command');
 	
 	protected static $keys = array(
-		'scheduleid' => array('sqlname' => 'Command', 'type'  => 'int')
+		'scheduleid' => array('sqlname' => 'ScheduleID', 'type'  => 'int')
 	);
 	
 	protected static $fields = array(
