@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 30 September 2013, 11:15 BST
+ * 
+ * Provide for 'connect', 'probe', 'provision' commands in the API logic
+ * and the HTML.  Preliminary implementation.
+ * 
  * 30 September 2013, 10:15 BST
  * 
  * Provide read, update, delete capabilities for Schedule records.

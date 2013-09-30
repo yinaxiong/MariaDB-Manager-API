@@ -23,6 +23,13 @@ CREATE TABLE NodeCommands (
 	UIOrder		smallint,		/* Display order in UI */ 
 	Steps		varchar(255)	/* Comma separated list of step IDs */ 
 );
+
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'created', 'Set up communications to node', 1, 'connect');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'unconnected', 'Set up communications to node', 1, 'connect');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('probe', 'provision', 'connected', 'Probe node to determine software configuration', 1, 'probe');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('probe', 'provision', 'incompatible', 'Probe node to determine software configuration', 1, 'probe');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('provision', 'provision', 'unprovisioned', 'Install a database on the node', 1, 'probe');
+
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'aws', 'master', 'Stop Master Node', 2, 'stop');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'aws', 'slave', 'Stop Slave Node', 2, 'stop');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('restart', 'aws', 'master', 'Restart Master Node', 3, 'stop,start');

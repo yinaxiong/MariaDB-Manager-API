@@ -101,14 +101,6 @@ class Task extends EntityModel {
 		$this->state = 'running';
 	}
 	
-	// Probably belongs elsewhere
-	public function updateJobNumber ($number) {
-		$database = AdminDatabase::getInstance();
-		$update = $database->prepare("UPDATE Task SET ATJobNumber = :atjobnumber, NextStart = :nextstart WHERE TaskID = :taskid");
-		$update->execute(array(':atjobnumber' => $number, ':nextstart' => $this->nextstart, ':taskid' => $this->taskid));
-		$this->atjobnumber = $number;
-	}
-	
 	public function markErrorCompletion () {
 		$database = AdminDatabase::getInstance();
 		$this->completed = date('Y-m-d H:i:s');
