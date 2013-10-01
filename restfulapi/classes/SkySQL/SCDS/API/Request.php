@@ -168,6 +168,7 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'PUT'),
 		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'DELETE'),
+		array('class' => 'UserData', 'method' => 'getBackupLog', 'uri' => 'userdata/(log|binlog)', 'http' => 'GET'),
 		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/[A-Za-z]+', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET'),
@@ -277,8 +278,6 @@ abstract class Request {
         $config = parse_ini_file(_API_INI_FILE_LOCATION, true);
 		if (!$config) $this->fatalError(sprintf('Could not parse configuration file at %s', _API_INI_FILE_LOCATION));
 		if (empty($config['apikeys'])) $this->fatalError(sprintf('Configuration at %s does not specify any API Keys', _API_INI_FILE_LOCATION));
-		if (empty($config['logging']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a logging directory', _API_INI_FILE_LOCATION);
-		elseif (!is_writeable($config['logging']['directory'])) $this->warnings[] = sprintf('Logging directory %s is not writeable, cannot write log, please check existence, permissions, SELinux',$config['logging']['directory']);
 		if (empty($config['cache']['directory'])) $this->warnings[] = sprintf('Configuration at %s does not specify a caching directory', _API_INI_FILE_LOCATION);
 		elseif (!is_writeable($config['cache']['directory'])) $this->warnings[] = sprintf('Caching directory %s is not writeable, cannot write cache, please check existence, permissions, SELinux',$config['cache']['directory']);
 		if (empty($config['shell']['path'])) $this->warnings[] = sprintf('Configuration at %s does not specify a path for scripts used to run commands', _API_INI_FILE_LOCATION);
@@ -372,7 +371,7 @@ abstract class Request {
 			if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
 		}
 		$uriparts = explode('/', $this->uri);
-		if ('metadata' != $uriparts[0]) $this->checkSecurity();
+		if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0]) $this->checkSecurity();
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			try {

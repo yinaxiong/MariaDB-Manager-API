@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 1 October 2013, 17:00
+ * 
+ * Fix bug in AdminDatabase with wrong case for CachedSingleton.
+ * Add preliminary UserData operations for retrieving backup logs.
+ * Restore logging directory to model api.ini for transition of scripts.
+ * 
+ * 
  * 1 October 2013, 12:45 BST
  * 
  * Trim any spaces from lists of steps.  Replace "recover" by "stop,start" to

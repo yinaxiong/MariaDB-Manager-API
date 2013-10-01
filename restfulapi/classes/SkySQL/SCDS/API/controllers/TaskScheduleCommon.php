@@ -64,7 +64,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$hostname = @$this->config['shell']['hostname'];
 		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $task->taskid \"{$task->steps}\" \"$hostname\" \"$params\" \"$task->privateip\" \"$logfile\"";
        	$pid = exec($cmd);
-		$this->log(LOG_INFO, "Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid\n");
+		$this->log(LOG_INFO, "Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid");
 		$task->updatePIDandState($pid);
 	}
 }
