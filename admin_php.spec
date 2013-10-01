@@ -2,10 +2,10 @@
 %define name		admin_php
 %define release         ##RELEASE_TAG##
 %define version         ##VERSION_TAG##
-%define buildroot %{_topdir}/%{name}-%{version}-%{release}root
+%define buildroot 	%{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
 
-BuildRoot:	%{buildroot}
+BuildRoot:		%{buildroot}
 Summary: 		Admin cnsole backend
 License: 		GPL
 Name: 			%{name}
@@ -45,7 +45,7 @@ mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d/
 cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapi/root/* $RPM_BUILD_ROOT/
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
-cp -R restfulapitest $RPM_BUILD_ROOT%{install_path}
+cp -R restfulapitest/* $RPM_BUILD_ROOT%{install_path}/restfultapi/
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 
 %clean
@@ -54,21 +54,12 @@ cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 %files
 %defattr(-,root,root)
 %{install_path}
-%{install_path}consoleAPI/
 %{install_path}consoleAPI/*
-%{install_path}restfulapi/
 %{install_path}restfulapi/*
-%{install_path}restfulapitest/
 %{install_path}restfulapitest/*
 /etc/skysqlmgr/api.ini
 /usr/local/skysql/scripts/api/*
-/usr/local/skysql/scripts/api/steps/*
 /etc/httpd/conf.d/skysql_rewrite.conf
 
 %changelog
-* Wed Apr 17 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-3
-- add postinst script to create log dir
-
-* Wed Apr 03 2013 Timofey Turenko <timofey.turenko@skysql.com> - 0.1-2
-- first packaged version
 
