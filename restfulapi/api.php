@@ -135,11 +135,12 @@ class API {
 	
 	public static $commandstates = array(
 		'running' => array('description' => 'Running', 'finished' => false),
-		'paused' => array('description' => 'Paused', 'finished' => false),
-		'stopped' => array('description' => 'Stopped', 'finished' => false),
-		'done' => array('description' => 'Done', 'finished' => true),
-		'error' => array('description' => 'Error', 'finished' => true),
-		'cancelled' => array('description' => 'Cancelled', 'finished' => true)
+		'paused' => array('description' => 'Paused - unclear how this could happen', 'finished' => false),
+		'stopped' => array('description' => 'Stopped - unclear what this is', 'finished' => true),
+		'done' => array('description' => 'Done - normal completion', 'finished' => true),
+		'error' => array('description' => 'Error - command failed', 'finished' => true),
+		'cancelled' => array('description' => 'Cancelled by request', 'finished' => true),
+		'missing' => array('description' => 'The command is not finished and is no longer visible', 'finished' => true)
 	);
 	
 	// To be removed - system state is now type dependent
@@ -159,7 +160,13 @@ class API {
 		'synchronize' => array('description' => 'Synchronize a node'),
 		'backup' => array('description' => 'Backup a node'),
 		'restore' => array('description' => 'Restore a node'),
-		'restart' => array('description' => 'Restart a node from error state')
+		'restart' => array('description' => 'Restart a node from error state'),
+		'setup-ssh' => array('description' => 'Establish SSH communications to new node'),
+		'register' => array('description' => 'No idea what this does'),
+		'install-agent' => array('description' => 'Install the agent that allows running of commands on nodes'),
+		'probe' => array('description' => 'Explore what services are already installed on a new node'),
+		'install-packages' => array('description' => 'Install the packages needed for managing the new node'),
+		'configure' => array('description' => 'Presumably this does some configuration')
 	);
 	
 	public static function getInstance () {

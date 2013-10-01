@@ -3,6 +3,14 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 1 October 2013, 10:15 BST
+ * 
+ * Added new command steps for provisioning. 
+ * Extended descriptions of command states.
+ * Amended node "commands" logic to include provisioning commands.
+ * Added "finished" field to Task to indicate a command has finished.
+ * 
+ * 
  * 30 September 2013, 18:05 BST
  * 
  * Added option to cancel a task by calling ../task/{taskid} with DELETE

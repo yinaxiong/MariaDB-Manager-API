@@ -68,7 +68,12 @@ abstract class EntityModel {
 		$select->execute($bind);
 		// ->fetchObject has problems, inadvisable to use
 		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
-		return count($entities) ? self::fixDate($entities[0]) : null;
+		$entity = $entities ? $entities[0] : null;
+		if ($entity) {
+			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
+			return self::fixDate($entity);
+		}
+		return null;
 	}
 	
 	protected static function fixDate (&$entity) {
@@ -114,7 +119,10 @@ abstract class EntityModel {
 			$select = $database->query($sql);
 		}
 		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
-		foreach ($entities as &$entity) $entity = self::fixDate($entity);
+		foreach ($entities as &$entity) {
+			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
+			$entity = self::fixDate($entity);
+		}
 		return array($total, $entities);
 	}
 	

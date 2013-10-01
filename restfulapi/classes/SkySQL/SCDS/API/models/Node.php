@@ -91,8 +91,8 @@ class Node extends EntityModel {
 	}
 
 	public function getCommands () {
-		$query = AdminDatabase::getInstance()->prepare('SELECT Command AS command, Description AS description, Steps AS steps 
-			FROM NodeCommands WHERE SystemType = :systemtype AND State = :state  ORDER BY UIOrder');
+		$query = AdminDatabase::getInstance()->prepare("SELECT Command AS command, Description AS description, Steps AS steps 
+			FROM NodeCommands WHERE (SystemType = :systemtype OR SystemType = 'provision') AND State = :state  ORDER BY UIOrder");
 		$query->execute(array(
 			':systemtype' => $this->getSystemType(),
 			':state' => $this->state

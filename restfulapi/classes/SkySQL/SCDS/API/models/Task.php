@@ -125,6 +125,10 @@ class Task extends EntityModel {
 		if (!$this->steps) Request::getInstance()->sendErrorResponse(sprintf("Command '%s' is not valid for specified node in its current state of '%s'", $this->command, $this->node->state), 400);
 	}
 	
+	protected function derivedFields () {
+		$this->finished = (isset(API::$commandstates[$this->state]) AND API::$commandstates[$this->state]['finished']);
+	}
+	
 	protected function validateInsert () {
 		$request = Request::getInstance();
 		foreach (array('systemid','nodeid','username') as $name) {
