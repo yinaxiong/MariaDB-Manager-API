@@ -1,55 +1,70 @@
-#!/bin/bash
+#!/bin/sh
 #
-# This script is called by the SkySQL Manager API to run jobs within the systems under control.
+#  Part of SkySQL Manager API
 #
-# Parameters passed are:
+# This file is distributed as part of SkySQL Manager.  It is free
+# software: you can redistribute it and/or modify it under the terms of the
+# GNU General Public License as published by the Free Software Foundation,
+# version 2.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
+# details.
+#
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+#
+# Copyright 2013 (c) SkySQL Ab
+#
+# Author: Marcos Amaral
+# Date: July 2013
+#
+#
+# This script is called by the SkySQL Manager API to run jobs remotely on a node of a given cluster.
+#
+# Parameters:
 # $1 The ID of the job that is to be run
 # $2 A comma separated list of steps (each being a script)
 # $3 The hostname for the API
 # $4 Parameters to be passed on to step scripts
-# $5 IP address for the node
-# $6 Log file
-#
+# $5 The IP of the node on which to run the command
+# $6 The path of the log file
+
+export api_host=$3
+
 taskid=$1
 steps=$2
-hostname=$3
+node_ip=$5
 params=${4//|/ }
-#
-# Function to call the API
-# Parameters: Hostname for API location, method, URI, query string
-#
-function callapi () {
-	local RFCDATE=`date -R`
-	local URI=$(echo -n $3 | sed 's;/*\(.*\)/*;\1;')
-	local APIKEY="1f8d9e040e65d7b105538b1ed0231770"
-	local MD5CHK=$(echo -n "$URI$APIKEY$RFCDATE" | md5sum | awk '{ print $1 }')
-	httpcode=`curl -s -o /dev/null -w "%{http_code}" --request $2 -H "Date:$RFCDATE" -H "Authorization:api-auth-1-$MD5CHK" -H "Accept:application/json" --data "$4" http://$1/$URI`
-}
+log_file=$6
 
-status=1
+scripts_dir=`dirname $0`
+cd $scripts_dir
+
 index=1
-for stepscript in ${steps//,/ }
+for stepscript in ${steps//,/ } # Iterating the list of steps for the command
 do
-	# update CommandExecution to the current step, so the UI can advance the progress bar
-	callapi "$hostname" "PUT" "task/$taskid" "stepindex=$index"
-	
-	# run the script and exit if an error occurs
-	fullpath=`dirname $0`"/steps/$stepscript.sh $params"
-	sh $fullpath >> $6 2>&1
-	status=$?
-	echo "Status after step $status" >> $6
-	if [ $status -ne 0 ]; then
-		break
-	fi
- 	let index+=1
+        # Setting current step for the command
+        ./restfulapi-call.sh "PUT" "task/$taskid" "stepindex=$index"
+
+        # Executing step remotely
+        ssh_return=`ssh -q skysqlagent@$node_ip "sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $params"`
+
+        if [ "$ssh_return" != "0" ]; then
+                break
+        fi
+
+        let index+=1
 done
 
-if [ $status -eq 0 ]; then
-	cmdstate="done"  # Done
-else 
-	cmdstate="error"  # Error
+if [ "$ssh_return" == "0" ]; then
+        cmdstate='done'  # Done
+else
+        cmdstate='error'  # Error
 fi
 
-# set command state to "Done" or "Error" and set completion time stamp
-time=$(date +"%Y-%m-%d %H:%M:%S")
-callapi "$hostname" "PUT" "task/$taskid" "completed=$time&state=$cmdstate&stepindex=0"
+time=$(date +%s)
+# Updating the state of command execution to finished (either successfully or with errors)
+./restfulapi-call.sh "PUT" "task/$taskid" "completed=@$time&state=$cmdstate"
