@@ -56,7 +56,6 @@ cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 %{install_path}
 %{install_path}consoleAPI/*
 %{install_path}restfulapi/*
-%{install_path}restfulapitest/*
 /etc/skysqlmgr/api.ini
 /usr/local/skysql/scripts/api/*
 /etc/httpd/conf.d/skysql_rewrite.conf
