@@ -30,6 +30,7 @@ namespace SkySQL\SCDS\API\models;
 
 use PDO;
 use SkySQL\COMMON\AdminDatabase;
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\managers\NodeStateManager;
 use SkySQL\SCDS\API\managers\SystemManager;
@@ -97,7 +98,9 @@ class Node extends EntityModel {
 			':systemtype' => $this->getSystemType(),
 			':state' => $this->state
 		));
-		return $query->fetchAll();
+		$commands = $query->fetchAll();
+		foreach ($commands as &$command) $command->steps = API::trimCommaSeparatedList($command->steps);
+		return $commands;
 	}
 	
 	protected function insertedKey ($insertid) {

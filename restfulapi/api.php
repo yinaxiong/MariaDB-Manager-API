@@ -45,7 +45,7 @@ use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','0.8');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
-define ('_API_CODE_ISSUE_DATE', '30 September 2013');
+define ('_API_CODE_ISSUE_DATE', '1 October 2013');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 
@@ -251,6 +251,10 @@ class API {
 	public static function mergeStates ($states, $keyname='state') {
 		self::$keyname = $keyname;
 		return array_map(array(__CLASS__,'merger'), $states, array_keys($states));
+	}
+	
+	public static function trimCommaSeparatedList ($list) {
+		return implode(',', array_map('trim', explode(',', $list)));
 	}
 	
 	public static function unfinishedCommandStates () {

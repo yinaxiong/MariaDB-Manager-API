@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 1 October 2013, 12:45 BST
+ * 
+ * Trim any spaces from lists of steps.  Replace "recover" by "stop,start" to
+ * bypass Galera issue (requres replacement of NodeCommands table).  Fix lack
+ * of "finished" in Task record returned after command.
+ * 
+ * 
  * 1 October 2013, 10:15 BST
  * 
  * Added new command steps for provisioning. 

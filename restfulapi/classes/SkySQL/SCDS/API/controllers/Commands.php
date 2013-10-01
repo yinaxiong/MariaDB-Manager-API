@@ -42,6 +42,7 @@ class Commands extends ImplementAPI {
 	public function getCommands () {
 		$commands = $this->db->query("SELECT Command AS command, State AS state, Description AS description, Steps AS steps FROM NodeCommands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
 		$results = $this->filterResults($commands->fetchAll(PDO::FETCH_ASSOC));
+		foreach ($results as &$command) $command['steps'] = API::trimCommaSeparatedList($command['steps']);
 		if (count($results)) $this->sendResponse(array('node_commands' => $results));
 		else $this->sendErrorResponse('', 404);
 	}
@@ -52,10 +53,5 @@ class Commands extends ImplementAPI {
 	
 	public function getSteps () {
 		$this->sendResponse(array('command_steps' => API::mergeStates(API::$commandsteps, 'step')));
-		
-		$stepstatement = $this->db->query('SELECT StepID AS id, Script AS script, 
-			Description AS description FROM Step');
-		$steps = $this->filterResults($stepstatement->fetchAll(PDO::FETCH_ASSOC));
-		$this->sendResponse(array("command_steps" => $steps));
 	}
 }

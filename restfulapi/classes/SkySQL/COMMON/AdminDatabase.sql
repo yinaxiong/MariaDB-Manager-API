@@ -52,14 +52,17 @@ insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Step
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'galera', 'joined', 'Stop Node when Joined', 3, 'stop');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('restart', 'galera', 'joined', 'Restart Node when Joined', 3, 'stop,start');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('isolate', 'galera', 'joined', 'Take Joined Node out of Replication', 3, 'isolate');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('recover', 'galera', 'joined', 'Recover Joined Node', 3, 'recover');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('backup', 'galera', 'joined', 'Backup Joined Node', 3, 'isolate,backup,recover');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('recover', 'galera', 'joined', 'Recover Joined Node', 3, 'stop,start');
+/* insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('recover', 'galera', 'joined', 'Recover Joined Node', 3, 'recover'); */
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('backup', 'galera', 'joined', 'Backup Joined Node', 3, 'isolate,backup,stop,start');
+/* insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('backup', 'galera', 'joined', 'Backup Joined Node', 3, 'isolate,backup,recover'); */
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'galera', 'synced', 'Stop Node when Synced', 3, 'stop');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('isolate', 'galera', 'synced', 'Isolate Node when Synced', 3, 'isolate');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'galera', 'donor', 'Stop Donor Node', 3, 'stop');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('isolate', 'galera', 'donor', 'Isolate Donor Node', 3, 'isolate');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'galera', 'isolated', 'Stop Node when Isolated', 3, 'stop');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('recover', 'galera', 'isolated', 'Recover Node when Isolated', 3, 'recover');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('recover', 'galera', 'isolated', 'Recover Node when Isolated', 3, 'stop,start');
+/* insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('recover', 'galera', 'isolated', 'Recover Node when Isolated', 3, 'recover'); */
 
 /* End of new tables */
 

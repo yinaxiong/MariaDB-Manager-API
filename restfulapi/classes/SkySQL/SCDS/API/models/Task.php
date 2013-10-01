@@ -86,6 +86,7 @@ class Task extends EntityModel {
 	public function insertOnCommand ($command) {
 		$this->command = $command;
 		parent::insert(false);
+		$this->derivedFields();
 		self::fixDate($this);
 	}
 
@@ -121,7 +122,7 @@ class Task extends EntityModel {
 	protected function getSteps () {
 		$getcmd = AdminDatabase::getInstance()->prepare('SELECT Steps FROM NodeCommands WHERE Command = :command AND State = :state');
 		$getcmd->execute(array(':command' => $this->command, ':state' => $this->node->state));
-		$this->steps = $getcmd->fetchColumn();
+		$this->steps = API::trimCommaSeparatedList($getcmd->fetchColumn());
 		if (!$this->steps) Request::getInstance()->sendErrorResponse(sprintf("Command '%s' is not valid for specified node in its current state of '%s'", $this->command, $this->node->state), 400);
 	}
 	
