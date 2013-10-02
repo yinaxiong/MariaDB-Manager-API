@@ -45,7 +45,7 @@ use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','0.8');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
-define ('_API_CODE_ISSUE_DATE', '1 October 2013');
+define ('_API_CODE_ISSUE_DATE', '2 October 2013');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 
@@ -112,7 +112,7 @@ class API {
 				'isolated' => array('stateid' => 99, 'description' => 'Isolated'),
 				'incorrectly-joined' => array('stateid' => 98, 'description' => 'Incorrectly Joined')
 			),
-			'onecommandpersystem' => true
+			'onecommandpersystem' => 'start,restart'
 		)
 	);
 	

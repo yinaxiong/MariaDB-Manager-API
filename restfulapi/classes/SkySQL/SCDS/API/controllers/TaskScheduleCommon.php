@@ -29,6 +29,8 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\models\Schedule;
+
 abstract class TaskScheduleCommon extends ImplementAPI {
 	
 	public function __construct ($controller) {
@@ -46,13 +48,17 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		if (@$matches[1]) $schedule->updateJobNumber($matches[1]);
 	}
 	
-	public function runScheduledCommand ($uriparts) {
-		$scheduleid = (int) $uriparts[1];
-		$schedule = new Schedule($scheduleid);
-		$schedule->loadData();
+	public function runScheduledCommand ($parm) {
+		if ($parm instanceof Schedule) $schedule = $parm;
+		else {
+			$schedule = new Schedule((int) $parm[1]);
+			$schedule->loadData();
+		}
+		exec ("atrm $schedule->atjobnumber");
 		$schedule->processCalendarEntry();
 		$this->setRunAt($schedule);
 		$task = $schedule->makeTask();
+		$task->insert(false);
 		$this->execute($task);
 		exit;
 	}

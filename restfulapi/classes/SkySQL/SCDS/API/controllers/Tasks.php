@@ -94,8 +94,8 @@ class Tasks extends TaskScheduleCommon {
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
 		if (empty($command->icalentry)) {
-			if (Task::tasksNotFinished($node)) {
-				$this->sendErrorResponse(sprintf('Command on node (%d, %d) but at least one command is already running there', $node->systemid, $node->nodeid), 409);
+			if (Task::tasksNotFinished($command, $node)) {
+				$this->sendErrorResponse(sprintf('Command on node (%d, %d) but another command is still running on the node, or a critical command is running on the system', $node->systemid, $node->nodeid), 409);
 			}
 			$this->immediateCommand ($command);
 		}

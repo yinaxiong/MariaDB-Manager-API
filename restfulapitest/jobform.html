@@ -345,11 +345,32 @@
 			<br />
 		</p>
 		<p class="formfields">
-			<label for="schedule">Schedule ID</label>
+			<label for="scheduleid">Schedule ID</label>
 			<input type="text" name="uri1" id="scheduleid" /><br />
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Get Schedule" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Run a Schedule</h3>
+	  <form action="" method="post" id="runschedule" target="apiresults" onsubmit="return(setFields(this.id,'schedule','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
+			URI will be /schedule/{scheduleid} <br />
+			Parameters: none
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="scheduleidr">Schedule ID</label>
+			<input type="text" name="uri1" id="scheduleidr" /><br />
+			<input type="submit" class="submit" value="Run Schedule" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />

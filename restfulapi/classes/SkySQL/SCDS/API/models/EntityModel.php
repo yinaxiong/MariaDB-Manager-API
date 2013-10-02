@@ -275,6 +275,10 @@ abstract class EntityModel {
 		}
 	}
 	
+	protected function copyProperties ($from) {
+		foreach (array_keys(static::$fields) as $name) if (isset($from->$name)) $this->$name = $from->$name;
+	}
+	
 	protected function setInsertValue ($name, $value) {
 		$bindname = ":$name";
 		$this->bind[$bindname] = $value;

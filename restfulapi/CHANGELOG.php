@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 2 October 2013, 14:45 BST
+ * 
+ * Limit restriction on running a new command across all nodes to start
+ * or restart.  Restrict commands to only one at once per node.  
+ * Develop scheduling internal logic.
+ * 
+ * 
  * 1 October 2013, 17:00
  * 
  * Fix bug in AdminDatabase with wrong case for CachedSingleton.

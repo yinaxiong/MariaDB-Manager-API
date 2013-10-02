@@ -66,6 +66,7 @@ class Task extends EntityModel {
 		'systemid' => array('sqlname' => 'SystemID', 'default' => 0, 'insertonly' => true),
 		'nodeid' => array('sqlname' => 'NodeID', 'default' => 0, 'insertonly' => true),
 		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'insertonly' => true),
+		'scheduleid' => array('sqlname' => 'ScheduleID', 'default' => '', 'insertonly' => true),
 		'username' => array('sqlname' => 'UserName', 'default' => '', 'insertonly' => true),
 		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
 		'parameters' => array('sqlname' => 'Params', 'default' => '', 'insertonly' => true),
@@ -119,10 +120,22 @@ class Task extends EntityModel {
 		$update->execute(array(':now' => $this->completed, ':taskid' => $this->taskid));
 	}
 	
-	protected function getSteps () {
+	public function setNodeData ($systemid, $nodeid) {
+		$this->node = NodeManager::getInstance()->getByID($systemid, $nodeid);
+		if ($this->node) {
+			$this->steps = $this->getSteps();
+			$this->privateip = $this->node->privateip;
+		}
+	}
+	
+	public function getSteps () {
 		$getcmd = AdminDatabase::getInstance()->prepare('SELECT Steps FROM NodeCommands WHERE Command = :command AND State = :state');
 		$getcmd->execute(array(':command' => $this->command, ':state' => $this->node->state));
-		$this->steps = API::trimCommaSeparatedList($getcmd->fetchColumn());
+		return API::trimCommaSeparatedList($getcmd->fetchColumn());
+	}
+	
+	protected function setSteps () {
+		$this->steps = $this->getSteps();
 		if (!$this->steps) Request::getInstance()->sendErrorResponse(sprintf("Command '%s' is not valid for specified node in its current state of '%s'", $this->command, $this->node->state), 400);
 	}
 	
@@ -142,7 +155,7 @@ class Task extends EntityModel {
 			$request->sendErrorResponse(sprintf("User name '%s' for command not a valid user", $this->bind[':username']), 400);
 		}
 		$this->privateip = $this->node->privateip;
-		$this->getSteps();
+		$this->setSteps();
 		foreach (array('command','privateip', 'steps') as $name) {
 			$this->setInsertValue($name, $this->$name);
 		}
@@ -177,20 +190,31 @@ class Task extends EntityModel {
 		else return new stdClass();
 	}
 	
-	public static function tasksNotFinished ($node) {
+	// Checks across the whole system for unfinished "risky" running tasks
+	public static function tasksNotFinished ($command, $node) {
 		$system = SystemManager::getInstance()->getByID($node->systemid);
 		if (!isset(API::$systemtypes[$system->systemtype])) Request::getInstance()->sendErrorResponse(sprintf("System with ID '%s' does not have valid system type", $node->systemid), 500);
-		$onepersystem = API::$systemtypes[$system->systemtype]['onecommandpersystem'];
+		$database = AdminDatabase::getInstance();
 		$unfinished = API::unfinishedCommandStates();
 		$where[] = "State IN ($unfinished)";
+		$where[] = "NodeID = :nodeid";
+		$bind[':nodeid'] = $node->nodeid;
+		$nconditions = implode(' AND ', $where);
+		$nodecommands = $database->prepare("SELECT COUNT(*) FROM Task WHERE $nconditions");
+		$nodecommands->execute($bind);
+		if ($nodecommands->fetch(PDO::FETCH_COLUMN)) return true;
+		$onepersystem = API::$systemtypes[$system->systemtype]['onecommandpersystem'];
+		if (!$onepersystem) return false;
+		unset($where, $bind);
+		$persystems = array_map('trim', explode(',', $onepersystem));
+		if (!in_array($command->command, $persystems)) return false;
+		$systemcondition = "'".implode("','", $persystems)."'";
+		$where[] = "State IN ($unfinished)";
 		$where[] = "SystemID = :systemid";
+		$where[] = "Command IN ($systemcondition)";
 		$bind[':systemid'] = $node->systemid;
-		if (!$onepersystem) {
-			$where[] = "NodeID = :nodeid";
-			$bind[':nodeid'] = $node->nodeid;
-		}
-		$conditions = implode(' AND ', $where);
-		$count = AdminDatabase::getInstance()->prepare("SELECT COUNT(*) FROM Task WHERE $conditions");
+		$sconditions = implode(' AND ', $where);
+		$count = AdminDatabase::getInstance()->prepare("SELECT COUNT(*) FROM Task WHERE $sconditions");
 		$count->execute($bind);
 		return $count->fetch(PDO::FETCH_COLUMN) ? true : false;
 	}

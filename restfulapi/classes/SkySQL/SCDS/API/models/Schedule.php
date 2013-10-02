@@ -95,7 +95,12 @@ class Schedule extends EntityModel {
 	}
 	
 	public function makeTask () {
-		
+		$task = new Task();
+		$task->copyProperties($this);
+		unset($task->updated);
+		$task->scheduleid = $this->scheduleid;
+		$task->setNodeData($this->systemid, $this->nodeid);
+		return $task;
 	}
 	
 	protected function validateInsert () {
@@ -111,7 +116,7 @@ class Schedule extends EntityModel {
 		$this->setInsertValue('command', $this->command);
 	}
 	
-	protected function processCalendarEntry () {
+	public function processCalendarEntry () {
 		$calines = explode('|', $this->icalentry);
 		$lastone = count($calines) - 1;
 		foreach ($calines as $i=>$line) {
