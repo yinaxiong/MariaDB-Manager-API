@@ -45,7 +45,6 @@ use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','0.8');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
-define ('_API_CODE_ISSUE_DATE', '2 October 2013');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 
@@ -97,7 +96,7 @@ class API {
 				'down' => array('description' => 'No nodes within system are joined'),
 				'running' => array('description' => 'Cluster with 3 or more nodes, and all nodes are joined'),
 				'available' => array('description' => 'Cluster has 3 or more joined nodes, none incorrectly joined'),
-				'limited' => array('description' => 'System has 1 or 2 nodes that are joined'),
+				'limited-availability' => array('description' => 'System has 1 or 2 nodes that are joined'),
 				'inconsistent' => array('description' => 'System has one or more nodes incorrectly joined')
 			),
 			'nodestates' => array(
@@ -182,6 +181,9 @@ class API {
 		define('ABSOLUTE_PATH', str_replace('\\', '/', dirname(__FILE__)));
 		require_once (ABSOLUTE_PATH.'/configs/definitions.php');
 		if (!defined('CLASS_BASE')) define ('CLASS_BASE', ABSOLUTE_PATH);
+		$apitimestamp = filemtime(ABSOLUTE_PATH.'/CHANGELOG.php');
+		define ('_API_CODE_ISSUE_DATE', date('D, j F Y H:i', $apitimestamp));
+		
 		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
 		
 		// Set up a simple class autoloader

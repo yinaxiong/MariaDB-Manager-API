@@ -79,7 +79,11 @@ class Task extends EntityModel {
 		'state' => array('sqlname' => 'State', 'default' => 'running'),
 		'errormessage' => array('sqlname' => 'ErrorMessage', 'default' => '')
 	);
-	
+
+	protected static $derived = array(
+		'finished' => array('type' => 'boolean', 'desc' => 'Whether the task is finished')
+	);
+
 	public function __construct ($taskid=0) {
 		$this->taskid = $taskid;
 	}
@@ -185,6 +189,7 @@ class Task extends EntityModel {
 		if ($taskid) {
 			$task = new self($taskid);
 			$task->loadData();
+			$task->derivedFields();
 			return $task;
 		}
 		else return new stdClass();

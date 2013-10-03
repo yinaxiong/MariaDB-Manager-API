@@ -110,7 +110,7 @@ abstract class NodeNullState implements NodeProvisioningState {
 	public function make ($state) {
 		$method = 'make'.ucfirst($state);
 		if (method_exists($this, $method)) return $this->$method();
-		else throw new DomainException("No state called $state exists, cannot transition to it");
+		else throw new DomainException("No provisioning state called $state exists, cannot transition to it from ".$this->stateName());
 	}
 	
     public function makeCreated () {

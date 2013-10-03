@@ -3,6 +3,17 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 3 October 2013, 11:40 BST
+ * 
+ * Aligned Galera node and system states with the document "Node States, System
+ * States and Node State Monitor Algorithm".  The only exceptions are that the
+ * API has states as all lower case and uses hyphens in place of underscores.
+ * Please note that there is currently no logic for handling system commands.
+ * Introduced automatic date stamp based on the date stamp of the CHANGELOG file;
+ * see ../metadata to find the date stamp of the API.
+ * Fixed bug so property of finished is included in latest task of nodes.
+ * 
+ * 
  * 2 October 2013, 14:45 BST
  * 
  * Limit restriction on running a new command across all nodes to start
