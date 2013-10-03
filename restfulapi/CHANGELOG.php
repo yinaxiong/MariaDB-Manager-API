@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 3 October 2013, 15:45
+ * 
+ * Fix typo in command steps in NodeCommands table.
+ * 
+ * 
  * 3 October 2013, 11:40 BST
  * 
  * Aligned Galera node and system states with the document "Node States, System
