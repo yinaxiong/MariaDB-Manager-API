@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 4 October 2013, 10:15
+ * 
+ * Fix bug that allowed monitor to bypass checks on provisioning state
+ * transitions.
+ * 
+ *  
  * 3 October 2013, 15:45
  * 
  * Fix typo in command steps in NodeCommands table.

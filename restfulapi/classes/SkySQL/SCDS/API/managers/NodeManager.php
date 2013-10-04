@@ -28,8 +28,11 @@
 
 namespace SkySQL\SCDS\API\managers;
 
+use LogicException;
+use DomainException;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\models\NodeNullState;
 use SkySQL\SCDS\API\managers\NodeStateManager;
 
 class NodeManager extends EntityManager {
@@ -85,8 +88,27 @@ class NodeManager extends EntityManager {
 	public function updateNode ($system, $id) {
 		$node = new Node($system,$id);
 		$request = Request::getInstance();
+		$old = $this->getByID($system, $id);
+		if (!$old) $this->sendErrorResponse(sprintf("Update node, no node with system ID '%s' and node ID '%s'", $system, $id), 400);
 		$stateid = $request->getParam($request->getMethod(), 'stateid', 0);
-		if ($stateid) $request->putParam($request->getMethod(), 'state', NodeStateManager::getInstance()->getByStateID($node->getSystemType(), $stateid));
+		if ($stateid) {
+			$request->putParam($request->getMethod(), 'state', NodeStateManager::getInstance()->getByStateID($node->getSystemType(), $stateid));
+			$newstate = NodeStateManager::getInstance()->getByStateID($node->getSystemType(), $stateid);
+		}
+		else $newstate = $request->getParam($request->getMethod(), 'state');
+		if ($newstate AND $newstate != $old->state AND NodeStateManager::getInstance()->isProvisioningState($old->state)) {
+			class_exists ('SkySQL\\SCDS\\API\\models\\NodeProvisioningStates');
+			try {
+				$stateobj = NodeNullState::create($old->state);
+				$stateobj->make($newstate);
+			}
+			catch (LogicException $l) {
+				$request->sendErrorResponse($l->getMessage(), 500);
+			}
+			catch (DomainException $d) {
+				$request->sendErrorResponse($d->getMessage(), 409);
+			}
+		}
 		$node->update();
 	}
 	

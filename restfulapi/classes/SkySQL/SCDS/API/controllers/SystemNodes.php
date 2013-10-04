@@ -29,11 +29,8 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use LogicException;
-use DomainException;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\models\Task;
-use SkySQL\SCDS\API\models\NodeNullState;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeStateManager;
@@ -129,22 +126,6 @@ class SystemNodes extends SystemNodeCommon {
 		Node::checkLegal('stateid');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) @$uriparts[3];
-		$old = NodeManager::getInstance()->getByID($this->systemid, $this->nodeid);
-		if (!$old) $this->sendErrorResponse(sprintf("Update node, no node with system ID '%s' and node ID '%s'", $this->systemid, $this->nodeid), 400);
-		$newstate = $this->getParam($this->requestmethod, 'state');
-		if ($newstate AND $newstate != $old->state AND NodeStateManager::getInstance()->isProvisioningState($old->state)) {
-			class_exists ('SkySQL\\SCDS\\API\\models\\NodeProvisioningStates');
-			try {
-				$stateobj = NodeNullState::create($old->state);
-				$stateobj->make($newstate);
-			}
-			catch (LogicException $l) {
-				$this->sendErrorResponse($l->getMessage(), 500);
-			}
-			catch (DomainException $d) {
-				$this->sendErrorResponse($d->getMessage(), 409);
-			}
-		}
 		NodeManager::getInstance()->updateNode($this->systemid, $this->nodeid);
 	}
 	
