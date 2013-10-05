@@ -6,6 +6,7 @@
 %define install_path	/var/www/html/
 
 BuildRoot:		%{buildroot}
+BuildArch:		noarch
 Summary: 		Admin cnsole backend
 License: 		GPL
 Name: 			%{name}
