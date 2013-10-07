@@ -34,10 +34,12 @@
 
 export api_host=$3
 
+echo $api_host >> /var/log/skysql-test.log
+
 taskid=$1
 steps=$2
 node_ip=$5
-params=${4//|/ }
+params=$4
 log_file=$6
 
 scripts_dir=`dirname $0`
@@ -48,22 +50,32 @@ for stepscript in ${steps//,/ } # Iterating the list of steps for the command
 do
         # Setting current step for the command
         ./restfulapi-call.sh "PUT" "task/$taskid" "stepindex=$index"
+	
+	# Checking if step is executed from API node
+	if [ -f "./steps/$stepscript.sh" ]; then
+		# Executing step locally
+		sh ./steps/$stepscript.sh $node_ip $taskid $params >> /var/log/skysql-test.log
+		return=$?
+	else
+	        # Executing step remotely
+		return=`ssh -q skysqlagent@$node_ip \
+		"sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $api_host $params"`
+	fi
 
-        # Executing step remotely
-        ssh_return=`ssh -q skysqlagent@$node_ip "sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $params"`
-
-        if [ "$ssh_return" != "0" ]; then
+        if [ "$return" != "0" ]; then
                 break
         fi
 
         let index+=1
 done
 
-if [ "$ssh_return" == "0" ]; then
+if [ "$return" == "0" ]; then
         cmdstate='done'  # Done
 else
         cmdstate='error'  # Error
 fi
+
+echo "End of the script" >> /var/log/skysql-test.log
 
 time=$(date +%s)
 # Updating the state of command execution to finished (either successfully or with errors)
