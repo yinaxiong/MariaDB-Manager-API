@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 8 October 2013, 11:00 BST
+ * 
+ * Switch to using UTC internally for the API and the Admin DB.
+ * Check the same Private IP is not reused within a system.
+ * Protect "live" nodes from deletion.  Correct bugs.
+ * 
  * 4 October 2013, 10:15
  * 
  * Fix bug that allowed monitor to bypass checks on provisioning state

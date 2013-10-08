@@ -36,8 +36,8 @@ class ComponentPropertyManager extends PropertyManager {
 	
 	protected $name = 'component';
 	
-	protected $updateSQL = "UPDATE ComponentProperties SET Value = :value, Updated = datetime('now', 'localtime') WHERE ComponentID = :key AND Property = :property";
-	protected $insertSQL = "INSERT INTO ComponentProperties (ComponentID, Property, Value, Updated) VALUES (:key, :property, :value, datetime('now', 'localtime'))";
+	protected $updateSQL = "UPDATE ComponentProperties SET Value = :value, Updated = datetime('now') WHERE ComponentID = :key AND Property = :property";
+	protected $insertSQL = "INSERT INTO ComponentProperties (ComponentID, Property, Value, Updated) VALUES (:key, :property, :value, datetime('now'))";
 	protected $deleteSQL = 'DELETE FROM ComponentProperties WHERE ComponentID = :key AND Property = :property';
 	protected $deleteAllSQL = 'DELETE FROM ComponentProperties WHERE ComponentID = :key';
 	protected $selectSQL = 'SELECT Value FROM ComponentProperties WHERE ComponentID = :key AND Property = :property';

@@ -62,13 +62,15 @@ class Systems extends SystemNodeCommon {
 	public function getSystemData ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$data = SystemManager::getInstance()->getByID($this->systemid);
-		if ($this->ifmodifiedsince < strtotime($data->updated)) $this->modified = true;
-		$system = $this->retrieveOneSystem($data);
-		if ($this->ifmodifiedsince AND !$this->modified) {
-			header (HTTP_PROTOCOL.' 304 Not Modified');
-			exit;
+		if ($data) {
+			if ($this->ifmodifiedsince < strtotime($data->updated)) $this->modified = true;
+			$system = $this->retrieveOneSystem($data);
+			if ($this->ifmodifiedsince AND !$this->modified) {
+				header (HTTP_PROTOCOL.' 304 Not Modified');
+				exit;
+			}
+			$this->sendResponse(array('system' => $this->filterSingleResult($system)));
 		}
-		if ($data) $this->sendResponse(array('system' => $this->filterSingleResult($system)));
 		else $this->sendErrorResponse("No system with ID of $this->systemid was found", 404);
 	}
 	

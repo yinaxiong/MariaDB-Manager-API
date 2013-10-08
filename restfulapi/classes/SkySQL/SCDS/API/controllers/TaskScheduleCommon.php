@@ -42,7 +42,8 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$php = $this->config['shell']['php'];
 		if (!is_executable($php)) $this->sendErrorResponse ("Configuration file api.ini says PHP is '$php' but this is not executable", 500);
 		$command = sprintf('%s %s \"POST\" \"schedule/%d\"', $php, $pathtoapi, $schedule->scheduleid);
-		$atcommand = sprintf('echo "%s" | at -t %s 2>&1', $command, date('YmdHi.s', strtotime($schedule->nextstart)));
+		$elapsed = (int) round((strtotime($schedule->nextstart) - time())/60);
+		$atcommand = sprintf('echo "%s" | at %s 2>&1', $command, "now +$elapsed minute");
 		$lastline = shell_exec($atcommand);
 		preg_match('/.*job ([0-9]+) at.*/', @$lastline, $matches);
 		if (@$matches[1]) $schedule->updateJobNumber($matches[1]);

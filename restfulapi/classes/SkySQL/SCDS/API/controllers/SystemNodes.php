@@ -29,6 +29,7 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\managers\NodeManager;
@@ -39,6 +40,7 @@ use SkySQL\SCDS\API\caches\CachedProvisionedNodes;
 class SystemNodes extends SystemNodeCommon {
 	protected $nodeid = 0;
 	protected $monitorid = 0;
+	protected $systemtype = '';
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
@@ -133,6 +135,11 @@ class SystemNodes extends SystemNodeCommon {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		if ($this->validateSystem()) {
+			$manager = NodeManager::getInstance();
+			$node = $manager->getByID($this->systemid, $this->nodeid);
+			if (!empty(API::$systemtypes[$this->systemtype]['nodestates'][$node->state]['protected'])) {
+				$this->sendErrorResponse(sprintf("Delete node '%s,%s' request, but cannot delete node in state '%s'",$this->systemid, $this->nodeid, $node->state), 400);
+			}
 			NodeManager::getInstance()->deleteNode($this->systemid, $this->nodeid);
 			ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
 		}
@@ -140,7 +147,9 @@ class SystemNodes extends SystemNodeCommon {
 	}
 	
 	protected function validateSystem () {
-		return SystemManager::getInstance()->getByID($this->systemid) ? true : false;
+		$system = SystemManager::getInstance()->getByID($this->systemid);
+		if (@$system->systemtype) $this->systemtype = $system->systemtype;
+		return $system ? true : false;
 	}
 	
 	protected function validateNode () {

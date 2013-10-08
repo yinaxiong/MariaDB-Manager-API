@@ -31,6 +31,7 @@ namespace SkySQL\SCDS\API\models;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\NodeStateManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 
@@ -124,6 +125,7 @@ class Node extends EntityModel {
 	
 	protected function validateInsert () {
 		if (empty($this->privateip)) Request::getInstance()->sendErrorResponse('Private IP must be provided to create a node', 400);
+		if (NodeManager::getInstance()->usedIP($this->systemid, $this->privateip)) Request::getInstance()->sendErrorResponse(sprintf("Node Private IP of '%s' duplicates an existing IP", $this->privateip), 400);
 		if (!empty($this->state) AND 'created' != $this->state) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not permitted for new node", @$this->state), 400);
 	}
 	

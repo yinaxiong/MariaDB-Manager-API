@@ -102,12 +102,12 @@ class API {
 			'nodestates' => array(
 				'provisioned' => array('stateid' => 10001, 'description' => 'Has agent, scripts, database'),
 				'down' => array('stateid' => 100, 'description' => 'Down'),
-				'open' => array('stateid' => 101, 'description' => 'Open'),
-				'primary' => array('stateid' => 102, 'description' => 'Primary'),
-				'joiner' => array('stateid' => 103, 'description' => 'Joiner'),
-				'joined' => array('stateid' => 104, 'description' => 'Joined'),
-				'synced' => array('stateid' => 105, 'description' => 'Synced'),
-				'donor' => array('stateid' => 106, 'description' => 'Donor'),
+				'open' => array('stateid' => 101, 'description' => 'Open', 'protected' => true),
+				'primary' => array('stateid' => 102, 'description' => 'Primary', 'protected' => true),
+				'joiner' => array('stateid' => 103, 'description' => 'Joiner', 'protected' => true),
+				'joined' => array('stateid' => 104, 'description' => 'Joined', 'protected' => true),
+				'synced' => array('stateid' => 105, 'description' => 'Synced', 'protected' => true),
+				'donor' => array('stateid' => 106, 'description' => 'Donor', 'protected' => true),
 				'isolated' => array('stateid' => 99, 'description' => 'Isolated'),
 				'incorrectly-joined' => array('stateid' => 98, 'description' => 'Incorrectly Joined')
 			),
@@ -193,7 +193,7 @@ class API {
 	
 	public function startup ($runController=false) {
 		
-		// date_default_timezone_set('UTC');
+		date_default_timezone_set('UTC');
 
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 

@@ -38,10 +38,21 @@ use SkySQL\SCDS\API\managers\NodeStateManager;
 class NodeManager extends EntityManager {
 	protected static $instance = null;
 	protected $nodes = array();
+	protected $nodeips = array();
 	
 	protected function __construct () {
 		foreach (Node::getAll() as $node) {
 			$this->nodes[$node->systemid][$node->nodeid] = $node;
+			$this->nodeips[$node->systemid][] = $node->privateip;
+			$ipcounts[$node->systemid][$node->privateip][] = $node->nodeid;
+		}
+		foreach ((array) @$ipcounts as $persystem) {
+			foreach ($persystem as $privateip=>$nodeids) if (1 < count($nodeids)) {
+				if ($privateip) {
+					$idlist = implode(',', $nodeids);
+					Request::getInstance()->warnings[] = sprintf("Nodes with IDs '%s' have the same private IP address, '%s'", $idlist, $privateip);
+				}
+			}
 		}
 	}
 	
@@ -79,6 +90,10 @@ class NodeManager extends EntityManager {
 		return $node->nodeid;
 	}
 	
+	public function usedIP ($systemid, $ip) {
+		return in_array($ip, (array) @$this->nodeips[$systemid]);
+	}
+	
 	public function createNode ($system) {
 		$node = new Node($system);
 		SystemManager::getInstance()->markUpdated($system);
@@ -89,7 +104,7 @@ class NodeManager extends EntityManager {
 		$node = new Node($system,$id);
 		$request = Request::getInstance();
 		$old = $this->getByID($system, $id);
-		if (!$old) $this->sendErrorResponse(sprintf("Update node, no node with system ID '%s' and node ID '%s'", $system, $id), 400);
+		if (!$old) $request->sendErrorResponse(sprintf("Update node, no node with system ID '%s' and node ID '%s'", $system, $id), 400);
 		$stateid = $request->getParam($request->getMethod(), 'stateid', 0);
 		if ($stateid) {
 			$request->putParam($request->getMethod(), 'state', NodeStateManager::getInstance()->getByStateID($node->getSystemType(), $stateid));
