@@ -15,7 +15,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-Requires:		php coreutils curl php-process php-pdo sshpass
+Requires:		php coreutils curl php-process php-pdo sshpass openssh openssh-clients awk
 #BuildRequires:		
 
 %description
@@ -37,7 +37,26 @@ sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
 touch /var/log/SDS.log
 chown apache:apache /var/log/SDS.log
 mkdir -p /usr/local/skysql/cache/api
-chown -R apache:apache usr/local/skysql/cache
+chown -R apache:apache /usr/local/skysql/cache
+mkdir -p /var/www/.ssh
+touch /var/www/.ssh/known_hosts
+chown apache:apache /var/www/.ssh/known_hosts
+touch /var/log/skysql-test.log
+chown apache:apache /var/log/skysql-test.log
+
+if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
+	ssh-keygen -q -f /var/www/.ssh/id_rsa -N "" 
+	chown apache:apache /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
+fi
+
+# disabling selinux! TO BE FIXED! 
+echo 0 >/selinux/enforce
+sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
+
+# add firewall rule to allow port 80 
+iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+service iptables save
+
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
