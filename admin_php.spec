@@ -15,7 +15,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-Requires:		php coreutils curl php-process php-pdo sshpass openssh openssh-clients awk
+Requires:		php coreutils curl php-process php-pdo sshpass openssh openssh-clients gawk
 #BuildRequires:		
 
 %description
