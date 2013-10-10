@@ -34,8 +34,6 @@
 
 export api_host=$3
 
-echo $api_host >> /var/log/skysql-test.log
-
 taskid=$1
 steps=$2
 node_ip=$5
@@ -74,8 +72,6 @@ if [ "$return" == "0" ]; then
 else
         cmdstate='error'  # Error
 fi
-
-echo "End of the script" >> /var/log/skysql-test.log
 
 time=$(date +%s)
 # Updating the state of command execution to finished (either successfully or with errors)

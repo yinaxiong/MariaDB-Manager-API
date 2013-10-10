@@ -3,3 +3,8 @@ name=skysql
 baseurl=http://eng01.skysql.com/repo/skysql/1/x86_64
 enabled=1
 gpgcheck=false
+[skysql-noarch]
+name=skysql
+baseurl=http://eng01.skysql.com/repo/skysql/1/noarch
+enabled=1
+gpgcheck=false
