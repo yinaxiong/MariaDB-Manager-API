@@ -31,6 +31,10 @@
 # $4 Parameters to be passed on to step scripts
 # $5 The IP of the node on which to run the command
 # $6 The path of the log file
+#
+# NB Paramter 3, api_host is not used any more as the idea has been superceeded
+# in favour of dynamically defining it. This works better when mutliple network
+# interfaces are in use.
 
 export api_host=$3
 
@@ -39,6 +43,9 @@ steps=$2
 node_ip=$5
 params=$4
 log_file=$6
+
+src_ip=`ip route get $node_ip | awk '{ for (i = 0; i < NF; i++) if ( $(i) == "src" ) print $(i+1); }'`
+export api_host=$src_ip
 
 scripts_dir=`dirname $0`
 cd $scripts_dir
