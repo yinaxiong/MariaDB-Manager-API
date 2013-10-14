@@ -43,7 +43,7 @@ class Schedules extends TaskScheduleCommon {
 	}
 	
 	public function getOneSchedule ($uriparts) {
-		$schedule = Schedule::getByID(array('scheduleid' => (int) $uriparts[1]));
+		$schedule = Schedule::getByID((int) $uriparts[1]);
 		if ($schedule) {
 			if ($this->ifmodifiedsince < strtotime($schedule->updated)) $this->modified = true;
 			if ($this->ifmodifiedsince AND !$this->modified) {
@@ -60,8 +60,7 @@ class Schedules extends TaskScheduleCommon {
 	}
 	
 	public function updateSchedule ($uriparts) {
-		$oldschedule = new Schedule((int) $uriparts[1]);
-		$oldschedule->loadData();
+		$oldschedule = Schedule::getByID((int) $uriparts[1]);
 		if ($oldschedule->atjobnumber) exec ("atrm $oldschedule->atjobnumber");
 		$schedule = new Schedule((int) $uriparts[1]);
 		$counter = $schedule->update(false);

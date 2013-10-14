@@ -516,7 +516,8 @@ abstract class Request {
 			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 		}
 		$this->sendHeaders($status);
-		echo 'application/json' == $this->accept ? json_encode($body) : print_r($body, true);
+		$output = json_encode($body);
+		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 		exit;
 	}
 	
@@ -544,8 +545,81 @@ abstract class Request {
 			}
 			echo json_encode($body);
 		}
-		else echo $text;
+		else echo $this->prettyPage($text);
 		exit;
+	}
+	
+	protected function prettyPage ($body) {
+		return <<<PRETTY_PAGE
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html
+   PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Results | MariaDB Enterprise API</title>
+</head>
+<body>
+$body
+</body>
+</html>		
+		
+PRETTY_PAGE;
+		
+	}
+	
+	// Function prettyPrint is by Kendall Hopkins (http://stackoverflow.com/users/188044/kendall-hopkins)
+	// and was published under Creative Commons License with attribution.  Thanks Kendall!
+	protected function prettyPrint( $json ) {
+	    $result = '';
+	    $level = 0;
+	    $prev_char = '';
+	    $in_quotes = false;
+	    $ends_line_level = NULL;
+	    $json_length = strlen( $json );
+	    for( $i = 0; $i < $json_length; $i++ ) {
+	        $char = $json[$i];
+	        $new_line_level = NULL;
+	        $post = "";
+	        if( $ends_line_level !== NULL ) {
+	            $new_line_level = $ends_line_level;
+	            $ends_line_level = NULL;
+	        }
+	        if( $char === '"' && $prev_char != '\\' ) {
+	            $in_quotes = !$in_quotes;
+	        } 
+			else if( ! $in_quotes ) {
+	            switch( $char ) {
+	                case '}': case ']':
+	                    $level--;
+	                    $ends_line_level = NULL;
+	                    $new_line_level = $level;
+	                    break;
+
+	                case '{': case '[':
+	                    $level++;
+	                case ',':
+	                    $ends_line_level = $level;
+	                    break;
+
+	                case ':':
+	                    $post = " ";
+	                    break;
+
+	             case " ": case "\t": case "\n": case "\r":
+	                    $char = "";
+		                $ends_line_level = $new_line_level;
+		                $new_line_level = NULL;
+		                break;
+		        }
+		    }
+		    if( $new_line_level !== NULL ) {
+		        $result .= "\n".str_repeat( "\t", $new_line_level );
+		    }
+		    $result .= $char.$post;
+		    $prev_char = $char;
+		}
+	    return $result;
 	}
 	
 	public function sendHeaders ($status) {

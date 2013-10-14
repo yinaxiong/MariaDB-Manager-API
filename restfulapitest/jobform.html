@@ -234,6 +234,34 @@
 	  </form>
 	  </div>
 	  <div class="section">
+	  <h3>Get Tasks in Range</h3>
+	  <form action="" method="post" id="getrangejob" target="apiresults" onsubmit="return(setFields(this.id,'task','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /task/{daterange} where the daterange is a start date followed by comma followed by end date.  Either date can be omitted.<br />
+			Parameters:
+			<a class="tooltip" href="#">fields<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>
+			<br />
+		</p>
+		<p class="formfields">
+			<label for="taskidr">Date Range</label>
+			<input type="text" name="uri1" id="taskidr" /><br />
+			<label for="fields1sr">Fields to return</label>
+			<input type="text" name="fields" id="fields1sr" /><br />
+			<input type="submit" class="submit" value="Get Tasks in Range" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
 	  <h3>Get Multiple Tasks</h3>
 	  <form action="" method="post" id="getjobs" target="apiresults" onsubmit="return(setFields(this.id,'task'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
@@ -321,7 +349,7 @@
 		<p class="formfields">
 			<label for="taskd">Task ID</label>
 			<input type="text" name="uri1" id="taskd" /><br />
-			<input type="submit" class="submit" value="Update Task" />
+			<input type="submit" class="submit" value="Cancel Task" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />

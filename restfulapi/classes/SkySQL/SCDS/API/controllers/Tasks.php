@@ -44,7 +44,7 @@ class Tasks extends TaskScheduleCommon {
 	
 	public function getOneTask ($uriparts) {
 		Task::checkLegal();
-		$task = Task::getByID(array('taskid' => (int) $uriparts[1]));
+		$task = Task::getByID((int) $uriparts[1]);
 		if ($task) {
 			if ($this->ifmodifiedsince < strtotime($task->updated)) $this->modified = true;
 			if ($this->ifmodifiedsince AND !$this->modified) {
@@ -57,7 +57,7 @@ class Tasks extends TaskScheduleCommon {
 	
 	public function cancelOneTask ($uriparts) {
 		Task::checkLegal();
-		$task = Task::getByID(array('taskid' => (int) $uriparts[1]));
+		$task = Task::getByID((int) $uriparts[1]);
 		if ($task) {
 			$counter = $task->updateState('cancelled');
 			$this->sendResponse(array('deletecount' => $counter));

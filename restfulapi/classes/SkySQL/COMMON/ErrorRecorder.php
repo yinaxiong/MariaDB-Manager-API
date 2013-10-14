@@ -138,7 +138,7 @@ final class ErrorRecorder  {
 			':errorkey' => $errorkey
 		));
 		$config = Request::getInstance()->getConfig();
-		if ($config['logging']['erroremail']) {
+		if (@$config['logging']['erroremail']) {
 			$headers = 'From: SkySQL Manager <no-reply@skysql.com>' . "\r\n";
 			mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
 		}

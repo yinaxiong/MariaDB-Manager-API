@@ -31,7 +31,7 @@ namespace SkySQL\SCDS\API\models;
 use SkySQL\COMMON\AdminDatabase;
 
 class System extends EntityModel {
-	protected static $setkeyvalues = true;
+	protected static $setkeyvalues = false;
 	
 	protected static $classname = __CLASS__;
 	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\SystemManager';

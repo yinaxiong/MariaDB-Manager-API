@@ -93,7 +93,12 @@ class ComponentProperties extends SystemNodeCommon {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		$this->component = urldecode(@$uriparts[5]);
-		if (NodeManager::getInstance()->getByID($this->systemid, $this->nodeid)) return urldecode(@$uriparts[7]);
+		$property = urldecode(@$uriparts[7]);
+		if (0 == $this->nodeid) {
+			if (0 == $this->systemid) return $property;
+			if (SystemManager::getInstance()->getByID($this->systemid)) return $property;
+		}
+		if (NodeManager::getInstance()->getByID($this->systemid, $this->nodeid)) return $property;
 		$this->sendErrorResponse(sprintf("No node with System ID '%s' and Node ID '%s'", $this->systemid, $this->nodeid), 404);
 	}
 }

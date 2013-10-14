@@ -50,7 +50,7 @@ class ComponentPropertyManager extends PropertyManager {
 	}
 	
 	private function makeKey ($systemid, $nodeid, $name=null) {
-		return empty($name) ? "$systemid|$nodeid|%" : "$systemid|$nodeid|$name";
+		return sprintf("%d|%d|", (int) $systemid, (int) $nodeid).($name ? $name : '%');
 	}
 	
 	public function setComponentProperty ($systemid, $nodeid, $name, $property, $value) {

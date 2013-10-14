@@ -52,8 +52,11 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	public function runScheduledCommand ($parm) {
 		if ($parm instanceof Schedule) $schedule = $parm;
 		else {
-			$schedule = new Schedule((int) $parm[1]);
-			$schedule->loadData();
+			$schedule = Schedule::getByID((int) $parm[1]);
+			if (!($schedule instanceof Schedule)) {
+				$this->log(LOG_CRIT, "Call to runScheduleCommand did not provide valid parameters");
+				exit;
+			}
 		}
 		exec ("atrm $schedule->atjobnumber");
 		$schedule->processCalendarEntry();

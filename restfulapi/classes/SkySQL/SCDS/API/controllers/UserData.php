@@ -37,7 +37,7 @@ class UserData extends ImplementAPI {
 		$field = $uriparts[1];
 		$systemid = $this->getParam($this->requestmethod, 'systemid', 0);
 		$backupid = $this->getParam($this->requestmethod, 'backupid', 0);
-		$backup = Backup::getByID(array('systemid' => $systemid, 'backupid' => $backupid));
+		$backup = Backup::getByID($systemid, $backupid);
 		if (!($backup instanceof Backup) OR empty($backup->$field)) $this->sendErrorResponse('Not Found', 404);
 		$node = NodeManager::getInstance()->getByID($backup->systemid, $backup->nodeid);
 		if (empty($node)) $this->sendErrorResponse('Not Found', 404);

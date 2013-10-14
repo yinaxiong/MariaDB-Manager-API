@@ -3,6 +3,15 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 14 October 2013, 16:30 BST
+ * 
+ * Bring system states into line with documentation
+ * Introduce full range of Galera monitors
+ * Make API HTML responses into correct HTML (not just text)
+ * Allow components to have zero node ID, or zero node and system ID
+ * Internal improvements; bug fixes.
+ * 
+ * 
  * 8 October 2013, 11:00 BST
  * 
  * Switch to using UTC internally for the API and the Admin DB.

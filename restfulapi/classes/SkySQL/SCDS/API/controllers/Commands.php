@@ -52,6 +52,18 @@ class Commands extends ImplementAPI {
 	}
 	
 	public function getSteps () {
+		$knownsteps = array_keys(API::$commandsteps);
+		$select = $this->db->query("SELECT Command AS command, Steps AS steps FROM NodeCommands");
+		$commands = $select->fetchAll();
+		foreach ($commands as $command) {
+			$steps = array_map('trim', explode(',', $command->steps));
+			foreach (array_diff($steps, $knownsteps) as $unknown) {
+				$errorsteps[$unknown][] = $command->command;
+			}
+		}
+		foreach ((array) @$errorsteps as $step=>$commands) {
+			$this->requestor->warnings[] = sprintf("Step '%s' is invalid; used by command(s): ", $step).implode(',',$commands);
+		}
 		$this->sendResponse(array('command_steps' => API::mergeStates(API::$commandsteps, 'step')));
 	}
 }

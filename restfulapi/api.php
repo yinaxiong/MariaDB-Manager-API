@@ -144,10 +144,12 @@ class API {
 	
 	// To be removed - system state is now type dependent
 	public static $systemstates = array(
-		'running' => array('description' => 'System Running'),
-		'stopping' => array('description' => 'System Stopping'),
-		'stopped' => array('description' => 'System Stopped'),
-		'starting' => array('description' => 'System Starting')
+		'created' => array('description' => 'Initial State of Newly Created System'),
+		'down' => array('description' => 'No Nodes of the System are in the joined state'),
+		'running' => array('description' => 'The cluster has 3 or more nodes and all the nodes within the system are in the joined state'),
+		'available' => array('description' => 'The cluster has 3 or more nodes in the joined state and no nodes in the incorrectly-joined state'),
+		'limited-availability' => array('description' => 'The system has 1 or 2 nodes only in the joined state'),
+		'inconsistent' => array('description' => 'The system has one or more nodes in the incorrectly-joined state.')
 	);
 
 	public static $commandsteps = array(

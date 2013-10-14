@@ -52,18 +52,20 @@ abstract class EntityModel {
 		return $entities;
 	}
 	
-	public static function getByID ($keyvalues) {
+	public static function getByID () {
 		$request = Request::getInstance();
 		$classname = static::$headername;
-		$actualcount = count($keyvalues);
+		$actualcount = func_num_args();
 		$keycount = count(static::$keys);
 		if ($actualcount != $keycount) {
-			$request->sendErrorResponse("Keys array passed to getByID in $classname has $actualcount values, should be $keycount", 500);
+			$request->sendErrorResponse(sprintf("Keys array passed to getByID in class '%s' has %d values, should be %d", $classname, $actualcount, $keycount), 500);
 		}
 		$select = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
+		$iarg = 0;
 		foreach (static::$keys as $name=>$about) {
-			if (empty($keyvalues[$name])) $request->sendErrorResponse("No key value given in $classname for {$about['sqlname']} as key to select items", 400);
-			$bind[":$name"] = $keyvalues[$name];
+			$arg = func_get_arg($iarg++);
+			if (!$arg) $request->sendErrorResponse(sprintf("No key value given in class '%s' for '%s' as key to select item", $classname, $about['sqlname']), 400);
+			$bind[":$name"] = $arg;
 		}
 		$select->execute($bind);
 		// ->fetchObject has problems, inadvisable to use
@@ -87,6 +89,7 @@ abstract class EntityModel {
 		return self::fixDate($this);
 	}
 	
+	// Unclear whether this is needed - can use ::getByID to obtain a fully populated object
 	public function loadData () {
 		$loader = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
 		foreach (array_keys(static::$keys) as $key) $bind[":$key"] = $this->$key; 
@@ -101,23 +104,12 @@ abstract class EntityModel {
 		$controller = array_shift($args);
 		list($where, $bind) = self::wheresAndBinds($controller, $args);
 		$database = AdminDatabase::getInstance();
-		if ($where) {
-			$conditions = implode(' AND ', $where);
-			$sql = static::$countAllSQL.' WHERE '.$conditions;
-			$count = $database->prepare($sql);
-			$count->execute($bind);
-			$total = $count->fetch(PDO::FETCH_COLUMN);
-			$sql = sprintf(static::$selectAllSQL, self::getSelects(), ' WHERE '.$conditions).self::limitsClause($controller);
-			$select = $database->prepare($sql);
-			$select->execute($bind);
-		}
-		else {
-			$count = $database->prepare(static::$countAllSQL);
-			$count->execute();
-			$total = $count->fetch(PDO::FETCH_COLUMN);
-			$sql = sprintf(static::$selectAllSQL, self::getSelects(), '').self::limitsClause($controller);
-			$select = $database->query($sql);
-		}
+		$conditions = empty($where) ? '' : ' WHERE '.implode(' AND ', $where);
+		$counter = $database->prepare(static::$countAllSQL.$conditions);
+		$counter->execute($bind);
+		$total = $counter->fetch(PDO::FETCH_COLUMN);
+		$select = $database->prepare(sprintf(static::$selectAllSQL, self::getSelects(), $conditions).self::limitsClause($controller));
+		$select->execute($bind);
 		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
 		foreach ($entities as &$entity) {
 			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
@@ -135,13 +127,12 @@ abstract class EntityModel {
 		$this->settersAndBinds(__FUNCTION__);
 		if (!empty($this->setter)) {
 			$this->validateUpdate();
-			$sql = sprintf(static::$updateSQL, implode(', ', $this->setter));
 			$database = AdminDatabase::getInstance();
-			$update = $database->prepare($sql);
+			$update = $database->prepare(sprintf(static::$updateSQL, implode(', ', $this->setter)));
 			$update->execute($this->bind);
-			$database->commitTransaction();
-			$this->clearCache(true);
 			$counter = $update->rowCount();
+			$database->commitTransaction();
+			if ($counter) $this->clearCache(true);
 			if ($counter OR $alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => $counter, 'insertkey' => 0));
 		}
 		if ($alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => 0, 'insertkey' => 0));
@@ -152,10 +143,8 @@ abstract class EntityModel {
 		$this->settersAndBinds(__FUNCTION__);
 		$this->setDefaults();
 		$this->validateInsert();
-		$fields = implode(',',$this->insname);
-		$values = implode(',',$this->insvalue);
 		$database = AdminDatabase::getInstance();
-		$insert = $database->prepare(sprintf(static::$insertSQL, $fields, $values));
+		$insert = $database->prepare(sprintf(static::$insertSQL, implode(',',$this->insname), implode(',',$this->insvalue)));
 		$insert->execute($this->bind);
 		$insertkey = $this->insertedKey($database->lastInsertId());
 		$database->commitTransaction();
@@ -182,8 +171,8 @@ abstract class EntityModel {
 		$this->settersAndBinds(__FUNCTION__);
 		$delete = AdminDatabase::getInstance()->prepare(static::$deleteSQL);
 		$delete->execute($this->bind);
-		$this->clearCache(true);
 		$counter = $delete->rowCount();
+		if ($counter) $this->clearCache(true);
 		$request = Request::getInstance();
 		if ($counter) $request->sendResponse(array('deletecount' => $counter));
 		else $request->sendErrorResponse("Delete $this->ordinaryname did not match any $this->ordinaryname", 404);
@@ -231,9 +220,8 @@ abstract class EntityModel {
 	
 	public static function checkLegal ($extras=array()) {
 		$request = Request::getInstance();
-		$method = $request->getMethod();
-		$fields = array_merge(array_keys(static::$fields), array_keys(static::$keys), (array) $extras);
-		$illegals = array_diff($request->getAllParamNames($method),$fields);
+		$okfields = array_merge(array_keys(static::$fields), array_keys(static::$keys), (array) $extras);
+		$illegals = array_diff($request->getAllParamNames($request->getMethod()),$okfields);
 		if (count($illegals)) {
 			$illegalist = implode (', ', $illegals);
 			$request->sendErrorResponse("Parameter(s) $illegalist not recognised",400);
@@ -246,26 +234,28 @@ abstract class EntityModel {
 	
 	protected function settersAndBinds ($caller) {
 		$request = Request::getInstance();
-		// Source for data is always provided except for deletes
+		// Source for data is always provided except for deletes; also delete has no need
+		// of setters or binds for fields, only for keys
 		if ('delete' != $caller) {
 			$source = $request->getMethod();
 			foreach (static::$fields as $name=>$about) {
-				$this->insname[] = $about['sqlname'];
 				$bindname = ":$name";
+				// insname and insvalue are only needed for inserts, but are set anyway
+				$this->insname[] = $about['sqlname'];
 				$this->insvalue[] = $bindname;
 				if ('insert' == $caller OR empty($about['insertonly'])) {
 					if ('insert' == $caller OR !$request->paramEmpty($source, $name) OR !empty($this->$name)) {
+						// setter is only needed for updates, but is set anyway
 						$this->setter[] = $about['sqlname'].' = '.$bindname;
-						if (empty($this->$name)) {
-							$this->bind[$bindname] = self::getParam($source, $name, $about);
-							$this->$name = $this->bind[$bindname];
-						}
+						if (empty($this->$name)) $this->$name = $this->bind[$bindname] = self::getParam($source, $name, $about);
 						else $this->bind[$bindname] = $this->$name;
 					}
 				}
 			}
 			if (count(self::$validationerrors)) $request->sendErrorResponse(self::$validationerrors, 400);
 		}
+		// The static variable $setkeyvalues is used to suppress setting a value for the key where autoincrement is used
+		// except in the case where the full key is a mix of a provided value and an increment.
 		if (!isset(static::$setkeyvalues)) $request->sendErrorResponse('All entity classes must set the static variable $setkeyvalues',500);
 		if (static::$setkeyvalues OR 'insert' != $caller) foreach (static::$keys as $name=>$about) if (!empty($this->$name)) {
 			$this->insname[] = $about['sqlname'];
@@ -280,14 +270,17 @@ abstract class EntityModel {
 	}
 	
 	protected function setInsertValue ($name, $value) {
-		$bindname = ":$name";
-		$this->bind[$bindname] = $value;
-		$sqlname = static::$fields[$name]['sqlname'];
-		$sub = array_search($sqlname, $this->insname);
-		if ($sub) unset($this->insname[$sub], $this->insvalue[$sub]);
-		$this->insname[] = $sqlname;
-		$this->insvalue[] = $bindname;
-		$this->setter[] = $sqlname.' = '.$bindname;
+		if (isset(static::$fields[$name])) {
+			$bindname = ":$name";
+			$this->bind[$bindname] = $value;
+			$sqlname = static::$fields[$name]['sqlname'];
+			$sub = array_search($sqlname, $this->insname);
+			if ($sub) unset($this->insname[$sub], $this->insvalue[$sub]);
+			$this->insname[] = $sqlname;
+			$this->insvalue[] = $bindname;
+			$this->setter[] = "$sqlname = $bindname";
+		}
+		else Request::getInstance()->sendErrorResponse(sprintf("Attempt to set an insert value for '%s' which is not a valid field", $name), 500);
 	}
 	
 	protected function calendarDate () {
@@ -296,6 +289,27 @@ abstract class EntityModel {
 		$date = date('Ymd\THis\Z');
 		date_default_timezone_set($savezone);
 		return $date;
+	}
+	
+	protected static function dateRange ($dates, $datefield, $entitiesname) {
+		$selectors = explode(',', $dates);
+		$request = Request::getInstance();
+		if (2 < count($selectors)) $request->sendErrorResponse(sprintf("Request for %s in date range had more than two comma separated entries", $entitiesname), 400);
+		$bindname = ':startdate';
+		$condition = "$datefield >= $bindname";
+		foreach ($selectors as $selector) {
+			if ($selector) {
+				$unixtime = strtotime($selector);
+				if (false === $unixtime) $request->sendErrorResponse(sprintf("Request for %s in date range contained invalid date '%s'", $entitiesname, $selector), 400);
+				if ($unixtime) {
+					$bind[$bindname] = date('Y-m-d H:i:s', $unixtime);
+					$where[] = $condition;
+				}
+			}
+			$bindname = ':enddate';
+			$condition = "$datefield <= $bindname";
+		}
+		return array((array) @$where, (array) @$bind);
 	}
 
 	protected static function wheresAndBinds ($controller, $args) {
@@ -345,8 +359,7 @@ abstract class EntityModel {
 	
 	// Validation method for System State
 	protected static function systemstate ($data) {
-		// return isset(API::$systemstates[$data]);
-		return true;
+		return isset(API::$systemstates[$data]);
 	}
 	
 	// Validation method for IP address

@@ -187,8 +187,7 @@ class Task extends EntityModel {
 		));
 		$taskid = $latest->fetch(PDO::FETCH_COLUMN);
 		if ($taskid) {
-			$task = new self($taskid);
-			$task->loadData();
+			$task = self::getByID($taskid);
 			$task->derivedFields();
 			return $task;
 		}
@@ -226,21 +225,6 @@ class Task extends EntityModel {
 
 	// Optional parameters are fromdate and todate, comma separated, in $args[0]
 	protected static function specialSelected ($args) {
-		$selectors = explode(',', @$args[0]);
-		foreach ($selectors as $selector) {
-			$unixtime = strtotime($selector);
-			if ($unixtime) $dates[] = date('Y-m-d H:i:s', $unixtime);
-		}
-		if (isset($dates)) {
-			$bind[":startdate"] = $dates[0];
-			if (1 == count($dates)) {
-				$where[] = "started >= :startdate";
-			}
-			else {
-				$where[] = "started >= :startdate AND started <= :enddate";
-				$bind[":enddate"] = $dates[1];
-			}
-		}
-		return array((array) @$where, (array) @$bind);
+		return parent::dateRange(@$args[0], 'Started', 'tasks');
 	}
 }

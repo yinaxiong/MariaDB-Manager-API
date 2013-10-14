@@ -52,8 +52,7 @@ class SystemBackups extends ImplementAPI {
 	public function getOneBackup ($uriparts) {
 		$systemid = (int) $uriparts[1];
 		$backupid = (int) $uriparts[3];
-		$backup = new Backup($systemid,$backupid);
-		$backup->loadData();
+		$backup = Backup::getByID($systemid,$backupid);
 		$this->sendResponse(array('backup' => $this->filterSingleResult($backup)));
 	}
 	
