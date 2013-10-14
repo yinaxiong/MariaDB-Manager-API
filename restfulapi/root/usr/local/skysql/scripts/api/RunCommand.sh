@@ -39,10 +39,10 @@
 export api_host=$3
 
 taskid=$1
-steps=$2
-node_ip=$5
-params=$4
-log_file=$6
+steps="$2"
+node_ip="$5"
+params="$4"
+log_file="$6"
 
 src_ip=`ip route get $node_ip | awk '{ for (i = 0; i < NF; i++) if ( $(i) == "src" ) print $(i+1); }'`
 export api_host=$src_ip
@@ -59,8 +59,11 @@ do
 	# Checking if step is executed from API node
 	if [ -f "./steps/$stepscript.sh" ]; then
 		# Executing step locally
-		sh ./steps/$stepscript.sh $node_ip $taskid $params >> /var/log/skysql-test.log
+		sh ./steps/$stepscript.sh $node_ip $taskid $params \
+					>/tmp/step.$$.log 2>&1
 		return=$?
+		logger -p user.info -t MariaDB-Enterprise-Task -f /tmp/step.$$.log
+		rm -f /tmp/step.$$.log
 	else
 	        # Executing step remotely
 		return=`ssh -q skysqlagent@$node_ip \
@@ -78,6 +81,7 @@ if [ "$return" == "0" ]; then
         cmdstate='done'  # Done
 else
         cmdstate='error'  # Error
+	logger -p user.error -t MariaDB-Enterprise-Task "Task $taskid: Execution of command failed in step $stepscript."
 fi
 
 time=$(date +%s)

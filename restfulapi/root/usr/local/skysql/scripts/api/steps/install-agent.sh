@@ -53,18 +53,18 @@ fi
 scripts_installed=0;
 
 # Checking if SkySQL Remote Execution Scripts are installed
-ssh_return=`ssh -q skysqlagent@$nodeip "sudo /usr/local/sbin/skysql/NodeCommand.sh test"`
+ssh_return=`ssh -q skysqlagent@"$nodeip" "sudo /usr/local/sbin/skysql/NodeCommand.sh test"`
 if [ $? == 0 ] && [ "$ssh_return" == "0" ]; then
 	scripts_installed=1;
 fi
 
 # Copying repository information to node
-sshpass -p $rootpwd scp steps/repo/MariaDB.repo root@$nodeip:/etc/yum.repos.d/MariaDB.repo
-sshpass -p $rootpwd scp steps/repo/SkySQL.repo root@$nodeip:/etc/yum.repos.d/SkySQL.repo
+sshpass -p "$rootpwd" scp steps/repo/MariaDB.repo root@"$nodeip":/etc/yum.repos.d/MariaDB.repo
+sshpass -p "$rootpwd" scp steps/repo/SkySQL.repo root@"$nodeip":/etc/yum.repos.d/SkySQL.repo
 
 if [ !scripts_installed ]; then
 	# Installing galera-remote-exec package
-	sshpass -p $rootpwd ssh root@$nodeip "yum -y install galera-remote-exec"
+	sshpass -p "$rootpwd" ssh root@"$nodeip" "yum -y install galera-remote-exec"
 fi
 
 # Getting current node systemid and nodeid
@@ -78,5 +78,8 @@ node_id=`echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
 
 # Updating node state
 ./restfulapi-call.sh "PUT" "system/$system_id/node/$node_id" "state=connected"
+if [ $? != 0 ]; then
+	echo Failed to update the node state
+fi
 
 exit 0

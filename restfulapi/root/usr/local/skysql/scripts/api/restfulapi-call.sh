@@ -45,11 +45,50 @@ full_url="http://$api_host/restfulapi/$2"
 if [ $# -ge 3 ]; then
 	if [ $1 == "GET" ]; then
                 curl --request GET -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" -H "Accept:application/json" $full_url?$3
+		curl_status=$?
         else
                 curl --request $1 -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" -H "Accept:application/json" --data "$3" $full_url
+		curl_status=$?
         fi
 else
         curl -s --request $1 -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" -H "Accept:application/json" $full_url
+	curl_status=$?
 fi
+
+if [ $curl_status != 0 ]; then
+	case $curl_status in
+
+	1)
+		msg="Unsupported protocol"
+		;;
+	2)
+		msg="Failed to connect"
+		;;
+	3)
+		msg="Malformed URL"
+		;;
+	5)
+		msg="Unable to resolve proxy"
+		;;
+	6)
+		msg="Unable to resolve host $api_host"
+		;;
+	7)
+		msg="Failed to connect to host $api_host"
+		;;
+	28)
+		msg="Request timeout"
+		;;
+	22)
+		msg="Page not received"
+		;;
+	*)
+		msg="curl failed with exit code $curl_status"
+	esac
+
+	logger -p user.error -t MariaDB-Enterprise-Task "restfulapi-call: $full_url failed, $msg"
+fi
+
+exit $curl_status
 
 
