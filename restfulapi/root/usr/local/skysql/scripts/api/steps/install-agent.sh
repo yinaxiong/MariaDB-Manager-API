@@ -61,6 +61,7 @@ fi
 # Copying repository information to node
 sshpass -p "$rootpwd" scp steps/repo/MariaDB.repo root@"$nodeip":/etc/yum.repos.d/MariaDB.repo
 sshpass -p "$rootpwd" scp steps/repo/SkySQL.repo root@"$nodeip":/etc/yum.repos.d/SkySQL.repo
+sshpass -p "$rootpwd" scp steps/repo/Percona.repo root@"$nodeip":/etc/yum.repos.d/Percona.repo
 
 if [ !scripts_installed ]; then
 	# Installing galera-remote-exec package

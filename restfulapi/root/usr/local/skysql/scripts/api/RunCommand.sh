@@ -59,7 +59,7 @@ do
 	# Checking if step is executed from API node
 	if [ -f "./steps/$stepscript.sh" ]; then
 		# Executing step locally
-		sh ./steps/$stepscript.sh $node_ip $taskid $params \
+		sh ./steps/$stepscript.sh "$node_ip" "$taskid" "$params" \
 					>/tmp/step.$$.log 2>&1
 		return=$?
 		logger -p user.info -t MariaDB-Enterprise-Task -f /tmp/step.$$.log
