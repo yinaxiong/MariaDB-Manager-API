@@ -55,17 +55,27 @@ if [ "$rootpwd" == "" ]; then
         exit 1
 fi
 
-# Adding node ip to ssh hosts list
-ssh-keyscan "$nodeip" >> /var/www/.ssh/known_hosts 2>/dev/null
+# Adding node ip to ssh hosts list (if there is no entry)
+scan_results=`ssh-keygen -F "$nodeip"`
+if [ "$scan_results" == "" ]; then
+        ssh-keyscan "$nodeip" >> /var/www/.ssh/known_hosts
+fi
+
+# Checking if node is already prepared for command execution
+ssh -q skysqlagent@"$nodeip" "exit"
+if [ $? == 0 ]; then
+        echo "Info: ssh login already setup in target node."
+        exit 0
+fi
 
 # Checking ssh connectivity
 sshpass -p "$rootpwd" ssh root@"$nodeip" "exit" > /dev/null 2>/tmp/setup-ssh.$$.log
 if [ $? != 0 ]; then
-	a=`cat /tmp/setup-ssh.$$.log`
-	echo "Error: cannot connect to target node $nodeip. $a"
-	./restfulapi-call.sh "PUT" "task/$taskid" "errormessage=Unable to connect: $a"
-	rm -f /tmp/setup-ssh.$$.log
-	exit 1
+        a=`cat /tmp/setup-ssh.$$.log`
+        echo "Error: cannot connect to target node $nodeip. $a"
+        ./restfulapi-call.sh "PUT" "task/$taskid" "errormessage=Unable to connect: $a"
+        rm -f /tmp/setup-ssh.$$.log
+        exit 1
 fi
 
 # Creating skysqlagent user and ssh credentials directory
@@ -74,13 +84,18 @@ sshpass -p "$rootpwd" ssh root@"$nodeip" "useradd skysqlagent; mkdir -p /home/sk
 # Setting up credentials on the node
 sshpass -p "$rootpwd" scp /var/www/.ssh/id_rsa.pub root@"$nodeip":/home/skysqlagent/.ssh/id_rsa.pub
 sshpass -p "$rootpwd" ssh root@"$nodeip" \
-	"cd /home/skysqlagent/.ssh/; cat id_rsa.pub >> authorized_keys; \
-	chown -R skysqlagent.skysqlagent /home/skysqlagent/.ssh/; chmod 600 authorized_keys"
+        "cd /home/skysqlagent/.ssh/; cat id_rsa.pub >> authorized_keys; \
+        chown -R skysqlagent.skysqlagent /home/skysqlagent/.ssh/; chmod 600 authorized_keys"
 
 # Setting up skysqlagent sudoer permissions
 sshpass -p "$rootpwd" ssh root@"$nodeip" \
-	"echo \"skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\" >> /etc/sudoers; \
-	sed \"s/.*Defaults.*requiretty.*/Defaults     !requiretty/\" /etc/sudoers > /etc/sudoers.tmp; \
-	mv /etc/sudoers.tmp /etc/sudoers"
+        "cat /etc/sudoers | \
+        grep -q \"^skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\"; \
+        if [ $? == 1 ]; then \
+                echo "skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh" >> /etc/sudoers; \
+        fi \
+        sed \"s/.*Defaults.*requiretty.*/Defaults     !requiretty/\" /etc/sudoers > /etc/sudoers.tmp; \
+        mv /etc/sudoers.tmp /etc/sudoers"
 
 exit 0
+

@@ -53,9 +53,11 @@ fi
 scripts_installed=0;
 
 # Checking if SkySQL Remote Execution Scripts are installed
-ssh_return=`ssh -q skysqlagent@"$nodeip" "sudo /usr/local/sbin/skysql/NodeCommand.sh test"`
+ssh_return=`ssh -q skysqlagent@"$nodeip" \
+        "sudo /usr/local/sbin/skysql/NodeCommand.sh test $taskid $api_host"`
 if [ $? == 0 ] && [ "$ssh_return" == "0" ]; then
-	scripts_installed=1;
+        echo "Info: MariaDB Manager API Agent already installed."
+        scripts_installed=1;
 fi
 
 # Copying repository information to node
