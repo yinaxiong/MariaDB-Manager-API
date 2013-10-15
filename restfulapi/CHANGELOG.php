@@ -3,6 +3,17 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 15 October 2013, 12:00 BST
+ * 
+ * Added 'provisioned' to node states where node cannot be deleted
+ * Added 'firewall-setup' as new command step (affects NodeCommands table)
+ * Removed 'register' step, no longer required
+ * Implemented mechanism to return nulls for monitor average data where raw data is null
+ * Provided If-Modified-Since capability to GET requests on /monitorclasses
+ * Fixed bug in treatment of command for non-existent node
+ * Fixed bugs in date handling including Bugzilla 229
+ * 
+ * 
  * 14 October 2013, 16:30 BST
  * 
  * Bring system states into line with documentation

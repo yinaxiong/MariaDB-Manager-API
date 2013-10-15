@@ -100,7 +100,7 @@ class API {
 				'inconsistent' => array('description' => 'System has one or more nodes incorrectly joined')
 			),
 			'nodestates' => array(
-				'provisioned' => array('stateid' => 10001, 'description' => 'Has agent, scripts, database'),
+				'provisioned' => array('stateid' => 10001, 'description' => 'Has agent, scripts, database', 'protected' => true),
 				'down' => array('stateid' => 100, 'description' => 'Down'),
 				'open' => array('stateid' => 101, 'description' => 'Open', 'protected' => true),
 				'primary' => array('stateid' => 102, 'description' => 'Primary', 'protected' => true),
@@ -163,10 +163,10 @@ class API {
 		'restore' => array('description' => 'Restore a node'),
 		'restart' => array('description' => 'Restart a node from error state'),
 		'setup-ssh' => array('description' => 'Establish SSH communications to new node'),
-		'register' => array('description' => 'No idea what this does'),
 		'install-agent' => array('description' => 'Install the agent that allows running of commands on nodes'),
 		'probe' => array('description' => 'Explore what services are already installed on a new node'),
 		'install-packages' => array('description' => 'Install the packages needed for managing the new node'),
+		'firewall-setup' => array('description' => 'Set up the firewall'),
 		'configure' => array('description' => 'Presumably this does some configuration')
 	);
 	

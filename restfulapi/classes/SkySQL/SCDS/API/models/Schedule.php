@@ -66,7 +66,7 @@ class Schedule extends EntityModel {
 		'nextstart' => array('sqlname' => 'NextStart', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
 		'atjobnumber' => array('sqlname' => 'ATJobNumber', 'default' => 0, 'insertonly' => true),
 		'created' => array('sqlname' => 'Created', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
-		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime')
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime')
 	);
 	
 	protected $runatonce = false;

@@ -58,7 +58,7 @@ class System extends EntityModel {
 		'name' => array('sqlname' => 'SystemName', 'desc' => 'Name of the system', 'default' => ''),
 		'started' => array('sqlname' => 'InitialStart', 'desc' => 'Date the manager system was set up', 'default' => '', 'validate' => 'datetime'),
 		'lastaccess' => array('sqlname' => 'LastAccess', 'desc' => 'Last date the manager system was accessed by a user', 'default' => '', 'validate' => 'datetime'),
-		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime'),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime'),
 		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'created', 'validate' => 'systemstate'),
 		'dbusername' => array('sqlname' => 'DBUserName', 'desc' => 'System default for database user name', 'default' => ''),
 		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'System default for database password', 'default' => ''),

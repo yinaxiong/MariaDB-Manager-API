@@ -62,7 +62,7 @@ class Node extends EntityModel {
 	protected static $fields = array(
 		'name' => array('sqlname' => 'NodeName', 'default' => ''),
 		'state' => array('sqlname' => 'State', 'default' => 'created'),
-		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime'),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime'),
 		'hostname' => array('sqlname' => 'Hostname', 'default' => ''),
 		'publicip' => array('sqlname' => 'PublicIP', 'default' => '', 'validate' => 'ipaddress'),
 		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'validate' => 'ipaddress'),

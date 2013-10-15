@@ -83,8 +83,9 @@ class Tasks extends TaskScheduleCommon {
 		$command->setPropertiesFromParams();
 		$state = $this->getParam('POST', 'state');
 		$node = NodeManager::getInstance()->getByID($command->systemid, $command->nodeid);
-		if ($state AND ($node instanceof Node) AND $state != $node->state) {
-			$this->sendErrorResponse(sprintf('Command required node (%d, %d) to be in state %s but it is in state %s', $node->systemid, $node->nodeid, $state, $node->state), 409);
+		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (%d, %d) but there is no such node", $command, $node->systemid, $node->nodeid), 409);
+		if ($state AND $state != $node->state) {
+			$this->sendErrorResponse(sprintf("Command '%s' required node (%d, %d) to be in state %s but it is in state %s", $command, $node->systemid, $node->nodeid, $state, $node->state), 409);
 		}
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
 		foreach (array('LaunchCommand','RunCommand') as $script) {

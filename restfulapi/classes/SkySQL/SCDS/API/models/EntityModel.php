@@ -80,7 +80,7 @@ abstract class EntityModel {
 	
 	protected static function fixDate (&$entity) {
 		foreach (static::$fields as $name=>$about) {
-			if (!empty($entity->$name) AND 'datetime' == @$about['validate']) $entity->$name = date('r', strtotime($entity->$name));
+			if (!empty($entity->$name) AND ('datetime' == @$about['validate'] OR 'datetime' == @$about['forced'])) $entity->$name = date('r', strtotime($entity->$name));
 		}
 		return $entity;
 	}
@@ -313,6 +313,7 @@ abstract class EntityModel {
 	}
 
 	protected static function wheresAndBinds ($controller, $args) {
+		// Default return is a pair of empty arrays; otherwise entity specific handling of selector parameters
 		list($where, $bind) = static::specialSelected($args);
 		$request = Request::getInstance();
 		$source = $request->getMethod();
@@ -340,12 +341,15 @@ abstract class EntityModel {
 	
 	protected static function getParam ($source, $name, $about) {
 		$request = Request::getInstance();
-		$data = isset($about['forced']) ? $about['forced'] : $request->getParam($source, $name, $about['default']);
+		if (isset($about['forced'])) {
+			if ('datetime' == $about['forced']) $data = date('Y-m-d H:i:s');
+		}
+		if (!isset($data)) $data = $request->getParam($source, $name, $about['default']);
 		if (@$about['validate']) {
 			$method = $about['validate'];
 			if (method_exists(__CLASS__, $method)) {
 				if (!self::$method($data)) self::$validationerrors[] = "Field '$name' with value '$data' failed $method validation";
-				if ('datetime' == $method) $data = self::formatDate(strtotime($data));
+				if ('datetime' == $method AND $data) $data = self::formatDate(strtotime($data));
 			}
 			else $request->sendErrorResponse("Field $name specified validation '$method', but no such method exists", 500);
 		}

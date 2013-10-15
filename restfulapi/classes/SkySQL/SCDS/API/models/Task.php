@@ -73,7 +73,7 @@ class Task extends EntityModel {
 		'steps' => array('sqlname' => 'Steps', 'default' => ''),
 		'started' => array('sqlname' => 'Started', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
 		'pid' => array('sqlname' => 'PID', 'default' => 0),
-		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => '', 'validate' => 'datetime'),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime'),
 		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime'),
 		'stepindex' => array('sqlname' => 'StepIndex', 'default' => 0),
 		'state' => array('sqlname' => 'State', 'default' => 'running'),

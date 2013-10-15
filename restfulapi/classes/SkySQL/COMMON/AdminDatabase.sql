@@ -24,11 +24,11 @@ CREATE TABLE NodeCommands (
 	Steps		varchar(255)	/* Comma separated list of step IDs */ 
 );
 
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'created', 'Set up communications to node', 1, 'setup-ssh, register, install-agent');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'unconnected', 'Set up communications to node', 1, 'setup-ssh, register, install-agent');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'created', 'Set up communications to node', 1, 'setup-ssh, install-agent');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('connect', 'provision', 'unconnected', 'Set up communications to node', 1, 'setup-ssh, install-agent');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('probe', 'provision', 'connected', 'Probe node to determine software configuration', 1, 'probe');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('probe', 'provision', 'incompatible', 'Probe node to determine software configuration', 1, 'probe');
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('provision', 'provision', 'unprovisioned', 'Install a database on the node', 1, 'install-packages, configure');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('provision', 'provision', 'unprovisioned', 'Install a database on the node', 1, 'install-packages, firewall-setup, configure');
 
 
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('start', 'aws', 'provisioned', 'Start Provisioned Node', 3, 'start');

@@ -46,6 +46,10 @@ final class Monitors extends ImplementAPI {
 	
 	public function getMonitorClasses ($uriparts) {
 		$manager = MonitorManager::getInstance();
+		if ($this->ifmodifiedsince AND $this->ifmodifiedsince > $manager->timeStamp()) {
+			header (HTTP_PROTOCOL.' 304 Not Modified');
+			exit;
+		}
 		if (empty($uriparts[1])) {
 			$monitors = $manager->getAll();
 			foreach ($monitors as $type=>$results) $monitors[$type] = $this->filterResults($results);
@@ -217,7 +221,15 @@ final class Monitors extends ImplementAPI {
 			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
 		}
 		else array_unshift($data, $preceding);
-		$this->sendResponse(array('monitor_data' => ($average ? $this->getAveraged($data) : $this->getMinMax($data))));
+		if ($average) {
+			$aresults = $this->getAveraged($data);
+			$mmresults = $this->getMinMax($data);
+			foreach (array_keys($aresults['value']) as $sub) {
+				if (null === $mmresults['min'][$sub] AND null === $mmresults['max'][$sub]) $aresults['value'][$sub] = null;
+			}
+			$this->sendResponse(array('monitor_data' => $aresults));
+		}
+		else $this->sendResponse(array('monitor_data' => $this->getMinMax($data)));
 	}
 	
 	protected function sendNullData ($average) {
