@@ -40,7 +40,7 @@ do
         param_name=`echo $param | cut -d = -f 1`
         param_value=`echo $param | cut -d = -f 2`
 
-        if [ $param_name == "rootpassword" ]; then
+        if [ "$param_name" == "rootpassword" ]; then
                 rootpwd=$param_value
         fi
 done
@@ -66,6 +66,8 @@ sshpass -p "$rootpwd" scp steps/repo/Percona.repo root@"$nodeip":/etc/yum.repos.
 if [ !scripts_installed ]; then
 	# Installing galera-remote-exec package
 	sshpass -p "$rootpwd" ssh root@"$nodeip" "yum -y install galera-remote-exec"
+else
+	sshpass -p "$rootpwd" ssh root@"$nodeip" "yum -y update galera-remote-exec"
 fi
 
 # Getting current node systemid and nodeid

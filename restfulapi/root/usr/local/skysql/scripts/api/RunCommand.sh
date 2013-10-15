@@ -62,7 +62,7 @@ do
 		sh ./steps/$stepscript.sh "$node_ip" "$taskid" "$params" \
 					>/tmp/step.$$.log 2>&1
 		return=$?
-		logger -p user.info -t MariaDB-Enterprise-Task -f /tmp/step.$$.log
+		logger -p user.info -t MariaDB-Manager-Task -f /tmp/step.$$.log
 		rm -f /tmp/step.$$.log
 	else
 	        # Executing step remotely
@@ -81,7 +81,7 @@ if [ "$return" == "0" ]; then
         cmdstate='done'  # Done
 else
         cmdstate='error'  # Error
-	logger -p user.error -t MariaDB-Enterprise-Task "Task $taskid: Execution of command failed in step $stepscript."
+	logger -p user.error -t MariaDB-Manager-Task "Task $taskid: Execution of command failed in step $stepscript."
 fi
 
 time=$(date +%s)

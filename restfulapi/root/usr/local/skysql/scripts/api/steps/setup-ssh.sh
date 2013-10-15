@@ -34,6 +34,8 @@ nodeip=$1
 taskid=$2
 params=$(echo $3 | tr "&" "\n")
 
+logger -p user.info -t MariaDB-Manager-Task "Setup ssh access for node $nodeip"
+
 # Parameter parsing and validation
 for param in $params
 do
