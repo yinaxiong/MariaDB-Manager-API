@@ -30,7 +30,6 @@ namespace SkySQL\SCDS\API\models;
 
 use PDO;
 use SkySQL\COMMON\AdminDatabase;
-use SkySQL\SCDS\API\Request;
 
 class UserTag extends EntityModel {
 	protected static $setkeyvalues = true;

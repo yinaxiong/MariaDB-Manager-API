@@ -111,7 +111,11 @@ class SystemNodes extends SystemNodeCommon {
 	
 	protected function extraNodeData (&$node) {
 		$node->commands = ($this->isFilterWord('commands') AND $node->state) ? $node->getCommands() : null;
-		$node->monitorlatest = $this->getMonitorData($node->nodeid);
+		if ($this->isFilterWord('monitorlatest') OR $this->isFilterWord('lastmonitored')) {
+			list ($monitorlatest, $lastmonitored) = $this->getMonitorData($node->nodeid);
+			if ($this->isFilterWord('monitorlatest')) $node->monitorlatest = $monitorlatest;
+			if ($this->isFilterWord('lastmonitored')) $node->lastmonitored = $lastmonitored;
+		}
 		$node->task = Task::latestForNode($node);
 	}
 

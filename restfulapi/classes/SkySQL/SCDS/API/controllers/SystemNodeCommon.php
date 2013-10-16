@@ -44,7 +44,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 		parent::__construct($controller);
 	}
 
-	protected function getMonitorData ($nodeid) {
+	protected function getMonitorData ($nodeid=0) {
 		$system = SystemManager::getInstance()->getByID($this->systemid);
 		$monitors = MonitorManager::getInstance()->getByType(@$system->systemtype);
 		$monitorlatest = new stdClass;
@@ -61,6 +61,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 		$this->monitorquery->execute(
 			array(':systemid' => $this->systemid, ':nodeid' => $nodeid)
 		);
+		$lastupdate = 0;
 		$latest = $this->monitorquery->fetchAll();
 		foreach ($latest as $data) {
 			$monitor = MonitorManager::getInstance()->getByMonitorID($data->monitorid);
@@ -68,9 +69,10 @@ abstract class SystemNodeCommon extends ImplementAPI {
 				$property = $monitor->monitor;
 				$monitorlatest->$property = $data->value;
 				if ($this->ifmodifiedsince < $data->updated) $this->modified = true;
+				$lastupdate = max($lastupdate,$data->updated);
 			}
 		}
-		return $monitorlatest;
+		return array($monitorlatest, ($lastupdate ? date('r', $lastupdate) : null));
 	}
 	
 	protected function targetDatabaseQuery ($query, $nodeid) {

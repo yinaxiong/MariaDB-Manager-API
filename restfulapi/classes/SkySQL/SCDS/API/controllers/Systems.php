@@ -108,7 +108,11 @@ class Systems extends SystemNodeCommon {
 		$system->properties = $this->isFilterWord('properties') ? SystemPropertyManager::getInstance()->getAllProperties($this->systemid) : null;
 		// Not sure if there are any system commands
 		// $system->commands = ($this->isFilterWord('commands') AND $system->state) ? $this->getCommands($system->state) : null;
-		$system->monitorlatest = $this->getMonitorData(0);
+		if ($this->isFilterWord('monitorlatest') OR $this->isFilterWord('lastmonitored')) {
+			list ($monitorlatest, $lastmonitored) = $this->getMonitorData();
+			if ($this->isFilterWord('monitorlatest')) $system->monitorlatest = $monitorlatest;
+			if ($this->isFilterWord('lastmonitored')) $system->lastmonitored = $lastmonitored;
+		}
 		return $system;
 	}
 	

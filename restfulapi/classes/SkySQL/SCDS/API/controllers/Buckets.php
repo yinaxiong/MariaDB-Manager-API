@@ -28,8 +28,6 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use \PDO;
-
 class Buckets extends ImplementAPI {
 	
 	public function getData () {

@@ -28,8 +28,6 @@
 
 namespace SkySQL\SCDS\API\managers;
 
-use SkySQL\COMMON\AdminDatabase;
-
 class UserPropertyManager extends PropertyManager {
 	
 	protected $name = 'user';

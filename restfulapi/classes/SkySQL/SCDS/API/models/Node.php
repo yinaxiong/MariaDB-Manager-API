@@ -77,6 +77,7 @@ class Node extends EntityModel {
 	protected static $derived = array(
 		'commands' => array('type' => 'array', 'desc' => 'Names of commands that could be run in the present node state'),
 		'monitorlatest' => array('type' => 'object', 'desc' => 'Latest value for node for each monitor'),
+		'lastmonitored' => array('type' => 'datetime', 'desc' => 'Date-time a monitor observation was last received'),
 		'command' => array('type' => 'varchar', 'desc' => 'Name of the command currently running on the node'),
 		'taskid' => array('type' => 'int', 'desc' => 'ID number of the task running on the node')
 	);

@@ -3,6 +3,15 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 16 October 2013, 09:30 BST
+ * 
+ * Correct mistake in Monitor table where 'null' should be NULL
+ * Add lastmonitored (date-time) to system and node records
+ * Modify iCalEntry processing to accept any newline or | as line separator,
+ *	store always as CRLF between lines
+ * Minor bug fixes, tidy up
+ * 
+ * 
  * 15 October 2013, 12:00 BST
  * 
  * Added 'provisioned' to node states where node cannot be deleted

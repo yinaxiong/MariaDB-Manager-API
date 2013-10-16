@@ -70,7 +70,8 @@ class System extends EntityModel {
 		'nodes' => array('type' => 'array', 'desc' => 'ID numbers of nodes belonging to this system'),
 		'lastbackup' => array('type' => 'datetime', 'desc' => 'Date and time of last backup'),
 		'properties' => array('type' => 'object', 'desc' => 'System properties'),
-		'monitorlatest' => array('type' => 'object', 'desc' => 'Latest value for system for each monitor')
+		'monitorlatest' => array('type' => 'object', 'desc' => 'Latest value for system for each monitor'),
+		'lastmonitored' => array('type' => 'datetime', 'desc' => 'Date-time a monitor observation was last received')
 	);
 	
 	public function __construct ($systemid=0) {

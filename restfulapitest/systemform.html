@@ -469,7 +469,10 @@
 			If parameters (apart from the information in the URI) are submitted with a
 			GET request, they must be supplied in the form of a standard query string.
 			That is, a series of name-data assignments separated by ampersand.
-			For example, 'systemid=4&amp;nodeid=2'
+			For example, 'systemid=4&amp;nodeid=2'.  Where a GET request is for a whole
+			set of Tasks, Schedules or Backups any of the fields for the entity involved
+			can be used as filtering parameters, although this cannot always be achieved
+			via this tool.
 		</p>
 		<p>
 			Where parameters are submitted with an HTTP PUT request, there is a single string passed

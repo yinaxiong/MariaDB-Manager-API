@@ -109,6 +109,7 @@ class Schedule extends EntityModel {
 			if (empty($this->bind[':'.$name])) $errors[] = "Value for $name is required to schedule a command";
 		}
 		if (isset($errors)) $request->sendErrorResponse($errors, 400);
+		$this->commonValidation();
 		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
 		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
 		if (!$this->icalentry) $request->sendErrorResponse("Cannot create a schedule without an iCalendar specification", 400);
@@ -116,8 +117,21 @@ class Schedule extends EntityModel {
 		$this->setInsertValue('command', $this->command);
 	}
 	
+	protected function validateUpdate () {
+		$this->commonValidation();
+	}
+	
+	protected function commonValidation () {
+		$request = Request::getInstance();
+		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
+		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
+		if (!$this->icalentry) $request->sendErrorResponse("Cannot create a schedule without an iCalendar specification", 400);
+		$this->processCalendarEntry();
+	}
+	
 	public function processCalendarEntry () {
-		$calines = explode('|', $this->icalentry);
+		$calines = preg_split('/(\R|\|)/', $this->icalentry);
+		$this->icalentry = implode("\r\n", $calines);
 		$lastone = count($calines) - 1;
 		foreach ($calines as $i=>$line) {
 			$parts = explode(':', $line, 2);
