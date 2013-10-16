@@ -49,6 +49,11 @@ if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
 	chown apache:apache /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
 fi
 
+if [ ! -f /etc/skysqlmgr/api.ini ] ; then
+	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
+fi
+
+
 # disabling selinux! TO BE FIXED! 
 echo 0 >/selinux/enforce
 sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
@@ -67,6 +72,7 @@ cp -R restfulapi/root/* $RPM_BUILD_ROOT/
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest/* $RPM_BUILD_ROOT%{install_path}restfulapi/
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
+mv $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template 
 
 %clean
 
@@ -76,7 +82,7 @@ cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 %{install_path}
 %{install_path}consoleAPI/*
 %{install_path}restfulapi/*
-/etc/skysqlmgr/api.ini
+/etc/skysqlmgr/api.ini.template
 /usr/local/skysql/scripts/api/*
 /etc/httpd/conf.d/skysql_rewrite.conf
 
