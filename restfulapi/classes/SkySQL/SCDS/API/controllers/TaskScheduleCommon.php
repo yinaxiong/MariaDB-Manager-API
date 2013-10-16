@@ -39,10 +39,9 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 
 	protected function setRunAt ($schedule) {
 		$pathtoapi = _API_BASE_FILE;
-		$php = $this->config['shell']['php'];
-		if (!is_executable($php)) $this->sendErrorResponse ("Configuration file api.ini says PHP is '$php' but this is not executable", 500);
-		$command = sprintf('%s %s \"POST\" \"schedule/%d\"', $php, $pathtoapi, $schedule->scheduleid);
-		$elapsed = (int) round((strtotime($schedule->nextstart) - time())/60);
+		if (empty($this->config['shell']['php']) OR !is_executable($this->config['shell']['php'])) $this->sendErrorResponse (sprintf("Configuration file api.ini says PHP is '%s' but this is not executable", $this->config['shell']['php']), 500);
+		$command = sprintf('%s %s \"POST\" \"schedule/%d\"', $this->config['shell']['php'], $pathtoapi, $schedule->scheduleid);
+		$elapsed = (int) round((30 + strtotime($schedule->nextstart) - time())/60);
 		$atcommand = sprintf('echo "%s" | at %s 2>&1', $command, "now +$elapsed minute");
 		$lastline = shell_exec($atcommand);
 		preg_match('/.*job ([0-9]+) at.*/', @$lastline, $matches);
@@ -72,9 +71,13 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
 		$params = @$task->parameters;
 		$hostname = @$this->config['shell']['hostname'];
-		$cmd = "$scriptdir/LaunchCommand.sh $scriptdir/RunCommand.sh $task->taskid \"{$task->steps}\" \"$hostname\" \"$params\" \"$task->privateip\" \"$logfile\"";
+		$cmd = $this->makeShellCall("$scriptdir/LaunchCommand.sh", "$scriptdir/RunCommand.sh", $task->taskid, $task->steps, $hostname, $params, $task->privateip, $logfile);
        	$pid = exec($cmd);
 		$this->log(LOG_INFO, "Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid");
 		$task->updatePIDandState($pid);
+	}
+	
+	protected function makeShellCall () {
+		return implode(' ', array_map('escapeshellarg', func_get_args()));
 	}
 }

@@ -195,7 +195,7 @@ abstract class EntityModel {
 		$bindname = ":$name";
 		if (!empty($this->bind[$bindname])) {
 			$unixtime = strtotime($this->bind[$bindname]);
-			$this->bind[$bindname] = self::formatDate($unixtime);
+			$this->$name = $this->bind[$bindname] = self::formatDate($unixtime);
 		}
 	}
 	
@@ -247,8 +247,7 @@ abstract class EntityModel {
 					if ('insert' == $caller OR !$request->paramEmpty($source, $name) OR !empty($this->$name)) {
 						// setter is only needed for updates, but is set anyway
 						$this->setter[] = $about['sqlname'].' = '.$bindname;
-						if (empty($this->$name)) $this->$name = $this->bind[$bindname] = self::getParam($source, $name, $about);
-						else $this->bind[$bindname] = $this->$name;
+						$this->$name = $this->bind[$bindname] = self::getParam($source, $name, $about, @$this->$name);
 					}
 				}
 			}
@@ -272,7 +271,7 @@ abstract class EntityModel {
 	protected function setInsertValue ($name, $value) {
 		if (isset(static::$fields[$name])) {
 			$bindname = ":$name";
-			$this->bind[$bindname] = $value;
+			$this->$name = $this->bind[$bindname] = $value;
 			$sqlname = static::$fields[$name]['sqlname'];
 			$sub = array_search($sqlname, $this->insname);
 			if ($sub) unset($this->insname[$sub], $this->insvalue[$sub]);
@@ -339,12 +338,12 @@ abstract class EntityModel {
 		return array(array(), array());
 	}
 	
-	protected static function getParam ($source, $name, $about) {
+	protected static function getParam ($source, $name, $about, $priordefault=null) {
 		$request = Request::getInstance();
 		if (isset($about['forced'])) {
 			if ('datetime' == $about['forced']) $data = date('Y-m-d H:i:s');
 		}
-		if (!isset($data)) $data = $request->getParam($source, $name, $about['default']);
+		if (!isset($data)) $data = $request->getParam($source, $name, (null === $priordefault ? $about['default'] : $priordefault));
 		if (@$about['validate']) {
 			$method = $about['validate'];
 			if (method_exists(__CLASS__, $method)) {

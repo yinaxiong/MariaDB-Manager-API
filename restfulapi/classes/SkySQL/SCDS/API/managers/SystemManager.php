@@ -76,6 +76,6 @@ class SystemManager extends EntityManager {
 		SystemPropertyManager::getInstance()->deleteAllProperties($id);
 		NodeManager::getInstance()->deleteNode($id);
 		$system->delete();
-		// Above method does not return - sends a response and exits
+		// Above method does not return - clears cache, sends a response and exits
 	}
 }

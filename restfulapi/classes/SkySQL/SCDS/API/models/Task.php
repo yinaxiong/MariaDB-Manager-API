@@ -92,7 +92,6 @@ class Task extends EntityModel {
 		$this->command = $command;
 		parent::insert(false);
 		$this->derivedFields();
-		self::fixDate($this);
 	}
 
 	protected function insertedKey ($insertid) {

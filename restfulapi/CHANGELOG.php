@@ -3,6 +3,16 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 16 October 2013, 17:50 BST
+ * 
+ * Fix problem with bulk monitor updates and limit on substitutions
+ * Moved ErrorLog to start of SQL for Admin DB creation so it is available to
+ *	record any errors in the rest of the SQL
+ * Introduce cache manager for Schedules; fix various issues for update and
+ *	deletion of schedule records
+ * Improve quoting of parameters when running commands (following Kolbe Kegel)
+ * 
+ * 
  * 16 October 2013, 09:30 BST
  * 
  * Correct mistake in Monitor table where 'null' should be NULL

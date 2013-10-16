@@ -4,6 +4,24 @@
 **
 **/
 
+CREATE TABLE ErrorLog (
+	id integer NOT NULL PRIMARY KEY AUTOINCREMENT, 
+	timestamp datetime NOT NULL, 
+	smessage varchar(255) NOT NULL, 
+	dbcall varchar(255) NOT NULL DEFAULT '', 
+	dberror varchar(255) NOT NULL DEFAULT '', 
+	dbmessage text NOT NULL, 
+	dbtrace text NOT NULL, 
+	sql text NOT NULL, 
+	lmessage text NOT NULL, 
+	errorkey text NOT NULL, 
+	referer text NOT NULL, 
+	ip varchar(15) NOT NULL DEFAULT '', 
+	get text NOT NULL, 
+	post text NOT NULL, 
+	trace text NOT NULL 
+);
+
 CREATE TABLE SystemCommands ( 
 	Command varchar(40), /* Name of the command */ 
 	State varchar(20), /* System state */
@@ -219,7 +237,6 @@ create table Schedule (
 	NodeID			int,					/* NodeID executed on */
 	UserName		varchar(40),			/* UserName that requested the command execution */
 	Command			varchar(40),			/* Command executed */
-	BackupLevel		int,					/* Whether a full=1 or incremental=2 backup, if applicable */
 	Params			text,					/* Parameters for Command */
 	iCalEntry		text,					/* Schedule details, if scheduled */
 	NextStart		datetime,				/* Time for next scheduled start */
@@ -532,20 +549,3 @@ create table Backup (
 
 create unique index SystemBackupIDX ON Backup (SystemID, BackupID);
 
-CREATE TABLE ErrorLog (
-	id integer NOT NULL PRIMARY KEY AUTOINCREMENT, 
-	timestamp datetime NOT NULL, 
-	smessage varchar(255) NOT NULL, 
-	dbcall varchar(255) NOT NULL DEFAULT '', 
-	dberror varchar(255) NOT NULL DEFAULT '', 
-	dbmessage text NOT NULL, 
-	dbtrace text NOT NULL, 
-	sql text NOT NULL, 
-	lmessage text NOT NULL, 
-	errorkey text NOT NULL, 
-	referer text NOT NULL, 
-	ip varchar(15) NOT NULL DEFAULT '', 
-	get text NOT NULL, 
-	post text NOT NULL, 
-	trace text NOT NULL 
-);

@@ -37,6 +37,7 @@ class Schedule extends EntityModel {
 	protected static $setkeyvalues = false;
 	
 	protected static $classname = __CLASS__;
+	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\ScheduleManager';
 
 	protected $ordinaryname = 'command';
 	protected static $headername = 'Command';
@@ -60,7 +61,6 @@ class Schedule extends EntityModel {
 		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => ''),
 		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
-		'level' => array('sqlname' => 'BackupLevel', 'type'  => 'int', 'default' => 0),
 		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => ''),
 		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'text', 'default' => 'running'),
 		'nextstart' => array('sqlname' => 'NextStart', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
@@ -79,7 +79,6 @@ class Schedule extends EntityModel {
 	public function insertOnCommand ($command) {
 		$this->command = $command;
 		parent::insert(false);
-		self::fixDate($this);
 	}
 
 	protected function insertedKey ($insertid) {
@@ -109,23 +108,15 @@ class Schedule extends EntityModel {
 			if (empty($this->bind[':'.$name])) $errors[] = "Value for $name is required to schedule a command";
 		}
 		if (isset($errors)) $request->sendErrorResponse($errors, 400);
-		$this->commonValidation();
 		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
 		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
 		if (!$this->icalentry) $request->sendErrorResponse("Cannot create a schedule without an iCalendar specification", 400);
 		$this->processCalendarEntry();
 		$this->setInsertValue('command', $this->command);
+		$this->setCorrectFormatDateWithDefault('created');
 	}
 	
 	protected function validateUpdate () {
-		$this->commonValidation();
-	}
-	
-	protected function commonValidation () {
-		$request = Request::getInstance();
-		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
-		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
-		if (!$this->icalentry) $request->sendErrorResponse("Cannot create a schedule without an iCalendar specification", 400);
 		$this->processCalendarEntry();
 	}
 	
@@ -147,14 +138,14 @@ class Schedule extends EntityModel {
 			$errors[] = "Start date $dtstart for schedule incorrectly formatted";
 		}
 		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors,400);
-		$this->updateNextStart($dtstart, $rrule);
-		$this->state = 'scheduled';
+		$this->updateNextStart($dtstart, @$rrule);
 	}
 	
 	protected function updateNextStart ($dtstart, $rrule) {
 		$event = new When();
-		$event->recur($dtstart)->rrule($rrule);
-		$this->nextstart = date('Y-m-d H:i:s', $event->nextAfter()->getTimeStamp());
+		$event->recur($dtstart);
+		if ($rrule) $event->rrule($rrule);
+		$this->setInsertValue('nextstart', date('Y-m-d H:i:s', $event->nextAfter()->getTimeStamp()));
 		$this->runatonce = $event->alreadyDue();
 	}
 	

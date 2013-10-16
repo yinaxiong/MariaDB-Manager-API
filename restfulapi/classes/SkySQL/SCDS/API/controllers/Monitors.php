@@ -159,18 +159,21 @@ final class Monitors extends ImplementAPI {
 			}
 			else {
 				if (isset($insertrows)) {
-					$insertrows .= "UNION SELECT :monitorid$i, :systemid$i, :nodeid$i, :value$i, :stamp$i, :repeats$i\n";
+					$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d, %d, %d\n", (int) $monitors[$i], (int) $systems[$i], (int) $nodes[$i], ('null' == $values[$i] ? 'NULL' : (int) $values[$i]), (int) $stamp, (($previous AND $value == $values[$i]) ? 1 : 0));
 				}
 				else {
 					$insertrows = "INSERT INTO MonitorData SELECT";
-					$insertrows .= " :monitorid$i AS MonitorID, :systemid$i AS SystemID, :nodeid$i AS NodeID, :value$i AS Value, :stamp$i AS Stamp, :repeats$i AS Repeats\n";
+					$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $monitors[$i], (int) $systems[$i], (int) $nodes[$i], ('null' == $values[$i] ? 'NULL' : (int) $values[$i]), (int) $stamp, (($previous AND $value == $values[$i]) ? 1 : 0));
 				}
+				/*
 				$bind[":monitorid$i"] = (int) $monitors[$i];
 				$bind[":systemid$i"] = (int) $systems[$i];
 				$bind[":nodeid$i"] = (int) $nodes[$i];
 				$bind[":value$i"] = 'null' == $values[$i] ? null : (int) $values[$i];
 				$bind[":stamp$i"] = $stamp;
 				$bind[":repeats$i"] = ($previous AND $value == $values[$i]) ? 1 : 0;
+				 *
+				 */
 			}
 		}		
 		if (isset($updaterows)) {
@@ -178,8 +181,8 @@ final class Monitors extends ImplementAPI {
 			$this->monitordb->query("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = '$stamp' WHERE rowid IN ($rowlist)");
 		}
 		if (isset($insertrows)) {
-			$insert = $this->monitordb->prepare($insertrows);
-			$insert->execute($bind);
+			$this->monitordb->query($insertrows);
+			// $insert->execute($bind);
 		}
 		
 		$this->monitordb->commitTransaction();
@@ -187,8 +190,8 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	public function monitorLatest ($uriparts) {
-		$this->monitordb = MonitorDatabase::getInstance();
 		$this->analyseMonitorURI($uriparts, 'monitorData');
+		$this->monitordb = MonitorDatabase::getInstance();
 		$select = $this->monitordb->prepare('SELECT Value FROM MonitorData
 			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
 			ORDER BY Stamp DESC');
