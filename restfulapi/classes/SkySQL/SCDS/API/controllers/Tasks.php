@@ -80,10 +80,14 @@ class Tasks extends TaskScheduleCommon {
 	public function runCommand ($uriparts) {
 		Command::checkLegal('icalentry');
 		$command = new Command(urldecode($uriparts[1]));
+		if ($this->paramEmpty($this->requestmethod,'systemid')) $errors[] = sprintf("Command '%s' requested, but required System ID not provided", $command->command);
+		if ($this->paramEmpty($this->requestmethod,'nodeid')) $errors[] = sprintf("Command '%s' requested, but required Node ID not provided", $command->command);
+		if ($this->paramEmpty($this->requestmethod,'username')) $errors[] = sprintf("Command '%s' requested, but required UserName not provided", $command->command);
+		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$command->setPropertiesFromParams();
 		$state = $this->getParam('POST', 'state');
 		$node = NodeManager::getInstance()->getByID($command->systemid, $command->nodeid);
-		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (%d, %d) but there is no such node", $command->command, $node->systemid, $node->nodeid), 409);
+		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (%d, %d) but there is no such node", $command->command, $command->systemid, $command->nodeid), 409);
 		if ($state AND $state != $node->state) {
 			$this->sendErrorResponse(sprintf("Command '%s' required node (%d, %d) to be in state %s but it is in state %s", $command->command, $node->systemid, $node->nodeid, $state, $node->state), 409);
 		}

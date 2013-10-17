@@ -98,6 +98,9 @@ class SystemNodes extends SystemNodeCommon {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		$processid = (int) $uriparts[5];
+		if ($processid) $plans = $this->targetDatabaseQuery("SHOW EXPLAIN FOR $processid", $this->nodeid);
+		if (empty($plans)) $this->sendErrorResponse(sprintf("No process plan found for ID '%d'",$processid), 404);
+		$this->sendResponse(array('processplan' => $plans[0]));
 		exit;
 	}
 	

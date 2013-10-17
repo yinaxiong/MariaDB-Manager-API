@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 18 October 2013, 00:01 BST
+ * 
+ * Add ScheduleManager class to cache Schedules
+ * Improve parameter validation for commands.
+ * 
+ * 
  * 16 October 2013, 17:50 BST
  * 
  * Fix problem with bulk monitor updates and limit on substitutions
