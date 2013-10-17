@@ -37,15 +37,15 @@ params=$(echo $3 | tr "&" "\n")
 # Parameter parsing and validation
 for param in $params
 do
-        param_name=`echo $param | cut -d = -f 1`
-        param_value=`echo $param | cut -d = -f 2`
+        param_name=$(echo $param | cut -d = -f 1)
+        param_value=$(echo $param | cut -d = -f 2)
 
-        if [ "$param_name" == "rootpassword" ]; then
+        if [[ "$param_name" == "rootpassword" ]]; then
                 rootpwd=$param_value
         fi
 done
 
-if [ "$rootpwd" == "" ]; then
+if [[ "$rootpwd" == "" ]]; then
         echo "Error: system password parameter not defined."
         exit 1
 fi
@@ -53,38 +53,39 @@ fi
 scripts_installed=0;
 
 # Checking if SkySQL Remote Execution Scripts are installed
-ssh_return=`ssh -q skysqlagent@"$nodeip" \
-        "sudo /usr/local/sbin/skysql/NodeCommand.sh test $taskid $api_host"`
-if [ $? == 0 ] && [ "$ssh_return" == "0" ]; then
-        echo "Info: MariaDB Manager API Agent already installed."
-        scripts_installed=1;
+ssh_return=$(ssh_agent_command "$nodeip" \
+	"sudo /usr/local/sbin/skysql/NodeCommand.sh test $taskid $api_host")
+if [[ "$ssh_return" == "0" ]]; then
+	echo "Info: MariaDB Manager API Agent already installed."
+	scripts_installed=1;
 fi
 
 # Copying repository information to node
-sshpass -p "$rootpwd" scp steps/repo/MariaDB.repo root@"$nodeip":/etc/yum.repos.d/MariaDB.repo
-sshpass -p "$rootpwd" scp steps/repo/SkySQL.repo root@"$nodeip":/etc/yum.repos.d/SkySQL.repo
-sshpass -p "$rootpwd" scp steps/repo/Percona.repo root@"$nodeip":/etc/yum.repos.d/Percona.repo
+ssh_put_file "$nodeip" "steps/repo/MariaDB.repo" "/etc/yum.repos.d/MariaDB.repo"
+ssh_put_file "$nodeip" "steps/repo/SkySQL.repo" "/etc/yum.repos.d/SkySQL.repo"
+ssh_put_file "$nodeip" "steps/repo/Percona.repo" "/etc/yum.repos.d/Percona.repo"
 
-if [ !scripts_installed ]; then
-	# Installing galera-remote-exec package
-	sshpass -p "$rootpwd" ssh root@"$nodeip" "yum -y install galera-remote-exec"
+if [[ !scripts_installed ]]; then
+	ssh_command "$nodeip" "yum -y install galera-remote-exec"
 else
-	sshpass -p "$rootpwd" ssh root@"$nodeip" "yum -y update galera-remote-exec"
+	ssh_command "$nodeip" "yum -y update galera-remote-exec"
 fi
 
 # Getting current node systemid and nodeid
-task_json=`./restfulapi-call.sh "GET" "task/$taskid" "fields=systemid,nodeid"`
-task_fields=`echo $task_json | sed 's|{"task":{||' | sed 's|}}||'`
+task_json=$(api_call "GET" "task/$taskid" "fields=systemid,nodeid")
+task_fields=$(echo $task_json | sed 's|{"task":{||' | sed 's|}}||')
 
-system_id=`echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
-        { gsub("\"", "", $0); if ($1 == "systemid") print $2; }'`
-node_id=`echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
-        { gsub("\"", "", $0); if ($1 == "nodeid") print $2; }'`
+system_id=$(echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
+        { gsub("\"", "", $0); if ($1 == "systemid") print $2; }')
+node_id=$(echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
+        { gsub("\"", "", $0); if ($1 == "nodeid") print $2; }')
 
 # Updating node state
-./restfulapi-call.sh "PUT" "system/$system_id/node/$node_id" "state=connected"
-if [ $? != 0 ]; then
-	echo Failed to update the node state
+(api_call "PUT" "system/$system_id/node/$node_id" "state=connected")
+if [[ $? != 0 ]]; then
+	echo "Error: Failed to update the node state."
+	set_error "Error: Failed to update the node state."
+	exit 1
 fi
 
-exit 0
+echo "Info: SkySQL Galera remote execution agent successfully installed."

@@ -39,63 +39,54 @@ logger -p user.info -t MariaDB-Manager-Task "Setup ssh access for node $nodeip"
 # Parameter parsing and validation
 for param in $params
 do
-        param_name=`echo $param | cut -d = -f 1`
-        param_value=`echo $param | cut -d = -f 2`
+        param_name=$(echo $param | cut -d = -f 1)
+        param_value=$(echo $param | cut -d = -f 2)
 
-        if [ "$param_name" == "rootpassword" ]; then
+        if [[ "$param_name" == "rootpassword" ]]; then
                 rootpwd=$param_value
         fi
 done
 
 # Hide the parameter string that contains the password
-./restfulapi-call.sh "PUT" "task/$taskid" "parameters=*****"
+api_call "PUT" "task/$taskid" "parameters=*****"
 
-if [ "$rootpwd" == "" ]; then
+if [[ "$rootpwd" == "" ]]; then
         echo "Error: system root password parameter not defined."
+	set_error "Error: system root password parameter not defined."
         exit 1
 fi
 
 # Adding node ip to ssh hosts list (if there is no entry)
-scan_results=`ssh-keygen -F "$nodeip"`
-if [ "$scan_results" == "" ]; then
-        ssh-keyscan "$nodeip" >> /var/www/.ssh/known_hosts
+scan_results=$(ssh-keygen -F $nodeip)
+if [[ "$scan_results" == "" ]]; then
+	ssh-keyscan "$nodeip" >> /var/www/.ssh/known_hosts
 fi
 
 # Checking if node is already prepared for command execution
-ssh -q skysqlagent@"$nodeip" "exit"
-if [ $? == 0 ]; then
-        echo "Info: ssh login already setup in target node."
-        exit 0
-fi
-
-# Checking ssh connectivity
-sshpass -p "$rootpwd" ssh root@"$nodeip" "exit" > /dev/null 2>/tmp/setup-ssh.$$.log
-if [ $? != 0 ]; then
-        a=`cat /tmp/setup-ssh.$$.log`
-        echo "Error: cannot connect to target node $nodeip. $a"
-        ./restfulapi-call.sh "PUT" "task/$taskid" "errormessage=Unable to connect: $a"
-        rm -f /tmp/setup-ssh.$$.log
-        exit 1
+# (on a subshell to catch exits)
+(ssh_agent_command "$nodeip" "exit")
+if [[ $? == 0 ]]; then
+	echo "Info: ssh login already setup in target node."
+	exit 0
 fi
 
 # Creating skysqlagent user and ssh credentials directory
-sshpass -p "$rootpwd" ssh root@"$nodeip" "useradd skysqlagent; mkdir -p /home/skysqlagent/.ssh"
+ssh_command "$nodeip" "useradd skysqlagent; mkdir -p /home/skysqlagent/.ssh"
 
 # Setting up credentials on the node
-sshpass -p "$rootpwd" scp /var/www/.ssh/id_rsa.pub root@"$nodeip":/home/skysqlagent/.ssh/id_rsa.pub
-sshpass -p "$rootpwd" ssh root@"$nodeip" \
-        "cd /home/skysqlagent/.ssh/; cat id_rsa.pub >> authorized_keys; \
-        chown -R skysqlagent.skysqlagent /home/skysqlagent/.ssh/; chmod 600 authorized_keys"
+ssh_put_file "$nodeip" "/var/www/.ssh/id_rsa.pub" "/home/skysqlagent/.ssh/id_rsa.pub"
+ssh_command "$nodeip" \
+	"cd /home/skysqlagent/.ssh/; cat id_rsa.pub >> authorized_keys; \
+	chown -R skysqlagent.skysqlagent /home/skysqlagent/.ssh/; chmod 600 authorized_keys"
 
 # Setting up skysqlagent sudoer permissions
-sshpass -p "$rootpwd" ssh root@"$nodeip" \
-        "cat /etc/sudoers | \
-        grep -q \"^skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\"; \
-        if [ $? == 1 ]; then \
-                echo "skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh" >> /etc/sudoers; \
-        fi \
-        sed \"s/.*Defaults.*requiretty.*/Defaults     !requiretty/\" /etc/sudoers > /etc/sudoers.tmp; \
-        mv /etc/sudoers.tmp /etc/sudoers"
+ssh_command "$nodeip" \
+	"cat /etc/sudoers | \
+	grep -q \"^skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\"; \
+	if [ \$? == 1 ]; then \
+		echo \"skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\" >> /etc/sudoers; \
+	fi; \
+	sed \"s/.*Defaults.*requiretty.*/Defaults     !requiretty/\" /etc/sudoers > /etc/sudoers.tmp; \
+	mv /etc/sudoers.tmp /etc/sudoers"
 
-exit 0
-
+echo "Info: SSH successfully set up."

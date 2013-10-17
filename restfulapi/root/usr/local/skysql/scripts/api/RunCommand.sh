@@ -38,26 +38,29 @@
 
 export api_host=$3
 
-taskid=$1
+export taskid=$1
 steps="$2"
 node_ip="$5"
 params="$4"
 log_file="$6"
 
-src_ip=`ip route get $node_ip | awk '{ for (i = 0; i < NF; i++) if ( $(i) == "src" ) print $(i+1); }'`
+src_ip=$(ip route get $node_ip | awk '{ for (i = 0; i < NF; i++) if ( $(i) == "src" ) print $(i+1); }')
 export api_host=$src_ip
 
-scripts_dir=`dirname $0`
+scripts_dir=$(dirname $0)
 cd $scripts_dir
+
+. ./restfulapicredentials.sh
+. ./functions.sh
 
 index=1
 for stepscript in ${steps//,/ } # Iterating the list of steps for the command
 do
         # Setting current step for the command
-        ./restfulapi-call.sh "PUT" "task/$taskid" "stepindex=$index"
-	
+        api_call "PUT" "task/$taskid" "stepindex=$index"
+
 	# Checking if step is executed from API node
-	if [ -f "./steps/$stepscript.sh" ]; then
+	if [[ -f "./steps/$stepscript.sh" ]]; then
 		# Executing step locally
 		sh ./steps/$stepscript.sh "$node_ip" "$taskid" "$params" \
 					>/tmp/step.$$.log 2>&1
@@ -66,24 +69,28 @@ do
 		rm -f /tmp/step.$$.log
 	else
 	        # Executing step remotely
-		return=`ssh -q skysqlagent@$node_ip \
-		"sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $api_host $params"`
+		return=$(ssh_agent_command "$node_ip" \
+		"sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $api_host $params")
+		ssh_exit_code=$?
+		if [[ $ssh_exit_code != 0 ]]; then
+			logger -p user.error -t MariaDB-Manager-Task "$return"
+		fi
 	fi
 
-        if [ "$return" != "0" ]; then
+        if [[ "$return" != "0" ]]; then
                 break
         fi
 
         let index+=1
 done
 
-if [ "$return" == "0" ]; then
-        cmdstate='done'  # Done
+if [[ "$return" == "0" ]]; then
+        cmdstate='done'
 else
-        cmdstate='error'  # Error
+        cmdstate='error'
 	logger -p user.error -t MariaDB-Manager-Task "Task $taskid: Execution of command failed in step $stepscript."
 fi
 
 time=$(date +%s)
 # Updating the state of command execution to finished (either successfully or with errors)
-./restfulapi-call.sh "PUT" "task/$taskid" "completed=@$time&state=$cmdstate"
+api_call "PUT" "task/$taskid" "completed=@$time&state=$cmdstate"
