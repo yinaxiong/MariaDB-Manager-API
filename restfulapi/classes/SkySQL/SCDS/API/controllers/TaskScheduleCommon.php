@@ -43,7 +43,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$command = sprintf('%s %s \"POST\" \"schedule/%d\"', $this->config['shell']['php'], $pathtoapi, $schedule->scheduleid);
 		$elapsed = (int) round((30 + strtotime($schedule->nextstart) - time())/60);
 		$atcommand = sprintf('echo "%s" | at %s 2>&1', $command, "now +$elapsed minute");
-		$lastline = shell_exec($atcommand);
+		$lastline = shell_exec("export SHELL=/bin/sh; " . $atcommand);
 		preg_match('/.*job ([0-9]+) at.*/', @$lastline, $matches);
 		if (@$matches[1]) $schedule->updateJobNumber($matches[1]);
 	}
