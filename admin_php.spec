@@ -7,7 +7,7 @@
 
 BuildRoot:		%{buildroot}
 BuildArch:		noarch
-Summary: 		Admin cnsole backend
+Summary: 		MariaDB Manager REST monitor and management API
 License: 		GPL
 Name: 			%{name}
 Version: 		%{version}
@@ -19,8 +19,11 @@ Requires:		php coreutils curl php-process php-pdo sshpass openssh openssh-client
 #BuildRequires:		
 
 %description
-PHP sripts that implements admin console backend 
-
+MariaDB Manager is a tool to manage and monitor a set of MariaDB
+servers using the Galera multi-master replication form Codership.
+The API provides a RESTful interface to the underlying monitoring
+and management functionality.
+ 
 %prep
 
 %setup -q
