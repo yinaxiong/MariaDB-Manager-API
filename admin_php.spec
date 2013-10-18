@@ -15,7 +15,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-Requires:		php coreutils curl php-process php-pdo sshpass openssh openssh-clients gawk iproute
+Requires:		php coreutils curl php-process php-pdo sshpass openssh openssh-clients gawk iproute at
 #BuildRequires:		
 
 %description
@@ -65,6 +65,8 @@ sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 service iptables save
 
+service atq start
+chkconfig atq on
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
