@@ -43,15 +43,13 @@ class NodeManager extends EntityManager {
 	protected function __construct () {
 		foreach (Node::getAll() as $node) {
 			$this->nodes[$node->systemid][$node->nodeid] = $node;
-			$this->nodeips[$node->systemid][] = $node->privateip;
-			$ipcounts[$node->systemid][$node->privateip][] = $node->nodeid;
+			$this->nodeips[] = $node->privateip;
+			$ipcounts[$node->privateip][] = $node->nodeid;
 		}
-		foreach ((array) @$ipcounts as $persystem) {
-			foreach ($persystem as $privateip=>$nodeids) if (1 < count($nodeids)) {
-				if ($privateip) {
-					$idlist = implode(',', $nodeids);
-					Request::getInstance()->warnings[] = sprintf("Nodes with IDs '%s' have the same private IP address, '%s'", $idlist, $privateip);
-				}
+		foreach ((array) @$ipcounts as $privateip=>$nodeids) if (1 < count($nodeids)) {
+			if ($privateip) {
+				$idlist = implode(',', $nodeids);
+				Request::getInstance()->warnings[] = sprintf("Nodes with IDs '%s' have the same private IP address, '%s'", $idlist, $privateip);
 			}
 		}
 	}
@@ -90,8 +88,8 @@ class NodeManager extends EntityManager {
 		return $node->nodeid;
 	}
 	
-	public function usedIP ($systemid, $ip) {
-		return in_array($ip, (array) @$this->nodeips[$systemid]);
+	public function usedIP ($ip) {
+		return in_array($ip, (array) @$this->nodeips);
 	}
 	
 	public function createNode ($system) {

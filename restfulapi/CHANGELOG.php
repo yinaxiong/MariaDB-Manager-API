@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 18 October 2013, 12:10 BST
+ * 
+ * Tighten restriction on duplicate Private IP for nodes to cover all nodes.
+ * 
+ * 
  * 18 October 2013, 00:01 BST
  * 
  * Add ScheduleManager class to cache Schedules
