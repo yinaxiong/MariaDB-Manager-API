@@ -131,7 +131,9 @@ class Node extends EntityModel {
 	}
 	
 	protected function validateUpdate () {
-		if (NodeManager::getInstance()->usedIP($this->privateip)) Request::getInstance()->sendErrorResponse(sprintf("Node Private IP of '%s' duplicates an existing IP", $this->privateip), 409);
+		if (! empty($this->private)) {
+			if (NodeManager::getInstance()->usedIP($this->privateip)) Request::getInstance()->sendErrorResponse(sprintf("Node Private IP of '%s' duplicates an existing IP", $this->privateip), 409);
+		}
 		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
 	}
 
