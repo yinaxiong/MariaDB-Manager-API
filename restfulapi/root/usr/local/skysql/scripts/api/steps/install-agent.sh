@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-#  Part of SkySQL Manager API
+#  Part of MariaDB Manager API
 #
 # This file is distributed as part of SkySQL Manager.  It is free
 # software: you can redistribute it and/or modify it under the terms of the
@@ -22,7 +22,7 @@
 # Date: July 2013
 #
 #
-# This script is responsible for the installation of the galera-remote-exec package
+# This script is responsible for the installation of the MariaDB-Manager-GREX package
 # on the target node.
 #
 # Parameters:
@@ -66,9 +66,9 @@ ssh_put_file "$nodeip" "steps/repo/SkySQL.repo" "/etc/yum.repos.d/SkySQL.repo"
 ssh_put_file "$nodeip" "steps/repo/Percona.repo" "/etc/yum.repos.d/Percona.repo"
 
 if [[ !scripts_installed ]]; then
-	ssh_command "$nodeip" "yum -y install galera-remote-exec"
+	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX"
 else
-	ssh_command "$nodeip" "yum -y update galera-remote-exec"
+	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX"
 fi
 
 # Getting current node systemid and nodeid
