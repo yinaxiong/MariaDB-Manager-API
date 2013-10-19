@@ -65,8 +65,8 @@ sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 service iptables save
 
-service atq start
-chkconfig atq on
+service atd start
+chkconfig atd on
 
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
