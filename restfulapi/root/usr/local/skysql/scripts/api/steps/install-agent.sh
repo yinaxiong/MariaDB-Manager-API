@@ -65,6 +65,7 @@ ssh_put_file "$nodeip" "steps/repo/MariaDB.repo" "/etc/yum.repos.d/MariaDB.repo"
 ssh_put_file "$nodeip" "steps/repo/SkySQL.repo" "/etc/yum.repos.d/SkySQL.repo"
 ssh_put_file "$nodeip" "steps/repo/Percona.repo" "/etc/yum.repos.d/Percona.repo"
 
+ssh_command "$nodeip" "yum -y clean all"
 if [[ !scripts_installed ]]; then
 	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX"
 else
