@@ -52,7 +52,9 @@ class CachedProvisionedNodes extends CachedSingleton {
 		'hostname',
 		'privateip',
 		'dbusername',
-		'dbpassword'
+		'dbpassword',
+		'repusername',
+		'reppassword'
 	);
 	
 	protected $systems = array();
@@ -91,7 +93,8 @@ class CachedProvisionedNodes extends CachedSingleton {
 		if ($nodes) foreach ($nodes as $node) {
 			if (isset(API::$provisionstates[$node->state])) continue;
 			$pnode = new stdClass();
-			foreach (self::$nodefields as $field) $pnode->$field = @$node->$field;
+			$system = $this->systems[$node->systemid];
+			foreach (self::$nodefields as $field) $pnode->$field = empty($node->$field) ? @$system->$field : $node->$field;
 			$pnode->systemtype = @$this->types[$node->systemid];
 			$pnodes[] = $pnode;
 		}
@@ -103,7 +106,7 @@ class CachedProvisionedNodes extends CachedSingleton {
 			$this->types[$system->systemid] = $system->systemtype;
 			$psystem = new stdClass();
 			foreach (self::$systemfields as $field) $psystem->$field = @$system->$field;
-			$psystems[] = $psystem;
+			$psystems[$system->systemid] = $psystem;
 		}
 		return (array) @$psystems;
 	}

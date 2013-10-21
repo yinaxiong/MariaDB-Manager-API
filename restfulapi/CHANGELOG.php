@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 21 October 2013, 22:40 BST
+ * 
+ * Fix /provisionednode call to implement system/node logic for DB credentals
+ * 
+ * 
  * 21 October 2013, 13:45 BST
  * 
  * Introduce validation for system and node DB credentials, based on system type
