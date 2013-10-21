@@ -29,6 +29,9 @@
 namespace SkySQL\SCDS\API\models;
 
 use SkySQL\COMMON\AdminDatabase;
+use SkySQL\SCDS\API\API;
+use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\SystemManager;
 
 class System extends EntityModel {
 	protected static $setkeyvalues = false;
@@ -88,6 +91,7 @@ class System extends EntityModel {
 		AdminDatabase::getInstance()->beginImmediateTransaction();
 		$this->setCorrectFormatDateWithDefault('started');
 		$this->setCorrectFormatDateWithDefault('lastaccess');
+		$this->checkCredentials();
 	}
 
 	protected function insertedKey ($insertid) {
@@ -106,6 +110,35 @@ class System extends EntityModel {
 	protected function validateUpdate () {
 		$this->setCorrectFormatDate('started');
 		$this->setCorrectFormatDate('lastaccess');
+		$oldsystem = SystemManager::getInstance()->getByID($this->systemid);
+		if (empty($this->systemtype)) $this->systemtype = $oldsystem->systemtype;
+		if (empty($this->dbusername)) $this->dbusername = $oldsystem->dbusername;
+		if (empty($this->dbpassword)) $this->dbpassword = $oldsystem->dbpassword;
+		if (empty($this->repusername)) $this->repusername = $oldsystem->repusername;
+		if (empty($this->reppassword)) $this->reppassword = $oldsystem->reppassword;
+		$this->checkCredentials();
+	}
+	
+	protected function checkCredentials () {
+		if ('system' == @API::$systemtypes[$this->systemtype]['wheretofinddb']) {
+			if (empty($this->dbusername)) $errors[] = sprintf("A system of type '%s' must have database user set", $this->systemtype);
+			elseif ('root' == $this->dbusername) $errors[] = "A system cannot have a database user of 'root'";
+			if (empty($this->dbpassword)) $errors[] = sprintf("A system of type '%s' must have database password set", $this->systemtype);
+		}
+		elseif ('node'== @API::$systemtypes[$this->systemtype]['wheretofinddb']) {
+			if (!empty($this->dbusername)) $errors[] = sprintf("A system of type '%s' must not have database user set", $this->systemtype);
+			if (!empty($this->dbpassword)) $errors[] = sprintf("A system of type '%s' must not have database password set", $this->systemtype);
+		}
+		if ('system' == @API::$systemtypes[$this->systemtype]['wheretofindrep']) {
+			if (empty($this->repusername)) $errors[] = sprintf("A system of type '%s' must have replication user set", $this->systemtype);
+			elseif ('root' == $this->repusername) $errors[] = "A system cannot have a replication user of 'root'";
+			if (empty($this->reppassword)) $errors[] = sprintf("A system of type '%s' must have replication password set", $this->systemtype);
+		}
+		elseif ('node'== @API::$systemtypes[$this->systemtype]['wheretofindrep']) {
+			if (!empty($this->repusername)) $errors[] = sprintf("A system of type '%s' must not have replication user set", $this->systemtype);
+			if (!empty($this->reppassword)) $errors[] = sprintf("A system of type '%s' must not have replication password set", $this->systemtype);
+		}
+		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors, 400);
 	}
 
 	public function markUpdated ($stamp=0) {

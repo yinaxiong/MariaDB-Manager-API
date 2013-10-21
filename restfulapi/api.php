@@ -82,7 +82,9 @@ class API {
 				'error' => array('stateid' => 13, 'description' => 'Slave Error'),
 				'standalone' => array('stateid' => 18, 'description' => 'Standalone Database'),
 			),
-			'onecommandpersystem' => false
+			'onecommandpersystem' => false,
+			'wheretofinddb' => 'system',
+			'wheretofindrep' => 'system',
 		),
 		'galera' => array(
 			'nodetranslator' => array(
@@ -111,7 +113,9 @@ class API {
 				'isolated' => array('stateid' => 99, 'description' => 'Isolated'),
 				'incorrectly-joined' => array('stateid' => 98, 'description' => 'Incorrectly Joined')
 			),
-			'onecommandpersystem' => 'start,restart'
+			'onecommandpersystem' => 'start,restart',
+			'wheretofinddb' => 'system',
+			'wheretofindrep' => 'system',
 		)
 	);
 	

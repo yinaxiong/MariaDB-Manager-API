@@ -128,13 +128,44 @@ class Node extends EntityModel {
 		if (empty($this->privateip)) Request::getInstance()->sendErrorResponse('Private IP must be provided to create a node', 400);
 		if (NodeManager::getInstance()->usedIP($this->privateip)) Request::getInstance()->sendErrorResponse(sprintf("Node Private IP of '%s' duplicates an existing IP", $this->privateip), 409);
 		if (!empty($this->state) AND 'created' != $this->state) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not permitted for new node", @$this->state), 400);
+		$this->checkCredentials();
 	}
 	
 	protected function validateUpdate () {
+		$manager = NodeManager::getInstance();
 		if (! empty($this->private)) {
-			if (NodeManager::getInstance()->usedIP($this->privateip)) Request::getInstance()->sendErrorResponse(sprintf("Node Private IP of '%s' duplicates an existing IP", $this->privateip), 409);
+			if ($manager->usedIP($this->privateip)) Request::getInstance()->sendErrorResponse(sprintf("Node Private IP of '%s' duplicates an existing IP", $this->privateip), 409);
 		}
 		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
+		$oldnode = $manager->getByID($this->systemid, $this->nodeid);
+		if (empty($this->dbusername)) $this->dbusername = $oldnode->dbusername;
+		if (empty($this->dbpassword)) $this->dbpassword = $oldnode->dbpassword;
+		if (empty($this->repusername)) $this->repusername = $oldnode->repusername;
+		if (empty($this->reppassword)) $this->reppassword = $oldnode->reppassword;
+		$this->checkCredentials();
+	}
+
+	protected function checkCredentials () {
+		$systemtype = $this->getSystemType();
+		if ('node' == @API::$systemtypes[$systemtype]['wheretofinddb']) {
+			if (empty($this->dbusername)) $errors[] = sprintf("A node in a system of type '%s' must have database user set", $systemtype);
+			elseif ('root' == $this->dbusername) $errors[] = "A node cannot have a database user of 'root'";
+			if (empty($this->dbpassword)) $errors[] = sprintf("A node in a system of type '%s' must have database password set", $systemtype);
+		}
+		elseif ('system'== @API::$systemtypes[$systemtype]['wheretofinddb']) {
+			if (!empty($this->dbusername)) $errors[] = sprintf("A node in a system of type '%s' must not have database user set", $systemtype);
+			if (!empty($this->dbpassword)) $errors[] = sprintf("A node in a system of type '%s' must not have database password set", $systemtype);
+		}
+		if ('node' == @API::$systemtypes[$systemtype]['wheretofindrep']) {
+			if (empty($this->repusername)) $errors[] = sprintf("A node in a system of type '%s' must have replication user set", $systemtype);
+			elseif ('root' == $this->repusername) $errors[] = "A node cannot have a replication user of 'root'";
+			if (empty($this->reppassword)) $errors[] = sprintf("A node in a system of type '%s' must have replication password set", $systemtype);
+		}
+		elseif ('system'== @API::$systemtypes[$systemtype]['wheretofindrep']) {
+			if (!empty($this->repusername)) $errors[] = sprintf("A node in a system of type '%s' must not have replication user set", $systemtype);
+			if (!empty($this->reppassword)) $errors[] = sprintf("A node in a system of type '%s' must not have replication password set", $systemtype);
+		}
+		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors, 400);
 	}
 
 	public function markUpdated ($stamp=0) {

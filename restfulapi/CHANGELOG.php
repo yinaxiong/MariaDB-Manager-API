@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 21 October 2013, 13:45 BST
+ * 
+ * Introduce validation for system and node DB credentials, based on system type
+ * Fix bug in delete node
+ * Remove symbolic links
+ * 
+ * 
  * 18 October 2013, 12:10 BST
  * 
  * Tighten restriction on duplicate Private IP for nodes to cover all nodes.

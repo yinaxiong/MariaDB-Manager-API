@@ -144,8 +144,9 @@ class SystemNodes extends SystemNodeCommon {
 		if ($this->validateSystem()) {
 			$manager = NodeManager::getInstance();
 			$node = $manager->getByID($this->systemid, $this->nodeid);
+			if (!$node) $this->sendErrorResponse(sprintf("Delete node, no node with System ID '%s', Node ID '%s'",$this->systemid, $this->nodeid), 400);
 			if (!empty(API::$systemtypes[$this->systemtype]['nodestates'][$node->state]['protected'])) {
-				$this->sendErrorResponse(sprintf("Delete node '%s,%s' request, but cannot delete node in state '%s'",$this->systemid, $this->nodeid, $node->state), 400);
+				$this->sendErrorResponse(sprintf("Delete node System ID '%s', Node ID '%s' request, but cannot delete node in state '%s'",$this->systemid, $this->nodeid, $node->state), 400);
 			}
 			NodeManager::getInstance()->deleteNode($this->systemid, $this->nodeid);
 			ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
