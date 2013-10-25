@@ -27,22 +27,27 @@
 # Parameters:
 # $1 The ID of the job that is to be run
 # $2 A comma separated list of steps (each being a script)
-# $3 The hostname for the API
+# $3 The hostname for the API - unused
 # $4 Parameters to be passed on to step scripts
 # $5 The IP of the node on which to run the command
-# $6 The path of the log file
+# $6 The path of the log file - unused
 #
 # NB Paramter 3, api_host is not used any more as the idea has been superceeded
 # in favour of dynamically defining it. This works better when mutliple network
 # interfaces are in use.
+# Also argument 6 is no longer used as all logging is done to syslog
 
-export api_host=$3
+if [[ $# -lt 5 ]]; then
+	logger -p user.error -t MariaDB-Manager-Task \
+		"RunCommand: Unexpected number of arguments $#. Called with $*"
+	api_call "PUT" "task/$taskid" "completed=@$(date +%s)&state=error&errormessage=Incorrect parameter count"
+	exit 1
+fi
 
-export taskid=$1
+export taskid="$1"
 steps="$2"
 node_ip="$5"
 params="$4"
-log_file="$6"
 
 src_ip=$(ip route get $node_ip | awk '{ for (i = 0; i < NF; i++) if ( $(i) == "src" ) print $(i+1); }')
 export api_host=$src_ip
@@ -62,7 +67,7 @@ do
 	# Checking if step is executed from API node
 	if [[ -f "./steps/$stepscript.sh" ]]; then
 		# Executing step locally
-		sh ./steps/$stepscript.sh "$node_ip" "$taskid" "$params" \
+		bash ./steps/$stepscript.sh "$node_ip" "$taskid" "$params" \
 					>/tmp/step.$$.log 2>&1
 		return=$?
 		logger -p user.info -t MariaDB-Manager-Task -f /tmp/step.$$.log

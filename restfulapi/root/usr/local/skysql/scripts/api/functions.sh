@@ -58,8 +58,8 @@ api_call() {
                 curl_status=$?
         fi
 
-        if [[ $curl_status != 0 ]]; then
-		case $curl_status in
+        if [[ "$curl_status" != 0 ]]; then
+		case "$curl_status" in
 
                 1)
                         msg="Unsupported protocol"
@@ -111,15 +111,18 @@ set_error() {
 # $2: ssh command
 ssh_command() {
 	ssh_output=$(sshpass -p "$rootpwd" ssh root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
-        if [[ $? != 0 ]]; then
+	ssh_return=$?
+        if [[ "$ssh_return" != "0" ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
-                echo "Error in ssh connection to $nodeip with root user. $ssh_error_output"
+                logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $nodeip with root user. $ssh_error_output"
 		set_error "Error in ssh connection to $nodeip with root user. $ssh_error_output"
                 rm -f /tmp/ssh_call.$$.log
+		echo $ssh_return
                 exit 1
-        else
-                echo $ssh_output
+        elif [[ "$ssh_output" != "" ]]; then
+                logger -p user.info -t MariaDB-Manager-Task $ssh_output
         fi
+	echo 0
 }
 
 # ssh_put_file()
@@ -131,15 +134,18 @@ ssh_command() {
 # $3: remote file path (destination)
 ssh_put_file() {
 	ssh_output=$(sshpass -p "$rootpwd" scp "$2" root@"$1":"$3" 2>/tmp/ssh_call.$$.log)
-	if [[ $? != 0 ]]; then
+	ssh_return=$?
+	if [[ "$ssh_return" != "0" ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
-                echo "Error in ssh file transfer to $nodeip with root user. $ssh_error_output"
+                logger -p user.error -t MariaDB-Manager-Task "Error in ssh file transfer to $nodeip with root user. $ssh_error_output"
 		set_error "Error in ssh file transfer to $nodeip with root user. $ssh_error_output"
                 rm -f /tmp/ssh_call.$$.log
-                exit 1
-        else
-                echo $ssh_output
+		echo $ssh_return
+                exit $ssh_return
+        elif [[ "$ssh_output" != "" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task $ssh_output
         fi
+	echo $ssh_return
 }
 
 # ssh_agent_command()
@@ -150,15 +156,40 @@ ssh_put_file() {
 # $2: ssh command
 ssh_agent_command() {
         ssh_output=$(ssh -q skysqlagent@"$1" "$2" 2>/tmp/ssh_call.$$.log)
-        if [[ $? != 0 ]]; then
+	ssh_return=$?
+        if [[ "$ssh_return" != 0 ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
-                echo "Error in ssh connection to $1 with skysqlagent user. $ssh_error_output"
+                logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $1 with skysqlagent user. $ssh_error_output"
 		set_error "Error in ssh connection to $1 with skysqlagent user. $ssh_error_output"
                 rm -f /tmp/ssh_call.$$.log
-                exit 1
-	else
-		echo $ssh_output
+		echo $ssh_return
+                exit "$ssh_return"
+	elif [[ "$ssh_output" != "" ]]; then
+		logger -p user.error -t MariaDB-Manager-Task $ssh_output
         fi
+	echo $ssh_return
+}
+
+# json_error
+# Look at the JSON return from an API call and process any error information
+# contained in that return
+#
+# Parameters
+# $1: The JSON returned from the API call
+# 
+# Returns
+# $json_err:	0 if no error was detected
+json_error() {
+	if [[ "$1" =~ '{"errors":"' ]] ; then
+		error_text=$(sed -e 's/^{"errors":\["//' -e 's/"\]}$//' <<<$1)
+		logger -p user.error -t MariaDB-Manager-Task "API call failed: $error_text"
+		if [[ "$error_text" =~ "Date header out of range" ]]; then
+			logger -p user.error -t MariaDB-Manager-Task "Date and time on the local host must be synchronised with the API host"
+		fi
+		json_err=1
+	else
+		json_err=0
+	fi
 }
 
 export -f api_call
@@ -166,3 +197,4 @@ export -f set_error
 export -f ssh_command
 export -f ssh_put_file
 export -f ssh_agent_command
+export -f json_error
