@@ -54,6 +54,19 @@ class MonitorLatest extends CachedSingleton {
 		}
 	}
 	
+	public function getLatestValue ($monitorid, $systemid, $nodeid) {
+		if (isset($this->instances[$monitorid][$systemid][$nodeid])) {
+			$monitor = MonitorManager::getInstance()->getByMonitorID($monitorid);
+			$value = $this->instances[$monitorid][$systemid][$nodeid]['value'];
+			return $value ? $value / pow(10,@$monitor->decimals) : $value;
+		}
+		else return false;
+	}
+	
+	public function getLatestStamp ($monitorid, $systemid, $nodeid) {
+		return isset($this->instances[$monitorid][$systemid][$nodeid]) ? $this->instances[$monitorid][$systemid][$nodeid]['stamp'] : false;
+	}
+	
 	public function getMonitorData ($systemid, $nodeid, $ifmodifiedsince) {
 		$system = SystemManager::getInstance()->getByID($systemid);
 		$monitors = MonitorManager::getInstance()->getByType(@$system->systemtype);
@@ -69,7 +82,7 @@ class MonitorLatest extends CachedSingleton {
 			if ($monitor) {
 				$property = $monitor->monitor;
 				$monitordata = $info[$systemid][$nodeid];
-				$monitorlatest->$property = $monitordata['value'] / pow(10,@$monitor->decimals);
+				$monitorlatest->$property = $monitordata['value'] ? $monitordata['value'] / pow(10,@$monitor->decimals) : $monitordata['value'];
 				if ($ifmodifiedsince < $monitordata['stamp']) $modified = true;
 				$lastupdate = max($lastupdate,$monitordata['stamp']);
 			}

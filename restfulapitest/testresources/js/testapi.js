@@ -94,7 +94,7 @@ function setup () {
   function getTZOString(timezoneOffset)
   {
     /* var hours = Math.floor(timezoneOffset/60); */
-	var hours = (tz/60)|0;
+	var hours = (timezoneOffset/60)|0;
     var modMin = Math.abs(timezoneOffset%60);
     var s = new String();
     s += (hours > 0) ? "-" : "+";

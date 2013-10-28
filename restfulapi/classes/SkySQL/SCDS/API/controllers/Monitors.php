@@ -91,47 +91,6 @@ final class Monitors extends ImplementAPI {
 		MonitorManager::getInstance()->deleteMonitor($uriparts[1], $uriparts[3]);
 	}
 	
-	public function storeMonitorData ($uriparts) {
-		$this->analyseMonitorURI($uriparts);
-		if ($this->paramEmpty('POST', 'value')) $this->sendErrorResponse('Updating monitor data but no value supplied', 400);
-		$value = $this->getParam('POST', 'value');
-		$stamp = $this->getParam('POST', 'timestamp', time());
-		if ('null' == $value) $value = null;
-		elseif (1 != $this->scale) $value = (int) round($value * $this->scale);
-		$this->monitordb = MonitorDatabase::getInstance();
-		$this->beginExclusiveTransaction();
-		$check = $this->monitordb->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
-			SystemID = :systemid AND MonitorID = :monitorid AND NodeID = :nodeid
-			ORDER BY Stamp DESC');
-		$check->execute(array(
-			':monitorid' => $this->monitorid,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid
-		));
-		$lastrecord = $check->fetch();
-		if (is_object($lastrecord) AND $lastrecord->Value == $value AND $lastrecord->Repeats) {
-			$store = $this->monitordb->prepare("UPDATE MonitorData SET Stamp = :stamp, Repeats = Repeats + 1 WHERE rowid = :rowid");
-			$store->execute(array(
-				':stamp' => $stamp,
-				':rowid' => $lastrecord->rowid
-			));
-		}
-		else {
-			$store = $this->monitordb->prepare("INSERT INTO MonitorData (SystemID, NodeID, MonitorID, Value, Stamp, Repeats)
-				VALUES (:systemid, :nodeid, :monitorid, :value, :stamp, :repeats)");
-			$store->execute(array(
-				':monitorid' => $this->monitorid,
-				':systemid' => $this->systemid,
-				':nodeid' => $this->nodeid,
-				':value' => $value,
-				':stamp' => $stamp,
-				':repeats' => ((is_object($lastrecord) AND $lastrecord->Value == $value) ? 1 : 0)
-			));
-		}
-		$this->commitTransaction();
-		$this->sendResponse("Stored Data OK");
-	}
-	
 	public function storeBulkMonitorData () {
 		$monitors = $this->getParam('POST', 'm', array());
 		$systems = $this->getParam('POST', 's', array());
@@ -225,18 +184,9 @@ final class Monitors extends ImplementAPI {
 	
 	public function monitorLatest ($uriparts) {
 		$this->analyseMonitorURI($uriparts, 'monitorData');
-		$this->monitordb = MonitorDatabase::getInstance();
-		$select = $this->monitordb->prepare('SELECT Value FROM MonitorData
-			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
-			ORDER BY Stamp DESC');
-		$select->execute(array(
-			':monitorid' => $this->monitorid,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid
-		));
-		$latest = $select->fetch(PDO::FETCH_COLUMN);
+		$latest = MonitorLatest::getInstance()->getLatestValue($this->monitorid, $this->systemid, $this->nodeid);
 		if (false === $latest) $this->sendErrorResponse('No data matches the request', 404);
-		else $this->sendResponse(array('latest' => $latest/$this->scale));
+		else $this->sendResponse(array('latest' => $latest));
 	}
 	
 	public function monitorData ($uriparts) {
@@ -369,7 +319,10 @@ final class Monitors extends ImplementAPI {
 			':from' => $from,
 			':to' => $to
 		));
-		return $select->fetchALL(PDO::FETCH_ASSOC);
+		$rawdata = $select->fetchALL(PDO::FETCH_ASSOC);
+		$latest = MonitorLatest::getInstance()->getLatestStamp($this->monitorid, $this->systemid, $this->nodeid);
+		if ($latest AND $latest <= strtotime($to)) arrray_push($rawdata, MonitorLatest::getInstance()->getLatestValue($this->monitorid, $this->systemid, $this->nodeid));
+		return $rawdata;
 	}
 	
 	protected function transformRawData ($rawdata) {

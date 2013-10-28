@@ -101,8 +101,6 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/monitor/.+/latest', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/rawdata', 'http' => 'GET'),
 		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/rawdata', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'POST'),
-		array('class' => 'Monitors', 'method' => 'storeMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'POST'),
 		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST'),
 		array('class' => 'ComponentProperties', 'method' => 'getComponentPropertyUpdated', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+/updated', 'http' => 'GET'),
 		array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),

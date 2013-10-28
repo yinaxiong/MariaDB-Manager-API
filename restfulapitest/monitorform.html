@@ -187,49 +187,6 @@
 	  </form>
 	  </div>
 	  <div class="section">
-	  <h3>Store Node Monitor Data</h3>
-	  <form action="" method="post" id="storedata" target="apiresults" onsubmit="return(setFields(this.id,'system','uri1','node','uri2','monitor','uri3','data'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
-		<p class="explain">
-			The HTTP method to be used is: 
-			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/data<br />
-			Parameters:
-			<a class="tooltip" href="#">value,<span class="custom info">
-			<img src="testresources/images/Info.png" alt="Value parameter" height="48" width="48" />
-			<strong>value</strong><br />
-			A numeric value that is a monitor observation, or to indicate no observation is available, omit 
-			the parameter or use the character string &quot;null&quot;.
-			</span></a>&nbsp;
-			<a class="tooltip" href="#">timestamp<span class="custom info">
-			<img src="testresources/images/Info.png" alt="Time stamp parameter" height="48" width="48" />
-			<strong>timestamp</strong><br />
-			A numeric value that is the unix time (integer seconds) for the observation - 
-			optional, if omitted the current time will be assumed.
-			</span></a>
-			<br />
-			Defaults: null, the present time.
-			<br />
-		</p>
-		<p class="formfields">
-			<label for="systemidw">System ID</label>
-			<input type="text" name="uri1" id="systemidw" /><br />
-			<label for="nodeidw">Node ID</label>
-			<input type="text" name="uri2" id="nodeidw" /><br />
-			<label for="monitoridw">Monitor Key</label>
-			<input type="text" name="uri3" id="monitoridw" /><br />
-			<label for="value">Observation value</label>
-			<input type="text" name="value" id="value" /><br />
-			<label for="timestamp">Time stamp</label>
-			<input type="text" name="timestamp" id="timestamp" /><br />
-			<input type="submit" class="submit" value="Submit Data" />
-			<input type="hidden" name="_accept" value="application/json" />
-			<!-- The following two inputs will be set automatically -->
-			<input type="hidden" name="HTTP_DATE" /><br />
-			<input type="hidden" name="HTTP_AUTHORIZATION" />
-		</p>
-	  </form>
-	  </div>
-	  <div class="section">
 	  <h3>Store Bulk Monitor Data</h3>
 	  <form action="" method="post" id="bulkmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitordata'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">

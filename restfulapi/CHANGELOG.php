@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 28 October 2013, 21:45 BST
+ * 
+ * Fix error in earlier JavaScript change that broke HTML front end
+ * Remove API interface for storing single monitor item - use bulk add
+ * Change implementation of get last monitor data to use caching logic
+ * 
+ * 
  * 28 October 2013, 17:45 BST
  * 
  * Fix bug in return message handling and "showhttpcode" handling
