@@ -3,13 +3,32 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * 23 October 2013, 10:00 BST
+ * 28 October 2013, 17:45 BST
+ * 
+ * Fix bug in return message handling and "showhttpcode" handling
+ * Change index on MonitorData to hold more fields for performance
+ * Change JavaScript RFC Date routine to handle hours offset correctly.
+ * 
+ * 
+ * 28 October 2013, 10:30 BST
  * 
  * Block scheduled comand if node no longer exists or potentially conflicting
  *	command is running
  * Centralise URL decoding of URI fields
  * Complete scaling of monitor data
  * Block second run of scheduled command at roughly the same time
+ * Limit system types to "galera"
+ * Suppress transaction rollback in database destructor - bug in PHP 5.3.3
+ * Radically modify handling of latest monitor data for performance
+ * Add ability to GET User Properties
+ * Resolve problem with totally unrecognised calls giving security error
+ * Add debug "reflectheaders" and "showhttpcode" options for api.ini
+ * Get all headers for tunnel request, instead of only those in the form
+ * Add support for "fields" parameter to practically all GET requests
+ * Fix problems with schedules requiring immediate execution
+ * Send HTTP 404 for missing backups, tasks, schedules, not null data
+ * Fix problem with "updated" field not being updated on PUT requests
+ * 
  * 
  * 21 October 2013, 22:40 BST
  * 

@@ -12,7 +12,7 @@ create table MonitorData (
 	Stamp		int,		/* Date/Time this value was observed, unix time */
 	Repeats		int			/* Number of repeated observations same value */
 );
-CREATE INDEX MonitorDataStampIDX ON MonitorData (Stamp);
+CREATE INDEX MonitorGetterIDX ON MonitorData (MonitorID, SystemID, NodeID, Stamp);
 
 create table LatestMonitorData (
 	MonitorID	int,		/* ID number for monitor class */

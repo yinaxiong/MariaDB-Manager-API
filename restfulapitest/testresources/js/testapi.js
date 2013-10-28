@@ -93,11 +93,12 @@ function setup () {
   returns the timezone offset in the format [+|-}DDDD */
   function getTZOString(timezoneOffset)
   {
-    var hours = Math.floor(timezoneOffset/60);
+    /* var hours = Math.floor(timezoneOffset/60); */
+	var hours = (tz/60)|0;
     var modMin = Math.abs(timezoneOffset%60);
     var s = new String();
     s += (hours > 0) ? "-" : "+";
-    var absHours = Math.abs(hours)
+    var absHours = Math.abs(hours);
     s += (absHours < 10) ? "0" + absHours :absHours;
     s += ((modMin == 0) ? "00" : modMin);
     return(s);

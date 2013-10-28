@@ -509,12 +509,8 @@ abstract class Request {
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
-		if (!is_object($body)) {
-			$result = $body;
-			unset($body);
-			$body['result'] = $result;
-		}
-		if ($this->suppress OR @$this->config['debug']['showhttpcode']) $body['httpcode'] = $status;
+		if (!is_array($body)) $body = array('result' => $body);
+		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode']) $body['httpcode'] = $status;
 		//if ('yes' == @$this->config['logging']['verbose']) $this->log(LOG_INFO, print_r($body, true));
 		if (count((array) $this->warnings)) {
 			$body['warnings'] = (array) $this->warnings;
@@ -536,7 +532,7 @@ abstract class Request {
 			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 		}
 		if ('yes' == @$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
-		if ($this->suppress OR @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
+		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
 		$recorder = ErrorRecorder::getInstance();
@@ -621,7 +617,7 @@ PRETTY_PAGE;
 	
 	public function sendHeaders ($status) {
 		$report = $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
-		$this->log(LOG_INFO, "$this->requestmethod completed $report - time taken {$this->timer->mark('seconds')}");
+		$this->log(LOG_INFO, "$this->requestmethod /$this->uri completed $report - time taken {$this->timer->mark('seconds')}");
 		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $report));
 		header('Content-type: '.$this->accept);
 		header('Cache-Control: no-store');
