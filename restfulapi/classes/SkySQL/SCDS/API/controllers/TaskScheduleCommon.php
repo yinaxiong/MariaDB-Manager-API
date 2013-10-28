@@ -30,6 +30,8 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\models\Schedule;
+use SkySQL\SCDS\API\models\Task;
+use SkySQL\SCDS\API\managers\NodeManager;
 
 abstract class TaskScheduleCommon extends ImplementAPI {
 	
@@ -48,22 +50,37 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		if (@$matches[1]) $schedule->updateJobNumber($matches[1]);
 	}
 	
-	public function runScheduledCommand ($parm) {
-		if ($parm instanceof Schedule) $schedule = $parm;
-		else {
-			$schedule = Schedule::getByID((int) $parm[1]);
-			if (!($schedule instanceof Schedule)) {
-				$this->log(LOG_CRIT, "Call to runScheduleCommand did not provide valid parameters");
-				exit;
-			}
+	public function runScheduledCommand ($uriparts) {
+		$schedule = Schedule::getByID((int) $uriparts[1]);
+		if (!($schedule instanceof Schedule)) {
+			$this->log(LOG_CRIT, sprintf("Call to runScheduleCommand gave scheduleid as '%d' but no such schedule", (int) $uriparts[1]));
 		}
-		exec ("atrm $schedule->atjobnumber");
-		$schedule->processCalendarEntry();
-		$this->setRunAt($schedule);
-		$task = $schedule->makeTask();
-		$task->insert(false);
-		$this->execute($task);
+		else {
+			exec ("atrm $schedule->atjobnumber");
+			$schedule->processCalendarEntry();
+			$this->setRunAt($schedule);
+			$this->runScheduleNow($schedule);
+		}
 		exit;
+	}
+	
+	protected function runScheduleNow ($schedule) {
+		$task = $schedule->makeTask();
+		$node = NodeManager::getInstance()->getByID($task->systemid, $task->nodeid);
+		if (!$node) {
+			$task->state = 'error';
+			$task->errormessage = 'Unable to run schedule command because the relevant node does not exist';
+			$task->insert(false);
+		}
+		elseif (Task::tasksNotFinished($task->command, $node)) {
+			$task->state = 'error';
+			$task->errormessage = 'Scheduled command could not run because other commands are running';
+			$task->insert(false);
+		}
+		else {
+			$task->insert(false);
+			$this->execute($task);
+		}
 	}
 	
 	protected function execute ($task) {

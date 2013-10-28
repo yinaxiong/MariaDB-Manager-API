@@ -244,7 +244,7 @@ abstract class EntityModel {
 				$this->insname[] = $about['sqlname'];
 				$this->insvalue[] = $bindname;
 				if ('insert' == $caller OR empty($about['insertonly'])) {
-					if ('insert' == $caller OR !$request->paramEmpty($source, $name) OR !empty($this->$name)) {
+					if ('insert' == $caller OR !$request->paramEmpty($source, $name) OR !empty($about['forced']) OR !empty($this->$name)) {
 						// setter is only needed for updates, but is set anyway
 						$this->setter[] = $about['sqlname'].' = '.$bindname;
 						$this->$name = $this->bind[$bindname] = self::getParam($source, $name, $about, @$this->$name);

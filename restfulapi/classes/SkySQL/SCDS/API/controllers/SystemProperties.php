@@ -58,7 +58,7 @@ class SystemProperties extends SystemNodeCommon {
 	
 	protected function checkSystemIDGetProperty ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
-		if (SystemManager::getInstance()->getByID($this->systemid)) return urldecode($uriparts[3]);
+		if (SystemManager::getInstance()->getByID($this->systemid)) return $uriparts[3];
 		$this->sendErrorResponse("No system with ID $this->systemid", 404);
 	}
 }

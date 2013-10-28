@@ -104,7 +104,7 @@ class Systems extends SystemNodeCommon {
 	protected function retrieveOneSystem ($system) {
 		$this->systemid = (int) $system->systemid;
 		$system->nodes = NodeManager::getInstance()->getAllIDsForSystem($this->systemid);
-		$system->lastbackup = $this->isFilterWord('lastBackup') ? $this->retrieveLastBackup() : null;
+		$system->lastbackup = $this->isFilterWord('lastbackup') ? $this->retrieveLastBackup() : null;
 		$system->properties = $this->isFilterWord('properties') ? SystemPropertyManager::getInstance()->getAllProperties($this->systemid) : null;
 		// Not sure if there are any system commands
 		// $system->commands = ($this->isFilterWord('commands') AND $system->state) ? $this->getCommands($system->state) : null;

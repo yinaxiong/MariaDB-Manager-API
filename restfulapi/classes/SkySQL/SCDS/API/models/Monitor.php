@@ -56,6 +56,7 @@ class Monitor extends EntityModel {
 		'name' => array('sqlname' => 'Name', 'default' => ''),
 		'sql' => array('sqlname' => 'SQL', 'default' => ''),
 		'description' => array('sqlname' => 'Description', 'default' => ''),
+		'decimals' => array('sqlname' => 'Decimals', 'default' => ''),
 		'mapping' => array('sqlname' => 'Mapping', 'default' => ''),
 		'charttype' => array('sqlname' => 'ChartType', 'default' => ''),
 		'delta' => array('sqlname' => 'delta', 'default' => 0),
@@ -63,7 +64,7 @@ class Monitor extends EntityModel {
 		'systemaverage' => array('sqlname' => 'SystemAverage', 'default' => 0),
 		'interval' => array('sqlname' => 'Interval', 'default' => 0),
 		'unit' => array('sqlname' => 'Unit', 'default' => ''),
-		'monitorid' => array('sqlname' => 'MonitorID', 'default' => 0)
+		'monitorid' => array('sqlname' => 'MonitorID', 'default' => 0, 'insertonly' => true)
 	);
 	
 	public function __construct ($systemtype='galera', $monitor='') {

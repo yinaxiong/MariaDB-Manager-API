@@ -28,6 +28,7 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\caches\MonitorLatest;
 use SkySQL\SCDS\API\managers\MonitorManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
@@ -39,6 +40,7 @@ final class Monitors extends ImplementAPI {
 	protected $nodeid = 0;
 	protected $monitor = null;
 	protected $monitorid = 0;
+	protected $scale = 1;
 	protected $rawtimes = array();
 	protected $rawvalues = array();
 	protected $rawrepeats = array();
@@ -56,24 +58,37 @@ final class Monitors extends ImplementAPI {
 			$this->sendResponse(array('monitorclasses' => $monitors));
 		}
 		elseif (empty($uriparts[3])) {
-			$systemtype = urldecode($uriparts[1]);
+			$systemtype = $uriparts[1];
 			$monitors = $manager->getByType($systemtype);
 			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
 		}
 		else {
-			$systemtype = urldecode($uriparts[1]);
-			$monitorkey = urldecode($uriparts[3]);
+			$systemtype = $uriparts[1];
+			$monitorkey = $uriparts[3];
 			$monitor = 	$manager->getByID($systemtype, $monitorkey);
 			$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
 		}
     }
 	
 	public function putMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->putMonitor(urldecode($uriparts[1]), urldecode($uriparts[3]));
+		$manager = MonitorManager::getInstance();
+		$oldmonitor = $manager->getByID($uriparts[1], $uriparts[3]);
+		if ($oldmonitor AND !$this->paramEmpty($this->requestmethod, 'decimals')) {
+			$newdecimals = (int) $this->getParam($this->requestmethod, 'decimals', 0) - (int) @$oldmonitor->decimals;
+			if ($newdecimals) {
+				$multiplier = pow(10, (int) $newdecimals);
+				$update = MonitorDatabase::getInstance()->prepare("UPDATE MonitorData SET Value = Value * :multiplier WHERE MonitorID = :monitorid");
+				$update->execute(array(
+					':multiplier' => $multiplier,
+					':monitorid' => $oldmonitor->monitorid
+				));
+			}
+		}
+		$manager->putMonitor($uriparts[1], $uriparts[3]);
 	}
 	
 	public function deleteMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->deleteMonitor(urldecode($uriparts[1]), urldecode($uriparts[3]));
+		MonitorManager::getInstance()->deleteMonitor($uriparts[1], $uriparts[3]);
 	}
 	
 	public function storeMonitorData ($uriparts) {
@@ -82,10 +97,7 @@ final class Monitors extends ImplementAPI {
 		$value = $this->getParam('POST', 'value');
 		$stamp = $this->getParam('POST', 'timestamp', time());
 		if ('null' == $value) $value = null;
-		else {
-			$scale = isset($this->monitor->scale) ? $this->monitor->scale : 0;
-			$value =  $scale ? (int) round($value * pow(10,$scale)) : (int) $value;
-		}
+		elseif (1 != $this->scale) $value = (int) round($value * $this->scale);
 		$this->monitordb = MonitorDatabase::getInstance();
 		$this->beginExclusiveTransaction();
 		$check = $this->monitordb->prepare('SELECT Value, Repeats, rowid FROM MonitorData WHERE
@@ -135,27 +147,43 @@ final class Monitors extends ImplementAPI {
 				unset($monitors[$i],$systems[$i],$nodes[$i],$values[$i]);
 				continue;
 			}
-			if (!MonitorManager::getInstance()->getByMonitorID($monitors[$i])) $errors[] = "No such monitor ID {$monitors[$i]}";
+			$monitor = MonitorManager::getInstance()->getByMonitorID($monitors[$i]);
+			if (!$monitor) $errors[] = "No such monitor ID {$monitors[$i]}";
 			if (!SystemManager::getInstance()->getByID($systems[$i])) $errors[] = "No such system ID: {$systems[$i]}";
 			if (0 != $nodes[$i] AND !NodeManager::getInstance()->getByID($systems[$i], $nodes[$i])) $errors[] = "No such node as system ID {$systems[$i]}, node ID {$nodes[$i]}";
+			if (!empty($monitor->decimals)) $values[$i] = (int) round($values[$i] * pow(10,$monitor->decimals));
 		}
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		
 		$this->monitordb = MonitorDatabase::getInstance();
 		$this->monitordb->beginExclusiveTransaction();
-		$latest = $this->monitordb->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, rowid, MAX(Stamp) FROM MonitorData GROUP BY SystemID, MonitorID, NodeID ');
-		foreach ($latest->fetchAll() as $instance) {
-			$instances[$instance->MonitorID][$instance->SystemID][$instance->NodeID] = array(
-				'value' => $instance->Value, 'repeats' => $instance->Repeats, 'rowid' => $instance->rowid
-			);
-		}
+		//$latest = $this->monitordb->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, rowid, MAX(Stamp) FROM MonitorData GROUP BY SystemID, MonitorID, NodeID ');
+		//foreach ($latest->fetchAll() as $instance) {
+		//	$instances[$instance->MonitorID][$instance->SystemID][$instance->NodeID] = array(
+		//		'value' => $instance->Value, 'repeats' => $instance->Repeats, 'rowid' => $instance->rowid
+		//	);
+		//}
+		//$instances = MonitorLatest::getInstance()->getForUpdate();
 		
 		$stamp = $this->getParam('POST', 'timestamp', time());
+		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systems[0], $nodes[0], $monitors, $values);
+		foreach ($inserts as $insert) {
+			if (isset($insertrows)) {
+				$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d, %d, %d\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['stamp'], $insert['repeats']);
+			}
+			else {
+				$insertrows = "INSERT INTO MonitorData SELECT";
+				$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['stamp'], $insert['repeats']);
+			}
+		}
+		
+		/*
 		for ($i = 0; $i < count($monitors); $i++) {
 			$previous = isset($instances[$monitors[$i]][$systems[$i]][$nodes[$i]]);
 			if ($previous) $value = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['value'];
 			if ($previous AND $value == $values[$i] AND $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['repeats']) {
-				$updaterows[] = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['rowid'];
+				//$updaterows[] = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['rowid'];
+				$updaterows[] = $monitors[$i];
 			}
 			else {
 				if (isset($insertrows)) {
@@ -165,21 +193,27 @@ final class Monitors extends ImplementAPI {
 					$insertrows = "INSERT INTO MonitorData SELECT";
 					$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $monitors[$i], (int) $systems[$i], (int) $nodes[$i], ('null' == $values[$i] ? 'NULL' : (int) $values[$i]), (int) $stamp, (($previous AND $value == $values[$i]) ? 1 : 0));
 				}
-				/*
 				$bind[":monitorid$i"] = (int) $monitors[$i];
 				$bind[":systemid$i"] = (int) $systems[$i];
 				$bind[":nodeid$i"] = (int) $nodes[$i];
 				$bind[":value$i"] = 'null' == $values[$i] ? null : (int) $values[$i];
 				$bind[":stamp$i"] = $stamp;
 				$bind[":repeats$i"] = ($previous AND $value == $values[$i]) ? 1 : 0;
-				 *
-				 */
 			}
 		}		
 		if (isset($updaterows)) {
 			$rowlist = implode(',',$updaterows);
-			$this->monitordb->query("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = '$stamp' WHERE rowid IN ($rowlist)");
+			$update = $this->monitordb->prepare("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = :stamp 
+				WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID IN (:rowlist) AND Repeats > 0");
+			$update->execute(array(
+				':stamp' => $stamp,
+				':systemid' => $systems[0],
+				':nodeid' => $nodes[0],
+				':rowlist' => $rowlist
+			));
 		}
+		 * 
+		 */
 		if (isset($insertrows)) {
 			$this->monitordb->query($insertrows);
 			// $insert->execute($bind);
@@ -202,7 +236,7 @@ final class Monitors extends ImplementAPI {
 		));
 		$latest = $select->fetch(PDO::FETCH_COLUMN);
 		if (false === $latest) $this->sendErrorResponse('No data matches the request', 404);
-		else $this->sendResponse(array('latest' => $latest));
+		else $this->sendResponse(array('latest' => $latest/$this->scale));
 	}
 	
 	public function monitorData ($uriparts) {
@@ -279,20 +313,20 @@ final class Monitors extends ImplementAPI {
 		$n++;
 		for ($i=0; $i < $n; $i++) {
 			$thistime = $data[$i]['timestamp'];
-			$thisvalue = $data[$i]['value'];
-			if ($thistime < $top) {
-				$results['min'][$k] = isset($results['min'][$k]) ? min ($results['min'][$k],$thisvalue) : $thisvalue;
-				$results['max'][$k] = isset($results['max'][$k]) ? max ($results['max'][$k],$thisvalue) : $thisvalue;
-			}
+			$thisvalue = (float) $data[$i]['value'];
 			while ($k < $this->count AND $thistime > $top) {
 				if (!isset($results['min'][$k])) {
-					$results['min'][$k] = $results['max'][$k] = $data[$i-1]['value'];
+					$results['min'][$k] = $results['max'][$k] = (float) $data[$i-1]['value'];
 				}
 				$k++;
 				if ($k >= $this->count) break 2;
 				$results['timestamp'][$k] = $results['timestamp'][$k-1] + $this->interval;
 				$base = $top;
 				$top = $base + $this->interval;
+			}
+			if ($thistime < $top) {
+				$results['min'][$k] = isset($results['min'][$k]) ? min ($results['min'][$k],$thisvalue) : $thisvalue;
+				$results['max'][$k] = isset($results['max'][$k]) ? max ($results['max'][$k],$thisvalue) : $thisvalue;
 			}
 		}
 		return $results;
@@ -309,10 +343,11 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getPreceding ($start) {
-		$preceding = $this->monitordb->prepare('SELECT Value AS value, Stamp AS timestamp, Repeats AS repeats
+		$preceding = $this->monitordb->prepare('SELECT 1.0 * Value/:scale AS value, Stamp AS timestamp, Repeats AS repeats
 			FROM MonitorData WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
 			AND Stamp < :start ORDER BY Stamp DESC');
 		$preceding->execute(array(
+			':scale' => $this->scale,
 			':monitorid' => $this->monitorid,
 			':systemid' => $this->systemid,
 			':nodeid' => $this->nodeid,
@@ -322,11 +357,12 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getRawData ($from, $to) {
-		$select = $this->monitordb->prepare('SELECT Value AS value, 
+		$select = $this->monitordb->prepare('SELECT 1.0 * Value/:scale AS value, 
 			Stamp AS timestamp, Repeats AS repeats FROM MonitorData
 			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
 			AND Stamp BETWEEN :from AND :to ORDER BY Stamp');
 		$select->execute(array(
+			':scale' => $this->scale,
 			':monitorid' => $this->monitorid,
 			':systemid' => $this->systemid,
 			':nodeid' => $this->nodeid,
@@ -346,13 +382,14 @@ final class Monitors extends ImplementAPI {
 		$this->systemid = (int) $uriparts[1];
 		if ('node' == $uriparts[2]) {
 			$this->nodeid = (int) $uriparts[3];
-			$this->monitorid = $this->getMonitorIDFromName($this->systemid, urldecode($uriparts[5]));
+			$this->monitorid = $this->getMonitorIDFromName($this->systemid, $uriparts[5]);
 		}
 		elseif ('monitor' == $uriparts[2]) {
 			$this->nodeid = 0;
-			$this->monitorid = $this->getMonitorIDFromName($this->systemid, urldecode($uriparts[3]));
+			$this->monitorid = $this->getMonitorIDFromName($this->systemid, $uriparts[3]);
 		}
 		else $this->sendErrorResponse("Internal contradiction in Monitors->storeMonitorData", 500);
+		$this->scale = isset($this->monitor->decimals) ? pow(10,$this->monitor->decimals) : 1;
 	}
 	
 	protected function getMonitorIDFromName ($systemid, $monitorkey) {
@@ -370,3 +407,4 @@ final class Monitors extends ImplementAPI {
 		$this->count = (int) $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
 	}
 }
+

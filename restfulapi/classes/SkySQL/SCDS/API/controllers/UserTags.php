@@ -44,7 +44,7 @@ abstract class UserTags extends ImplementAPI {
 	}
 	
 	public static function UserTagsFactory ($uriparts, $controller) {
-		$tagtype = ucfirst(trim(substr(urldecode($uriparts[2]), 0, -3)));
+		$tagtype = ucfirst(trim(substr($uriparts[2], 0, -3)));
 		$class = __CLASS__.$tagtype;
 		if (class_exists($class)) {
 			$object = new $class($controller);
@@ -54,18 +54,18 @@ abstract class UserTags extends ImplementAPI {
 	}
 	
 	protected function analyseURI ($uriparts) {
-		$this->username = urldecode($uriparts[1]);
+		$this->username = $uriparts[1];
 		$user = UserManager::getInstance()->getByName($this->username);
 		if (!($user instanceof User)) $this->sendErrorResponse("Username $this->username not recognised", 400);
-		$this->tagtype = substr(urldecode($uriparts[2]), 0, -3);
-		$this->tagname = urldecode(@$uriparts[3]);
+		$this->tagtype = substr($uriparts[2], 0, -3);
+		$this->tagname = @$uriparts[3];
 	}
 	
 	public function getAllUserTags ($uriparts) {
 		$this->analyseURI($uriparts);
 		$tagnames = UserTag::getTagNames($this->username, $this->tagtype);
 		foreach ($tagnames as $this->tagname) $tags[$this->tagname] = $this->getTags();
-		$this->sendResponse(array('tags' => $tags));
+		$this->sendResponse(array('tags' => (array) @$tags));
 	}
 
 	public function getUserTags ($uriparts) {
@@ -79,7 +79,7 @@ abstract class UserTags extends ImplementAPI {
 	
 	public function deleteUserTags ($uriparts) {
 		$this->analyseURI($uriparts);
-		$tag = urldecode(@$uriparts[4]);
+		$tag = @$uriparts[4];
 		$counter = UserTag::deleteTag($this->username, $this->tagtype, $this->tagname, $tag);
 		if ($counter) $this->sendResponse(array('deletecount' => $counter));
 		else $this->sendErrorResponse("Delete did not match any user tags", 404);
@@ -109,7 +109,7 @@ class UserTagsMonitor extends UserTags {
 			}
 			UserTag::deleteTag($this->username, $this->tagtype, $this->tagname, $tag);
 		}
-		return $fulltags;
+		return (array) @$fulltags;
 	}
 	
 	protected function makeFullTag ($systemid, $nodeid, $monitor) {

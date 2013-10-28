@@ -116,11 +116,21 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /user/{username} <br />
-			No parameters <br />
+			Parameters:
+			<a class="tooltip" href="#">fields 
+			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			Comma separated list of the field names that you would like to be returned. If not specified,
+			all fields are returned.
+			</span>
+			</a><br />
+			Default: All fields <br />
 		</p>
 		<p class="formfields">
 			<label for="usernamex">Username</label>
 			<input type="text" name="uri1" id="usernamex" /><br />
+			<label for="fields1">Fields to return</label>
+			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Information" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -180,6 +190,28 @@
 			<label for="value">Value</label>
 			<input type="text" name="value" id="value" /><br />
 			<input type="submit" class="submit" value="Add or Update Property" />
+			<input type="hidden" name="_accept" value="application/json" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+			</p>
+		</form>
+	  </div>
+	  <div class="section">
+	  <h3>Get a User Property</h3>
+	  <form action="" method="post" id="getuserprop" target="apiresults" onsubmit="return(setFields(this.id,'user','uri1','property','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /user/{username}/property/{propertyname} <br />
+			Parameters: none
+		</p>
+		<p class="formfields">
+			<label for="usernamepg">Username</label>
+			<input type="text" name="uri1" id="usernamepg" /><br />
+			<label for="propnameg">Property Name</label>
+			<input type="text" name="uri2" id="propnameg" /><br />
+			<input type="submit" class="submit" value="Get Property" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />

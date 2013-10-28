@@ -69,7 +69,7 @@ final class Metadata extends ImplementAPI {
 	}
 	
 	public function getEntity ($uriparts) {
-		$entity = urldecode($uriparts[2]);
+		$entity = $uriparts[2];
 		$model = $this->findEntity($entity);
 		$modelclass = 'SkySQL\\SCDS\\API\\models\\'.$model;
 		if (!$model OR !class_exists($modelclass)) {

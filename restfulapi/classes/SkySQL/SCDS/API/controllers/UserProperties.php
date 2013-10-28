@@ -36,16 +36,22 @@ class UserProperties extends ImplementAPI {
 		Property::checkLegal();
 	}
 
+	public function getUserProperty ($uriparts) {
+		$username = $uriparts[1];
+		$property = $uriparts[3];
+		return UserPropertyManager::getInstance()->getProperty($username, $property);
+	}
+	
 	public function putUserProperty ($uriparts) {
-		$username = urldecode($uriparts[1]);
-		$property = urldecode($uriparts[3]);
+		$username = $uriparts[1];
+		$property = $uriparts[3];
 		$value = $this->getParam('PUT', 'value');
 		UserPropertyManager::getInstance()->setProperty($username, $property, $value);
 	}
 	
 	public function deleteUserProperty ($uriparts) {
-		$username = urldecode($uriparts[1]);
-		$property = urldecode($uriparts[3]);
+		$username = $uriparts[1];
+		$property = $uriparts[3];
 		UserPropertyManager::getInstance()->deleteProperty($username, $property);
 	}
 }

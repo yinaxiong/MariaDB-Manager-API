@@ -52,7 +52,7 @@ class SystemNodes extends SystemNodeCommon {
 			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAll())));
 		}
 		else {
-			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAllForType(urldecode($uriparts[1])))));
+			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAllForType($uriparts[1]))));
 		}
 	}
 	

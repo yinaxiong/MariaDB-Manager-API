@@ -61,6 +61,7 @@ class API {
 	private static $keyname = '';
 	
 	public static $systemtypes = array(
+		/*
 		'aws' => array(
 			'nodetranslator' => array(
 				'Master' => 'master',
@@ -86,6 +87,8 @@ class API {
 			'wheretofinddb' => 'system',
 			'wheretofindrep' => 'system',
 		),
+		 * 
+		 */
 		'galera' => array(
 			'nodetranslator' => array(
 				'Master' => 'master',

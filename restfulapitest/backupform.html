@@ -32,9 +32,18 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /backupstates <br />
-			No parameters <br />
+			Parameter: 
+			<a class="tooltip" href="#">fields,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>&nbsp;
+			<br />
+			Default: All fields <br />
 		</p>
 		<p class="formfields">
+			<label for="fieldsbs">Fields to return</label>
+			<input type="text" name="fields" id="fieldsbs" /><br />
 			<input type="submit" class="submit" value="List States" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->
@@ -133,6 +142,8 @@
 			<input type="text" name="uri1" id="systemidb" /><br />
 			<label for="backupidb">Backup ID</label>
 			<input type="text" name="uri2" id="backupidb" /><br />
+			<label for="fieldsb">Fields to return</label>
+			<input type="text" name="fields" id="fieldsb" /><br />
 			<input type="submit" class="submit" value="Show Backup" />
 			<input type="hidden" name="_accept" value="application/json" />
 			<!-- The following two inputs will be set automatically -->

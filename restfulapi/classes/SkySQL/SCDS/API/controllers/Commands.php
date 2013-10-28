@@ -48,7 +48,7 @@ class Commands extends ImplementAPI {
 	}
 	
 	public function getStates () {
-        $this->sendResponse(array("commandStates" => API::mergeStates(API::$commandstates)));
+        $this->sendResponse(array("commandStates" => $this->filterResults(API::mergeStates(API::$commandstates))));
 	}
 	
 	public function getSteps () {
@@ -64,6 +64,6 @@ class Commands extends ImplementAPI {
 		foreach ((array) @$errorsteps as $step=>$commands) {
 			$this->requestor->warnings[] = sprintf("Step '%s' is invalid; used by command(s): ", $step).implode(',',$commands);
 		}
-		$this->sendResponse(array('command_steps' => API::mergeStates(API::$commandsteps, 'step')));
+		$this->sendResponse(array('command_steps' => $this->filterResults(API::mergeStates(API::$commandsteps, 'step'))));
 	}
 }

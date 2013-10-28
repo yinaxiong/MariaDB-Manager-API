@@ -3,6 +3,14 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 23 October 2013, 10:00 BST
+ * 
+ * Block scheduled comand if node no longer exists or potentially conflicting
+ *	command is running
+ * Centralise URL decoding of URI fields
+ * Complete scaling of monitor data
+ * Block second run of scheduled command at roughly the same time
+ * 
  * 21 October 2013, 22:40 BST
  * 
  * Fix /provisionednode call to implement system/node logic for DB credentals

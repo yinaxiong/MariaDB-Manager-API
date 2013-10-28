@@ -47,13 +47,13 @@ class Applications extends SystemNodeCommon {
 	
 	public function deleteApplicationProperty ($uriparts) {
 		$this->appid = (int) $uriparts[1];
-		$property = urldecode($uriparts[3]);
+		$property = $uriparts[3];
 		ApplicationPropertyManager::getInstance()->deleteProperty($this->appid, $property);
 	}
 	
 	public function getApplicationProperty ($uriparts) {
 		$this->appid = (int) $uriparts[1];
-		$property = urldecode($uriparts[3]);
+		$property = $uriparts[3];
 		return ApplicationPropertyManager::getInstance()->getProperty($this->appid, $property);
 	}
 }

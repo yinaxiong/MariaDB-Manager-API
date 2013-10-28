@@ -35,6 +35,7 @@ use SkySQL\SCDS\API\managers\MonitorManager;
 use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\COMMON\MonitorDatabase;
+use SkySQL\SCDS\API\caches\MonitorLatest;
 
 abstract class SystemNodeCommon extends ImplementAPI {
 	protected $systemid = 0;
@@ -45,33 +46,8 @@ abstract class SystemNodeCommon extends ImplementAPI {
 	}
 
 	protected function getMonitorData ($nodeid=0) {
-		$system = SystemManager::getInstance()->getByID($this->systemid);
-		$monitors = MonitorManager::getInstance()->getByType(@$system->systemtype);
-		$monitorlatest = new stdClass;
-		foreach ($monitors as $monitor) {
-			$property = $monitor->monitor;
-			$monitorlatest->$property = null;
-		}
-		if (empty($this->monitorquery)) $this->monitorquery = MonitorDatabase::getInstance()->prepare(
-			'SELECT MonitorID AS monitorid, Value AS value, MAX(Stamp) AS updated FROM MonitorData 
-				WHERE SystemID = :systemid AND NodeID = :nodeid AND Repeats = 0 GROUP BY MonitorID');
-		// AS m INNER JOIN Monitor AS c ON c.MonitorID = m.MonitorID AND s.SystemType = c.SystemType 
-		//	INNER JOIN System AS s ON s.SystemID = m.SystemID
-			
-		$this->monitorquery->execute(
-			array(':systemid' => $this->systemid, ':nodeid' => $nodeid)
-		);
-		$lastupdate = 0;
-		$latest = $this->monitorquery->fetchAll();
-		foreach ($latest as $data) {
-			$monitor = MonitorManager::getInstance()->getByMonitorID($data->monitorid);
-			if ($monitor) {
-				$property = $monitor->monitor;
-				$monitorlatest->$property = $data->value;
-				if ($this->ifmodifiedsince < $data->updated) $this->modified = true;
-				$lastupdate = max($lastupdate,$data->updated);
-			}
-		}
+		list($monitorlatest, $lastupdate, $modified) = MonitorLatest::getInstance()->getMonitorData($this->systemid, $nodeid, $this->ifmodifiedsince);
+		if ($modified) $this->modified = true;
 		return array($monitorlatest, ($lastupdate ? date('r', $lastupdate) : null));
 	}
 	

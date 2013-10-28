@@ -83,6 +83,12 @@
 			<strong>description</strong><br />
 			A description of the monitor class (text).
 			</span></a>&nbsp;
+			<a class="tooltip" href="#">decimals,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
+			<strong>decimals</strong><br />
+			The number of decimal places to be assumed for the integer stored in the Admin DB as a value.
+			Can be negative, which implies adding zeroes to the end of the stored integer.
+			</span></a>&nbsp;
 			<a class="tooltip" href="#">mapping,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
 			<strong>mapping</strong><br />
@@ -134,6 +140,8 @@
 			<input type="text" id="sql" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'sql');" /><br />
 			<label for="description">Description</label>
 			<input type="text" id="description" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'description');" /><br />
+			<label for="decimals">Decimals</label>
+			<input type="text" id="decimals" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'decimals');" /><br />
 			<label for="mapping">Mapping</label>
 			<input type="text" id="mapping" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'mapping');" /><br />
 			<label for="type">Type</label>

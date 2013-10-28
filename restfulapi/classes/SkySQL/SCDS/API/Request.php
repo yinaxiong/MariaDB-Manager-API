@@ -129,6 +129,7 @@ abstract class Request {
 		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+/.+', 'http' => 'DELETE'),
 		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'DELETE'),
 		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'DELETE'),
+		array('class' => 'UserProperties', 'method' => 'getUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'GET'),
 		array('class' => 'UserProperties', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT'),
 		array('class' => 'UserProperties', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE'),
 		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/.*', 'http' => 'GET'),
@@ -370,16 +371,16 @@ abstract class Request {
 			if (count($_GET)) $this->log(LOG_DEBUG, print_r($_GET,true));
 			if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
 		}
-		$uriparts = explode('/', $this->uri);
-		if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0]) $this->checkSecurity();
+		$uriparts = array_map('urldecode', explode('/', $this->uri));
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			try {
+				if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0]) $this->checkSecurity();
 				if ('Request' == $link['class']) $object = $this;
 				else {
 					$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
 					if (!class_exists($class)) {
-						$this->sendErrorResponse("Request $this->uri no such class as $class", 404);
+						$this->sendErrorResponse("Request $this->uri no such class as $class", 500);
 					}
 					$factory = $link['class'].'Factory';
 					if (method_exists($class, $factory)) $object = call_user_func (array($class, $factory), $uriparts, $this);
@@ -387,7 +388,7 @@ abstract class Request {
 				}
 				$method = $link['method'];
 				if (!method_exists($object, $method)) {
-					$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 404);
+					$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 500);
 				}
 				$object->$method($uriparts);
 				$this->sendErrorResponse("Selected method $method of class $class returned to controller", 500);
@@ -473,7 +474,6 @@ abstract class Request {
 	            $result = $arr[$name];
 	            if (!($mask&_MOS_NOTRIM)) $result = trim($result);
 	            if (!is_numeric($result)) {
-					if ('GET' == $arrname AND !$this->requestviapost) $result = urldecode($result);
 	            	if (get_magic_quotes_gpc() AND !($mask & _MOS_NOSTRIP)) $result = stripslashes($result);
 	                if (!($mask&_MOS_ALLOWRAW) AND is_numeric($def)) $result = $def;
 	            }
@@ -509,13 +509,19 @@ abstract class Request {
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
-		if ($this->suppress) $body['httpcode'] = $status;
+		if (!is_object($body)) {
+			$result = $body;
+			unset($body);
+			$body['result'] = $result;
+		}
+		if ($this->suppress OR @$this->config['debug']['showhttpcode']) $body['httpcode'] = $status;
 		//if ('yes' == @$this->config['logging']['verbose']) $this->log(LOG_INFO, print_r($body, true));
 		if (count((array) $this->warnings)) {
 			$body['warnings'] = (array) $this->warnings;
 			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 		}
 		$this->sendHeaders($status);
+		if ('yes' == @$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
 		$output = json_encode($body);
 		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 		exit;
@@ -524,28 +530,19 @@ abstract class Request {
 	public function sendErrorResponse ($errors, $status, $exception=null) {
 		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);
 		$this->sendHeaders($status);
-		if ('text/html' == $this->accept) {
-			$statusname = @self::$codes[$status];
-			$errortext = implode('<br />', (array) $errors);
-			if (empty($errortext)) $errortext = '*none*';
-			$text = "<p>Error(s) accompanying return code $status $statusname:<br />$errortext</p>";
-			if (count((array) $this->warnings)) {
-				$text .= '<p>Warning(s) noted:<br />'.implode('<br />', (array) $this->warnings);
-				foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
-			}
+		$body['errors'] = (array) $errors;
+		if (count($this->warnings)) {
+			$body['warnings'] = (array) $this->warnings;
+			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
+		}
+		if ('yes' == @$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
+		if ($this->suppress OR @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
+			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
 		$recorder = ErrorRecorder::getInstance();
 		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
-		if ('application/json' == $this->accept) {
-			$body['errors'] = (array) $errors;
-			if ($this->suppress) $body['httpcode'] = $status;
-			if (count($this->warnings)) {
-				$body['warnings'] = (array) $this->warnings;
-				foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
-			}
-			echo json_encode($body);
-		}
-		else echo $this->prettyPage($text);
+		$output = json_encode($body);
+		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 		exit;
 	}
 	

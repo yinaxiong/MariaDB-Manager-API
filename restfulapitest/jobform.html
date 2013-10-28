@@ -59,9 +59,18 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /command/state <br />
-			Parameters: none <br />
+			Parameter: 
+			<a class="tooltip" href="#">fields,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>&nbsp;
+			<br />
+			Default: All fields <br />
 		</p>
 		<p class="formfields">
+			<label for="fieldscs">Fields to return</label>
+			<input type="text" name="fields" id="fieldscs" /><br />
 			<input type="hidden" name="uri1" value="state" /><br />
 			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />
@@ -78,9 +87,18 @@
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /command/step <br />
-			Parameters: none <br />
+			Parameter: 
+			<a class="tooltip" href="#">fields,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>&nbsp;
+			<br />
+			Default: All fields <br />
 		</p>
 		<p class="formfields">
+			<label for="fieldscp">Fields to return</label>
+			<input type="text" name="fields" id="fieldscp" /><br />
 			<input type="hidden" name="uri1" value="step" /><br />
 			<input type="submit" class="submit" value="List" />
 			<input type="hidden" name="_accept" value="application/json" />

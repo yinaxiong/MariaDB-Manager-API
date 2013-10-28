@@ -92,8 +92,8 @@ class ComponentProperties extends SystemNodeCommon {
 	protected function checkNodeIDGetProperty ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
-		$this->component = urldecode(@$uriparts[5]);
-		$property = urldecode(@$uriparts[7]);
+		$this->component = @$uriparts[5];
+		$property = @$uriparts[7];
 		if (0 == $this->nodeid) {
 			if (0 == $this->systemid) return $property;
 			if (SystemManager::getInstance()->getByID($this->systemid)) return $property;

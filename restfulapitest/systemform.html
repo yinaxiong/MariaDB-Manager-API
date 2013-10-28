@@ -475,6 +475,11 @@
 			via this tool.
 		</p>
 		<p>
+			Any request can use the "suppress_response_codes" parameter with a value of "true".
+			If this is set, then every request will receive an HTTP return code of 200 OK, but the
+			actual code is included in the response as a property called "httpcode".  
+		</p>
+		<p>
 			Where parameters are submitted with an HTTP PUT request, there is a single string passed
 			with the request.  The string should be a query string, similar to that provided for GET.
 		</p>

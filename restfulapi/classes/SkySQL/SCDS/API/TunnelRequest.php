@@ -57,6 +57,7 @@ final class TunnelRequest extends Request {
 	}
 
 	protected function getHeaders () {
+		$this->headers = apache_request_headers();
 		foreach ($_POST as $key=>$value) {
 			if ('HTTP_' == substr($key,0,5)) {
 				$nicekey = str_replace(" ","-",ucwords(strtolower(str_replace("_"," ",substr($key,5)))));

@@ -28,6 +28,7 @@
 
 namespace SkySQL\SCDS\API\models;
 
+use DateTime;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\COMMON\WHEN\When;
@@ -138,14 +139,16 @@ class Schedule extends EntityModel {
 			$errors[] = "Start date $dtstart for schedule incorrectly formatted";
 		}
 		if (isset($errors)) Request::getInstance()->sendErrorResponse($errors,400);
-		$this->updateNextStart($dtstart, @$rrule);
+		$this->updateNextStart($dtstart, @$rrule, @$this->nextstart);
 	}
 	
-	protected function updateNextStart ($dtstart, $rrule) {
+	protected function updateNextStart ($dtstart, $rrule, $nextstart) {
 		$event = new When();
 		$event->recur($dtstart);
 		if ($rrule) $event->rrule($rrule);
-		$this->setInsertValue('nextstart', date('Y-m-d H:i:s', $event->nextAfter()->getTimeStamp()));
+		$unixtime = $nextstart ? strtotime($nextstart) : false;
+		$nextevent = $event->nextAfter($unixtime ? new DateTime("@$unixtime") : null);
+		$this->setInsertValue('nextstart', date('Y-m-d H:i:s', ($nextevent instanceof DateTime ? $nextevent->getTimeStamp() : 0)));
 		$this->runatonce = $event->alreadyDue();
 	}
 	

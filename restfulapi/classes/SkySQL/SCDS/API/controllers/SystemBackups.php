@@ -53,6 +53,7 @@ class SystemBackups extends ImplementAPI {
 		$systemid = (int) $uriparts[1];
 		$backupid = (int) $uriparts[3];
 		$backup = Backup::getByID($systemid,$backupid);
+		if (!$backup) $this->sendErrorResponse(sprintf("No backup with systemid '%d' and backupid '%d'", $systemid, $backupid), 404);
 		$this->sendResponse(array('backup' => $this->filterSingleResult($backup)));
 	}
 	
@@ -79,6 +80,6 @@ class SystemBackups extends ImplementAPI {
 	}
 
 	public function getBackupStates () {
-        $this->sendResponse(array("backupStates" => Backup::getBackupStates()));
+        $this->sendResponse(array("backupStates" => $this->filterResults(Backup::getBackupStates())));
 	}
 }

@@ -44,32 +44,33 @@ class SystemUsers extends ImplementAPI {
 	}
 	
 	public function getUserInfo ($uriparts) {
-		$username = @urldecode($uriparts[1]);
+		$username = @$uriparts[1];
 		$user = UserManager::getInstance()->getByName($username);
 		if ($user) {
 			$user = $user->publicCopy();
 			$user->properties = UserPropertyManager::getInstance()->getAllProperties($username);
-			$this->sendResponse(array ('user' => $user));
+			$this->sendResponse(array ('user' => $this->filterSingleResult($user)));
 		}
 		else $this->sendErrorResponse('No user found with username '.$username, 404);
 	}
 	
 	public function putUser ($uriparts) {
-		$username = @urldecode($uriparts[1]);
+		$username = @$uriparts[1];
+		//$username = $uriparts[1];
 		if (!preg_match('/^[A-Za-z0-9_]+$/', $username)) {
-			$this->sendErrorResponse("User name must only contain alphameric and underscore, $username submitted", 400);
+			$this->sendErrorResponse("User name must only contain alphameric and underscore, '$username' submitted", 400);
 		}
 		$user = new User($username);
 		$user->save();
 	}
 	
 	public function deleteUser ($uriparts) {
-		$username = urldecode($uriparts[1]);
+		$username = $uriparts[1];
 		UserManager::getInstance()->deleteUser($username);
 	}
 
 	public function loginUser ($uriparts) {
-		$username = urldecode($uriparts[1]);
+		$username = $uriparts[1];
 		$password = $this->getParam('POST', 'password');
 		$manager = UserManager::getInstance();
 		if ($manager->authenticate($username,$password)) {

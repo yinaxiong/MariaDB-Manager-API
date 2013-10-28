@@ -194,7 +194,7 @@ class Task extends EntityModel {
 	}
 	
 	// Checks across the whole system for unfinished "risky" running tasks
-	public static function tasksNotFinished ($command, $node) {
+	public static function tasksNotFinished ($commandname, $node) {
 		$system = SystemManager::getInstance()->getByID($node->systemid);
 		if (!isset(API::$systemtypes[$system->systemtype])) Request::getInstance()->sendErrorResponse(sprintf("System with ID '%s' does not have valid system type", $node->systemid), 500);
 		$database = AdminDatabase::getInstance();
@@ -210,7 +210,7 @@ class Task extends EntityModel {
 		if (!$onepersystem) return false;
 		unset($where, $bind);
 		$persystems = array_map('trim', explode(',', $onepersystem));
-		if (!in_array($command->command, $persystems)) return false;
+		if (!in_array($commandname, $persystems)) return false;
 		$systemcondition = "'".implode("','", $persystems)."'";
 		$where[] = "State IN ($unfinished)";
 		$where[] = "SystemID = :systemid";

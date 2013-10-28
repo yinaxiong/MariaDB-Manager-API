@@ -52,11 +52,12 @@ class Schedules extends TaskScheduleCommon {
 				exit;
 			}
 		}
+		else $this->sendErrorResponse(sprintf("No schedule with scheduleid '%d'", (int) $uriparts[1]), 404);
 		$this->sendResponse(array('schedule' => $this->filterSingleResult($schedule)));
 	}
 	
 	public function getSelectedSchedules ($uriparts) {
-		list($total, $schedules) = Schedule::select($this, trim(urldecode(@$uriparts[1])));
+		list($total, $schedules) = Schedule::select($this, trim(@$uriparts[1]));
 		$this->sendResponse(array('total' => $total, 'schedules' => $this->filterResults($schedules)));
 	}
 	
@@ -69,7 +70,7 @@ class Schedules extends TaskScheduleCommon {
 		if ($schedule->icalentry) {
 			$schedule->processCalendarEntry();
 			$this->setRunAt($schedule);
-			if ($schedule->isDue()) $this->execute($schedule);
+			if ($schedule->isDue()) $this->runScheduleNow($schedule);
 		}
 		$manager->updateSchedule((int) $uriparts[1]);
 	}
