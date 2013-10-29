@@ -3,21 +3,26 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * 28 October 2013, 21:45 BST
+ * 29 October 2013, 13:30 GMT
+ * 
+ * Added code to handle encrypted parameters - rootpassword and sshkey
+ * 
+ * 
+ * 28 October 2013, 21:45 GMT
  * 
  * Fix error in earlier JavaScript change that broke HTML front end
  * Remove API interface for storing single monitor item - use bulk add
  * Change implementation of get last monitor data to use caching logic
  * 
  * 
- * 28 October 2013, 17:45 BST
+ * 28 October 2013, 17:45 GMT
  * 
  * Fix bug in return message handling and "showhttpcode" handling
  * Change index on MonitorData to hold more fields for performance
  * Change JavaScript RFC Date routine to handle hours offset correctly.
  * 
  * 
- * 28 October 2013, 10:30 BST
+ * 28 October 2013, 10:30 GMT
  * 
  * Block scheduled comand if node no longer exists or potentially conflicting
  *	command is running

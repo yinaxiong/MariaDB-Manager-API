@@ -235,6 +235,7 @@ abstract class Request {
 	protected $suffix = '';
 	protected $suppress = false;
 	protected $clientip = '';
+	protected $apikey = '';
 	
 	protected function __construct() {
 		$this->timer = new aliroProfiler();
@@ -413,13 +414,18 @@ abstract class Request {
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
 				if (isset($this->config['apikeys'][$matches[1]])) {
-					$checkstring = \md5($this->uri.$this->config['apikeys'][@$matches[1]].$this->headers['Date']);
+					$this->apikey = $this->config['apikeys'][$matches[1]];
+					$checkstring = \md5($this->uri.$this->apikey.$this->headers['Date']);
 					if ($matches[2] == $checkstring) return;
 				}
 			}
 		}
 		$this->log(LOG_ERR, 'Auth error - Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->headers['Date']);
 		$this->sendErrorResponse('Invalid Authorization header', 401);
+	}
+	
+	public function getAPIKey () {
+		return $this->apikey;
 	}
 	
 	protected function getLinkByURI ($uriparts) {

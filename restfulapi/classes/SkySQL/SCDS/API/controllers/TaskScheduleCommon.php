@@ -29,6 +29,7 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\managers\NodeManager;
@@ -86,15 +87,46 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	protected function execute ($task) {
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
 		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
-		$params = @$task->parameters;
+		$params = $this->decryptParameters(@$task->parameters);
 		$hostname = @$this->config['shell']['hostname'];
 		$cmd = $this->makeShellCall("$scriptdir/LaunchCommand.sh", "$scriptdir/RunCommand.sh", $task->taskid, $task->steps, $hostname, $params, $task->privateip, $logfile);
-       	$pid = exec($cmd);
+		$pid = exec($cmd);
 		$this->log(LOG_INFO, "Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid");
 		$task->updatePIDandState($pid);
 	}
 	
 	protected function makeShellCall () {
 		return implode(' ', array_map('escapeshellarg', func_get_args()));
+	}
+	
+	protected function decryptParameters ($parameters) {
+		if ($parameters) {
+			Request::getInstance()->parse_str($parameters, $parray);
+			if (count($parray)) {
+				foreach (array('rootpassword', 'sshkey') as $field) if (isset($parray[$field])) {
+					$parray[$field] = $this->decryptOneField($parray[$field]);
+				}
+				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
+				return implode('&', $newparray);
+			}
+			else return $parameters;
+		}
+		else return '';
+	}
+	
+	protected function decryptOneField ($string) {
+	    $key = pack('H*', Request::getInstance()->getAPIKey());
+    
+	    $ciphertext_dec = base64_decode($string);
+    
+	    # retrieves the IV, iv_size should be created using mcrypt_get_iv_size()
+	    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+	    $iv_dec = substr($ciphertext_dec, 0, $iv_size);
+    
+	    # retrieves the cipher text (everything except the $iv_size in the front)
+	    $ciphertext = substr($ciphertext_dec, $iv_size);
+
+	    # may remove 00h valued characters from end of plain text
+	    return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $ciphertext, MCRYPT_MODE_CBC, $iv_dec);
 	}
 }
