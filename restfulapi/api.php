@@ -43,7 +43,7 @@ use PDOException;
 use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
-define ('_API_VERSION_NUMBER','0.8');
+define ('_API_VERSION_NUMBER','1.0');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);

@@ -169,6 +169,7 @@ abstract class Request {
 		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'DELETE'),
 		array('class' => 'UserData', 'method' => 'getBackupLog', 'uri' => 'userdata/(log|binlog)', 'http' => 'GET'),
 		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET'),
+		array('class' => 'Request', 'method' => 'APIDate', 'uri' => 'apidate', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/[A-Za-z]+', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET'),
 		array('class' => 'Metadata', 'method' => 'metadataSummary', 'uri' => 'metadata', 'http' => 'GET'),
@@ -374,7 +375,7 @@ abstract class Request {
 		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			try {
-				if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0]) $this->checkSecurity();
+				if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0] AND 'apidate' != $uriparts[0]) $this->checkSecurity();
 				if ('Request' == $link['class']) $object = $this;
 				else {
 					$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
@@ -402,6 +403,10 @@ abstract class Request {
 	protected function listAPI () {
 		$controller = new Metadata($this);
 		$controller->listAPI(self::$uriTable);
+	}
+	
+	protected function APIDate () {
+		$this->sendResponse(array('apidate' => _API_CODE_ISSUE_DATE));
 	}
 	
 	protected function checkSecurity () {

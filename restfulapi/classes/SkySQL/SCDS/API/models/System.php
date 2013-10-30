@@ -81,12 +81,6 @@ class System extends EntityModel {
 		$this->systemid = $systemid;
 	}
 	
-	protected function setDefaults () {
-		if (empty($this->bind[':name'])) {
-			$this->setInsertValue('name', 'System '.sprintf('%06d', $this->systemid));
-		}
-	}
-
 	protected function validateInsert () {
 		AdminDatabase::getInstance()->beginImmediateTransaction();
 		$this->setCorrectFormatDateWithDefault('started');

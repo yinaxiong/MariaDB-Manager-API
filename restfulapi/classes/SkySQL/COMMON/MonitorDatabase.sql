@@ -22,3 +22,4 @@ create table LatestMonitorData (
 	Stamp		int,		/* Date/Time this value was observed, unix time */
 	Repeats		int			/* Number of repeated observations same value */
 );
+CREATE INDEX MonitorLatestIDX ON MonitorData (SystemID, NodeID, MonitorID);

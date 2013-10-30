@@ -3,6 +3,14 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 30 October 2013, 11:40 GMT
+ * 
+ * Changed API version in headers to 1.0
+ * Added /apidate request (no security) to return datestamp of this file.
+ * Fixed bug in handling of empty sshkey or rootpassword parameters
+ * Fixed problem of System name not defaulting correctly
+ * 
+ * 
  * 29 October 2013, 13:30 GMT
  * 
  * Added code to handle encrypted parameters - rootpassword and sshkey

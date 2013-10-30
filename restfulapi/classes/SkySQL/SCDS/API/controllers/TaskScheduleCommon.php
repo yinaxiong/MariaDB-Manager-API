@@ -103,7 +103,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		if ($parameters) {
 			Request::getInstance()->parse_str($parameters, $parray);
 			if (count($parray)) {
-				foreach (array('rootpassword', 'sshkey') as $field) if (isset($parray[$field])) {
+				foreach (array('rootpassword', 'sshkey') as $field) if (!empty($parray[$field])) {
 					$parray[$field] = $this->decryptOneField($parray[$field]);
 				}
 				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
@@ -121,6 +121,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
     
 	    # retrieves the IV, iv_size should be created using mcrypt_get_iv_size()
 	    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
+		if (strlen($ciphertext_dec) < ($iv_size + 2)) $this->sendErrorResponse("Field requiring decryption is too short", 400); 
 	    $iv_dec = substr($ciphertext_dec, 0, $iv_size);
     
 	    # retrieves the cipher text (everything except the $iv_size in the front)
