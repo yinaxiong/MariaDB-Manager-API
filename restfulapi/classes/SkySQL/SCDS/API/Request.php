@@ -518,11 +518,11 @@ abstract class Request {
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
 		$this->sendHeaders($status);
-		$this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body));
+		$this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body), $status);
 		exit;
 	}
 	
-	protected function addResponseInformationAndSend ($body) {
+	protected function addResponseInformationAndSend ($body, $status=200) {
 		$diagnostics = ob_get_clean();
 		if ($diagnostics) $body['diagnostics'] = explode("\n", preg_replace("=<br */?>=i", "\n", $diagnostics));
 		foreach ((array) @$body['diagnostics'] as $sub=>$value) if (empty($value)) unset ($body['diagnostics'][$sub]);
@@ -540,7 +540,7 @@ abstract class Request {
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
 		$this->sendHeaders($status);
-		$this->addResponseInformationAndSend(array('errors' => (array) $errors));
+		$this->addResponseInformationAndSend(array('errors' => (array) $errors), $status);
 
 		// Record errors in the log and in the ErrorLog table
 		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);
@@ -621,7 +621,7 @@ PRETTY_PAGE;
 		}
 	    return $result;
 	}
-	
+
 	public function sendHeaders ($status) {
 		$report = $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 		$this->log(LOG_INFO, "$this->requestmethod /$this->uri completed $report - time taken {$this->timer->mark('seconds')}");

@@ -125,6 +125,7 @@ class Schedule extends EntityModel {
 	
 	public function processCalendarEntry () {
 		$calines = preg_split('/(\R|\|)/', $this->icalentry);
+		while (!end($calines)) array_pop($calines);
 		$this->icalentry = implode("\r\n", $calines);
 		$lastone = count($calines) - 1;
 		foreach ($calines as $i=>$line) {

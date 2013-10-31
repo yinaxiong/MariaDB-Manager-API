@@ -196,7 +196,14 @@ class API {
 		define ('_API_CODE_ISSUE_DATE', date('D, j F Y H:i', $apitimestamp));
 		
 		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
-		
+
+		// Can't work without JSON
+		if (!function_exists('json_encode')) {
+			echo "The API is unable to function because PHP JSON functions are not available";
+			header(HTTP_PROTOCOL." 500 Internal Server Error");
+			exit;
+		}
+
 		// Set up a simple class autoloader
 		spl_autoload_register(array(__CLASS__, 'simpleAutoload'));
 		openlog(_API_SYSTEM_NAME, LOG_ODELAY, LOG_USER);

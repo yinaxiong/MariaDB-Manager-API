@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 31 October 2013, 18:00 GMT
+ * 
+ * Fix fault introduced by tidy up of response sending
+ * Fix problem in analysis of schedule rules
+ * Introduce simple test for presence of JSON functions (required)
+ * 
+ * 
  * 31 October 2013, 12:05 GMT
  * 
  * Prevent encrypted fields being written to the Task record
