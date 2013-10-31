@@ -113,7 +113,7 @@ class Tasks extends TaskScheduleCommon {
 		// insertOnCommand also fixes dates as RFC
 		$schedule->insertOnCommand($command->command);
 		$this->setRunAt($schedule);
-		if ($schedule->isDue()) $this->runScheduleNow($schedule);
+		//if ($schedule->isDue()) $this->runScheduleNow($schedule);
 		$this->sendResponse(array('schedule' => $schedule->withDateFix()));
 	}
 	

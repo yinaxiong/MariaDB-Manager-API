@@ -51,11 +51,17 @@ final class StandardRequest extends Request {
 	}
 	
 	protected function __construct () {
+		$this->getHeaders();
 		if ('PUT' == $_SERVER['REQUEST_METHOD'] OR 'DELETE' == $_SERVER['REQUEST_METHOD']) {
 			$rawput = file_get_contents("php://input");
 			$dejson = json_decode($rawput, true);
 			if (false === stripos($rawput, '=')) $dequery = $rawput;
-			else $this->parse_str($rawput, $dequery);
+			else {
+				if ('application/x-www-form-urlencoded' == @$this->headers('Content-Type')) {
+					parse_str($rawput, $dequery);
+				}
+				else $this->parse_str($rawput, $dequery);
+			}
 			$this->putdata = (is_null($dejson) OR (is_array($dequery) AND count($dejson) < count($dequery))) ? $dequery : $dejson;
 			if (is_array($this->putdata)) foreach ($this->putdata as $key=>$value) {
 				if (is_null($value)) $this->putdata[$key] = '';

@@ -54,7 +54,9 @@ class MonitorDatabase extends APIDatabase {
 			$sqlfile = dirname(__FILE__).'/MonitorDatabase.sql';
 			$nocomment = preg_replace('#/\*.*?\*/#s', '', file_get_contents($sqlfile));
 			$sqldb = new SQLite3($dboparts[1]);
+			$sqldb->exec('BEGIN EXCLUSIVE TRANSACTION');
 			$sqldb->exec($nocomment);
+			$sqldb->exec('COMMIT TRANSACTION');
 			$sqldb->close();
 		}
 		if (isset($error)) throw new PDOException($error);

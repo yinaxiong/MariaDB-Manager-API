@@ -70,7 +70,7 @@ class Schedules extends TaskScheduleCommon {
 		if ($schedule->icalentry) {
 			$schedule->processCalendarEntry();
 			$this->setRunAt($schedule);
-			if ($schedule->isDue()) $this->runScheduleNow($schedule);
+			//if ($schedule->isDue()) $this->runScheduleNow($schedule);
 		}
 		$manager->updateSchedule((int) $uriparts[1]);
 	}

@@ -54,7 +54,9 @@ class AdminDatabase extends APIDatabase {
 			$sqlfile = dirname(__FILE__).'/AdminDatabase.sql';
 			$nocomment = preg_replace('#/\*.*?\*/#s', '', file_get_contents($sqlfile));
 			$sqldb = new SQLite3($dboparts[1]);
+			$sqldb->exec('BEGIN EXCLUSIVE TRANSACTION');
 			$sqldb->exec($nocomment);
+			$sqldb->exec('COMMIT TRANSACTION');
 			$sqldb->close();
 			CachedSingleton::deleteAll();
 		}

@@ -255,7 +255,6 @@ abstract class Request {
 		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
 		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
-		$this->getHeaders();
 		$this->uri = $this->getURI();
 		$this->getSuffix();
 		$this->handleAccept();
@@ -518,24 +517,15 @@ abstract class Request {
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200) {
-		if (!is_array($body)) $body = array('result' => $body);
-		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode']) $body['httpcode'] = $status;
-		//if ('yes' == @$this->config['logging']['verbose']) $this->log(LOG_INFO, print_r($body, true));
-		if (count((array) $this->warnings)) {
-			$body['warnings'] = (array) $this->warnings;
-			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
-		}
 		$this->sendHeaders($status);
-		if ('yes' == @$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
-		$output = json_encode($body);
-		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
+		$this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body));
 		exit;
 	}
 	
-	public function sendErrorResponse ($errors, $status, $exception=null) {
-		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);
-		$this->sendHeaders($status);
-		$body['errors'] = (array) $errors;
+	protected function addResponseInformationAndSend ($body) {
+		$diagnostics = ob_get_clean();
+		if ($diagnostics) $body['diagnostics'] = explode("\n", preg_replace("=<br */?>=i", "\n", $diagnostics));
+		foreach ((array) @$body['diagnostics'] as $sub=>$value) if (empty($value)) unset ($body['diagnostics'][$sub]);
 		if (count($this->warnings)) {
 			$body['warnings'] = (array) $this->warnings;
 			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
@@ -544,10 +534,18 @@ abstract class Request {
 		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
-		$recorder = ErrorRecorder::getInstance();
-		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
 		$output = json_encode($body);
 		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
+	}
+	
+	public function sendErrorResponse ($errors, $status, $exception=null) {
+		$this->sendHeaders($status);
+		$this->addResponseInformationAndSend(array('errors' => (array) $errors));
+
+		// Record errors in the log and in the ErrorLog table
+		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);
+		$recorder = ErrorRecorder::getInstance();
+		$recorder->recordError('Sent error response: '.$status, md5(Diagnostics::trace()), implode("\r\n", (array) $errors), $exception);
 		exit;
 	}
 	

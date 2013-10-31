@@ -77,7 +77,18 @@ abstract class EntityModel {
 		}
 		return null;
 	}
-	
+
+	protected function removeSensitiveParameters () {
+		if (!empty($this->bind[':parameters'])) {
+			Request::getInstance()->parse_str($this->bind[':parameters'], $parray);
+			if (count($parray)) {
+				foreach (API::$encryptedfields as $field) if (isset($parray[$field])) unset($parray[$field]);
+				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
+				$this->bind[':parameters'] = implode('&', (array) @$newparray);
+			}
+		}
+	}
+
 	protected static function fixDate (&$entity) {
 		foreach (static::$fields as $name=>$about) {
 			if (!empty($entity->$name) AND ('datetime' == @$about['validate'] OR 'datetime' == @$about['forced'])) $entity->$name = date('r', strtotime($entity->$name));

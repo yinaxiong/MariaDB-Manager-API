@@ -53,6 +53,7 @@ final class TunnelRequest extends Request {
 	protected function __construct () {
 		$this->requestviapost = true;
 		$this->requestmethod = $_POST['_method'];
+		$this->getHeaders();
 		parent::__construct();
 	}
 

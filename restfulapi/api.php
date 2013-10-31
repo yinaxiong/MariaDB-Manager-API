@@ -177,6 +177,8 @@ class API {
 		'configure' => array('description' => 'Presumably this does some configuration')
 	);
 	
+	public static $encryptedfields = array('rootpassword', 'sshkey');
+	
 	public static function getInstance () {
 	    return (self::$instance instanceof self) ? self::$instance : (self::$instance = new self());
 	}
@@ -325,8 +327,8 @@ class API {
 	}
 }
 
-// Remove error settings after testing
-ini_set('display_errors', 1);
+// Adjust for testing
+ini_set('display_errors', 0);
 error_reporting(-1);
 
 API::getInstance()->startup(true);

@@ -164,6 +164,7 @@ class Task extends EntityModel {
 		}
 		$this->setCorrectFormatDate('completed');
 		$this->setCorrectFormatDateWithDefault('started');
+		$this->removeSensitiveParameters();
 	}
 	
 	protected function validateUpdate () {
@@ -176,6 +177,7 @@ class Task extends EntityModel {
 			}
 			$this->bind[':stepindex'] = 0;
 		}
+		$this->removeSensitiveParameters();
 	}
 	
 	public static function latestForNode ($node) {

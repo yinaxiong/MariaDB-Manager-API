@@ -3,6 +3,17 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 31 October 2013, 12:05 GMT
+ * 
+ * Prevent encrypted fields being written to the Task record
+ * Suppress direct reporting of PHP errors
+ * Capture all diagnostics and include in response as property "diagnostics"
+ * Wrap database table creation commands in a transaction
+ * Suppress running a schedule immediately if next date in the past
+ * Trim decrypted fields of right hand low character padding
+ * URL decode PUT data if Content-Tpe is set to application/x-www-form-urlencoded
+ * 
+ * 
  * 30 October 2013, 11:40 GMT
  * 
  * Changed API version in headers to 1.0

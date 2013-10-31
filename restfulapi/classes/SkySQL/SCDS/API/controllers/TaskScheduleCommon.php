@@ -29,6 +29,7 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Task;
@@ -103,7 +104,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		if ($parameters) {
 			Request::getInstance()->parse_str($parameters, $parray);
 			if (count($parray)) {
-				foreach (array('rootpassword', 'sshkey') as $field) if (!empty($parray[$field])) {
+				foreach (API::$encryptedfields as $field) if (!empty($parray[$field])) {
 					$parray[$field] = $this->decryptOneField($parray[$field]);
 				}
 				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
@@ -113,7 +114,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		}
 		else return '';
 	}
-	
+
 	protected function decryptOneField ($string) {
 	    $key = pack('H*', Request::getInstance()->getAPIKey());
     
@@ -128,6 +129,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	    $ciphertext = substr($ciphertext_dec, $iv_size);
 
 	    # may remove 00h valued characters from end of plain text
-	    return mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $ciphertext, MCRYPT_MODE_CBC, $iv_dec);
+	    $decrypt = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $ciphertext, MCRYPT_MODE_CBC, $iv_dec);
+		return trim($decrypt, "\0..\32");
 	}
 }

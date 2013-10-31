@@ -60,6 +60,7 @@ final class CommandRequest extends Request {
 			$this->parse_str($argv[3], $_POST);
 	        $_POST['suppress_response_codes'] = 'true';
 		}
+		$this->getHeaders();
 		parent::__construct();
 	}
 

@@ -115,10 +115,12 @@ class Schedule extends EntityModel {
 		$this->processCalendarEntry();
 		$this->setInsertValue('command', $this->command);
 		$this->setCorrectFormatDateWithDefault('created');
+		$this->removeSensitiveParameters();
 	}
 	
 	protected function validateUpdate () {
 		$this->processCalendarEntry();
+		$this->removeSensitiveParameters();
 	}
 	
 	public function processCalendarEntry () {
