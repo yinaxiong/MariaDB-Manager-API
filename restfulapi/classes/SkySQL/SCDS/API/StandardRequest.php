@@ -57,7 +57,7 @@ final class StandardRequest extends Request {
 			$dejson = json_decode($rawput, true);
 			if (false === stripos($rawput, '=')) $dequery = $rawput;
 			else {
-				if ('application/x-www-form-urlencoded' == @$this->headers('Content-Type')) {
+				if ('application/x-www-form-urlencoded' == @$this->headers['Content-Type']) {
 					parse_str($rawput, $dequery);
 				}
 				else $this->parse_str($rawput, $dequery);

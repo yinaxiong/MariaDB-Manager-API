@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 1 November 2013, 08:35
+ * 
+ * Fix bug in PUT data handling.
+ * 
+ * 
  * 31 October 2013, 18:00 GMT
  * 
  * Fix fault introduced by tidy up of response sending
