@@ -89,10 +89,13 @@ else
 	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX"
 fi
 
-ssh_return=$(ssh_agent_command "$nodeip" "exit 0")
-if [[ "$ssh_return" != "0" ]]; then
-	set_error "Agent user creation failed."
-	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to create agent user."
+# Check to see if the node date/time is in sync
+localdate=$(date -u "+%Y%m%d%H%M%S")
+remdate=$(sshpass -p "$rootpwd" ssh root@"$nodeip" "date -u +%Y%m%d%H%M%S")
+datediff=$(expr "$localdate" - "$remdate")
+if [[ "$datediff" -gt "30" || "$datediff" -lt "-30" ]]; then
+	set_error "Node date is more than 30 seconds adrift from the server"
+	logger -p user.error -t MariaDB-Manager-Task "Node date is more than 30 seconds adrift from the server"
 	exit 1
 fi
 
