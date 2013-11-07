@@ -83,7 +83,7 @@ if [[ "$ssh_return" != "0" ]]; then
 fi
 
 ssh_command "$nodeip" "yum -y clean all"
-if [[ !scripts_installed ]]; then
+if [[ ! "$scripts_installed" ]]; then
 	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX"
 else
 	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX"
