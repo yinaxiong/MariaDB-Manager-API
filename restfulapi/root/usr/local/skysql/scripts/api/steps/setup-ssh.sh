@@ -64,8 +64,9 @@ fi
 
 # Checking if node is already prepared for command execution
 # (on a subshell to catch exits)
-ssh_return=(ssh_agent_command "$nodeip" "exit 0")
-if [[ "$ssh_return" == "0" ]]; then
+$(ssh_agent_command "$nodeip" "exit 0")
+ssh_err_code=$?
+if [[ "$?" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh login already setup in target node."
 	exit 0
 fi
@@ -88,7 +89,7 @@ fi
 
 # Setting up credentials on the node
 ssh_return=$(ssh_put_file "$nodeip" "/var/www/.ssh/id_rsa.pub" "/home/skysqlagent/.ssh/id_rsa.pub")
-if [[ "$ssh_return" != "0" ]]; then
+if [[ "$?" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Failed to install file public key for node $nodeip."
 	set_error "Failed to install public key."
 	exit 1

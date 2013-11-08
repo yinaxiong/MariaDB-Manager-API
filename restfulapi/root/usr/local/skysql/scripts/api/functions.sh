@@ -145,7 +145,6 @@ ssh_put_file() {
         elif [[ "$ssh_output" != "" ]]; then
                 logger -p user.error -t MariaDB-Manager-Task $ssh_output
         fi
-	echo $ssh_return
 }
 
 # ssh_agent_command()
@@ -157,17 +156,15 @@ ssh_put_file() {
 ssh_agent_command() {
         ssh_output=$(ssh -q skysqlagent@"$1" "$2" 2>/tmp/ssh_call.$$.log)
 	ssh_return=$?
-        if [[ "$ssh_return" != 0 ]]; then
+        if [[ "$ssh_return" != "0" ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
                 logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $1 with skysqlagent user. $ssh_error_output"
 		set_error "Error in ssh connection to $1 with skysqlagent user. $ssh_error_output"
                 rm -f /tmp/ssh_call.$$.log
-		echo $ssh_return
+		echo $ssh_output
                 exit "$ssh_return"
-	elif [[ "$ssh_output" != "" ]]; then
-		logger -p user.error -t MariaDB-Manager-Task $ssh_output
         fi
-	echo $ssh_return
+	echo $ssh_output
 }
 
 # json_error
