@@ -1,0 +1,6 @@
+[skysql]
+name=skysql
+baseurl=http://###API-HOST###/repo/CentOS6_64/
+enabled=1
+gpgcheck=false
+

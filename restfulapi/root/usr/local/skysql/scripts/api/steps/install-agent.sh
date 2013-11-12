@@ -62,25 +62,16 @@ if [[ "$ssh_return" == "0" ]]; then
 	scripts_installed=1;
 fi
 
-# Copying repository information to node
-ssh_return=$(ssh_put_file "$nodeip" "steps/repo/MariaDB.repo" "/etc/yum.repos.d/MariaDB.repo")
-if [[ "$?" != "0" ]]; then
-	logger -p user.error -t MariaDB-Manager-Task "Failed to write MariaDB repository file"
-	set_error "Failed to install MariaDB Repository"
-	exit 1
+
+# Generating and copying internal repository information to node
+sed -e "s/###API-HOST###/$api_host/" steps/repo/SkySQL.repo > /tmp/SkySQL.repo
+ssh_return=$(ssh_put_file "$nodeip" "/tmp/SkySQL.repo" "/etc/yum.repos.d/SkySQL.repo")
+if [[ "$ssh_return" != "0" ]]; then
+        logger -p user.error -t MariaDB-Manager-Task "Failed to write SkySQL repository file"
+        set_error "Failed to install SkySQL Repository"
+        exit 1
 fi
-ssh_return=$(ssh_put_file "$nodeip" "steps/repo/SkySQL.repo" "/etc/yum.repos.d/SkySQL.repo")
-if [[ "$?" != "0" ]]; then
-	logger -p user.error -t MariaDB-Manager-Task "Failed to write SkySQL repository file"
-	set_error "Failed to install SkySQL Repository"
-	exit 1
-fi
-ssh_return=$(ssh_put_file "$nodeip" "steps/repo/Percona.repo" "/etc/yum.repos.d/Percona.repo")
-if [[ "$?" != "0" ]]; then
-	logger -p user.error -t MariaDB-Manager-Task "Failed to write Percona repository file"
-	set_error "Failed to install Percona Repository"
-	exit 1
-fi
+rm -f /tmp/SkySQL.repo
 
 ssh_command "$nodeip" "yum -y clean all"
 if [[ "$scripts_installed" == "0" ]]; then
