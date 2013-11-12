@@ -66,7 +66,7 @@ fi
 # (on a subshell to catch exits)
 $(ssh_agent_command "$nodeip" "exit 0")
 ssh_err_code=$?
-if [[ "$?" == "0" ]]; then
+if [[ "$ssh_err_code" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh login already setup in target node."
 	exit 0
 fi
