@@ -64,15 +64,15 @@ fi
 
 
 # Generating and copying internal repository information to node
-sed -e "s/###API-HOST###/$api_host/" steps/repo/SkySQL.repo > /tmp/SkySQL.repo
-$(ssh_put_file "$nodeip" "/tmp/SkySQL.repo" "/etc/yum.repos.d/SkySQL.repo")
+sed -e "s/###API-HOST###/$api_host/" steps/repo/SkySQL.repo > /tmp/SkySQL-$$.repo
+$(ssh_put_file "$nodeip" "/tmp/SkySQL-$$.repo" "/etc/yum.repos.d/SkySQL.repo")
 ssh_err_code=$?
 if [[ "$ssh_err_code" != "0" ]]; then
         logger -p user.error -t MariaDB-Manager-Task "Failed to write SkySQL repository file"
         set_error "Failed to install SkySQL Repository"
         exit 1
 fi
-rm -f /tmp/SkySQL.repo
+rm -f /tmp/SkySQL-$$.repo
 
 ssh_command "$nodeip" "yum -y clean all"
 if [[ "$scripts_installed" == "0" ]]; then
