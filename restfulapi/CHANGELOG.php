@@ -3,6 +3,16 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 13 November 2013, 12:40
+ * 
+ * Changes and additions to the text and appearance of the HTML front end
+ * Fix error in the database specification of the "Capacity" monitor
+ * Improve trapping of diagnostic output
+ * Set character set to UTF-8 in the content type header
+ * Fix bug in averaged monitor data introduced by redesign of data handling
+ * Allow passwords to have leading or trailing spaces
+ * 
+ * 
  * 1 November 2013, 08:35
  * 
  * Fix bug in PUT data handling.

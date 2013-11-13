@@ -4,7 +4,7 @@
     "DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>SkySQL Manager API</title>
+    <title>MariaDB Manager API</title>
 	<link href="testresources/css/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
  </head>
@@ -28,11 +28,11 @@
 	  </div>	
 	<div id="page">
 	  <div class="section">
-	  <h2>About the API for the SkySQL Data Suite</h2>
+	  <h2>About the API</h2>
 	  <p>
-		  The API is a RESTful web service, allowing control of one or more SkySQL
-		  Cloud Systems.  A truly RESTful interface relies on a Resource Oriented
-		  Architecture, and the SkySQL Manager API does that.  Calls are made to different URIs 
+		  The API is a RESTful web service, allowing control of one or more Systems.  
+		  A truly RESTful interface relies on a Resource Oriented
+		  Architecture, and the Manager API does that.  Calls are made to different URIs 
 		  depending on which resource is being accessed.  Different HTTP methods are 
 		  used, in accordance with REST principles:
 	  </p>
@@ -43,8 +43,11 @@
 		  <li>Delete an existing resource: HTTP DELETE</li>
 	  </ul>
 	  <p>
-		  The main resources handled by the SkySQL Manager API are Systems, Nodes, Users, Backups,
+		  The main resources handled by the API are Systems, Nodes, Users, Backups,
 		  Monitors, Commands/Tasks.  Each has a page where you can run the various API requests.
+		  In addition to the information provided here, you can go to any installation of the
+		  API and request http://example.com/path/to/api/metadata to obtain information about
+		  the entities handled by the API and the legal requests that can be made to the API.
 	  </p>
 	  <p>
 		  Because the API is potentially open to the public internet and is managing critical
@@ -106,9 +109,7 @@
 		  typically a virtual private server (or VPS) and may be provisioned by
 		  the use of cloud services.  Nodes can typically be started and stopped
 		  (either deliberately or by accident) without bringing down the system.
-		  One node is the master database, but not necessarily always the same
-		  node.  Another node (never the master) or a server outside the system
-		  runs this API. For details of 
+		  For details of 
 		  <a href="http://manager.skysql.com/node" rel="metadata/entity/node.html">
 			node data
 		  </a> click on the link. Note that this includes derived
@@ -127,7 +128,7 @@
 	  </p>
 	  <h4>Backups</h4>
 	  <p>
-		  Access to currently existing backups of system and nodes is available
+		  Access to iinformation about currently existing backups of system and nodes is available
 		  through the API. For details of 
 		  <a href="http://manager.skysql.com/backup" rel="metadata/entity/backup.html">
 			backup data
@@ -169,7 +170,7 @@
 		  information:
 	  </p>
 	  <pre>
-; This is the INI file for the SkySQL Cloud Data Suite API
+; This is the INI file for the Manager API
 ;
 ; The database section defines access to the administration DB
 ; 
@@ -204,7 +205,7 @@ verbose = "no"
 ;
 [shell]
 path = "/usr/local/skysql/scripts/api/"
-php = "/usr/bin/php5-cgi"
+php = "/usr/bin/php-cgi"
 hostname = "localhost"
 ;
 ; Monitor defaults determines how many readings and what intervals the
@@ -255,13 +256,13 @@ showhttpcode = "no"
 1 = "1f8d9e040e65d7b105538b1ed0231770"
 	  </pre>
 	  <p>
-		  The path to the SQLite database could be different, but will be set by the SCDS
+		  The path to the SQLite database could be different, but will be set by the 
 		  provisioning system.  User and password are not required so long as SQLite is
-		  used for the administration database.  If the logging directory is writeable by
-		  the web server when running the API, and the errorlog option is set to yes, 
-		  information about requests to the API will be recorded there.  If an email
-		  address is provided in erroremail, the errors will be mailed to that address.
-		  The shell path defines how system calls will be handled by the API.
+		  used for the administration database.  The API will write log records using the
+		  syslog daemon and will write details of errors to the ErrorLog table in the
+		  administration database.  If an email address is provided in erroremail, the 
+		  errors will be mailed to that address.  The shell path defines how system 
+		  calls will be handled by the API.
 	  </p>
 	  </div>
 	  <div class="section">
@@ -282,7 +283,7 @@ showhttpcode = "no"
 		  Within the configuration file is an apikeys section which contains one or more
 		  integers to which are assigned long random strings.  Typically, these are
 		  32 character strings created by applying MD5 to some random text string.  But
-		  any long string of characters will do.  The integer will be part of the 
+		  any string of 32 ASCII characters will do.  The integer will be part of the 
 		  authorization header and it will be stored in the log with brief information
 		  about each request to the API.  So it is possible to use a number of different
 		  API keys to track use of the API by different mechanisms.
@@ -291,12 +292,12 @@ showhttpcode = "no"
 		  To create the Authorization header, first obtain the RFC-2822 date mentioned above
 		  and the request URI, trimmed of any leading and trailing slashes.  The request
 		  URI is the part of an absolute URI that comes after the domain.  For example,
-		  the request URI for http://eng01.skysql.com/system/123 is the string &quot;/system/123&quot;.
+		  the request URI for http://example.com/system/123 is the string &quot;/system/123&quot;.
 		  Trimmed of leading and trailing slashes, it is &quot;system/123&quot;.
 	  </p>
 	  <p>
 		  The code string needed for authorization is then calculated by first concatenating these
-		  three items:
+		  three items and then calculating the MD5 hash of the concatenation:
 	  </p>
 	  <ul>
 		  <li>The trimmed request URI</li>
@@ -304,14 +305,14 @@ showhttpcode = "no"
 		  <li>RFC-2822 Date</li>
 	  </ul>
 	  <p>
-		  Once the code string has been formed, the whole Authorization header is obtained
-		  by concatenating these strings (the first is the literal text required):
+		  Once the hashed code string has been formed, the whole Authorization header is obtained
+		  by concatenating the following strings (the first is the literal text required):
 	  </p>
 	  <ul>
 		  <li>api-auth-</li>
 		  <li>the integer corresponding to the chosen API key, as a string, e.g. 1</li>
 		  <li>a hyphen</li>
-		  <li>the code string computed as above</li>
+		  <li>the hashed code string computed as above</li>
 	  </ul>
 	  <p>
 		  The full header will then be something like:<br />
@@ -321,24 +322,17 @@ showhttpcode = "no"
 	  <div class="section">
 	  <h3>Installation</h3>
 	  <p>
-		  The code can be extracted from the SkySQL repository.  Currently it is found at
-		  bzr+ssh://repository.skysql.com/bzr/admin_php/restfulapi.  The files should be 
-		  placed in a directory within the web server's document root.  The directory 
-		  structure must be preserved.
+		  The code can be obtained from the SkySQL downloads area, see 
+		  <a href="http://www.skysql.com">http://www.skysql.com</a> for details.  
+		  The files should be placed in a directory within the web server's document 
+		  root.  The directory structure must be preserved.
 	  </p>
 	  <p>
-		  There is a configuration file called api.ini.  This is in the root of the
+		  There is a configuration file called api.ini.  This is in the directory ../root/etc/skysqlmgr of the
 		  structure in the repository.  It should be checked and modified to suit local
 		  requirements.  In particular, the API keys should be changed in order to secure
 		  the API.  The file must be moved to /etc/skysqlmgr/api.ini so that it cannot be
 		  served to the web and so that it can be found by the API.
-	  </p>
-	  <p>
-		  One element of api.ini is the directory given in the logging section.  Provided
-		  this points to a directory that can be written by the web server, the API will
-		  log some of its actions to a file called api.log.  Please note that the ability
-		  to write may require not only correct permissions, but also correct SELinux
-		  settings.
 	  </p>
 	  <p>
 		  Another critical aspect to installing the API code is setting up Apache 
@@ -373,6 +367,7 @@ RewriteRule ^(/some/directory/.*) /some/directory/api.php [L]
 RewriteRule .* - [E=HTTPHTTP_AUTHORIZATION:%{HTTP:Authorization}]
 RewriteRule .* - [E=HTTP_IF_MODIFIED_SINCE:%{HTTP:If-Modified-Since}]
 RewriteRule .* - [E=HTTP_IF_NONE_MATCH:%{HTTP:If-None-Match}]
+RewriteRule .* - [E=HTTP_CONTENT_TYPE:%{HTTP:Content-Type}]
 	  </pre>
 	  <p>
 	  </p>
@@ -397,7 +392,7 @@ $(document).ready(function()
 					url: $(this).attr('rel') // Use the rel attribute of each element for the url to load
 				},
 				title: {
-					text: 'SkySQL Manager - ' + $(this).text(), // Give the tooltip a title using each elements text
+					text: 'MariaDB Manager - ' + $(this).text(), // Give the tooltip a title using each elements text
 					button: true
 				}
 			},

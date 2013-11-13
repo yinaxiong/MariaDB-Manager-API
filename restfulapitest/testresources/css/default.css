@@ -90,14 +90,15 @@ label {
 #logo {
 	float: left;
 	padding: 60px 0 0 0;
-	background: url(http://www.skysql.com/sites/all/themes/skysql/images/logo.png) no-repeat left top;
+	margin-top: 5px;
+	background: url(../images/MariaDBlogo.png) no-repeat left top;
 }
 
 #logo h1 {
 	margin: 0;
 	text-transform: lowercase;
 	letter-spacing: -2px;
-	font-size: 3.6em;
+	font-size: 3.0em;
 	font-weight: normal;
 	color: #FFFFFF;
 }

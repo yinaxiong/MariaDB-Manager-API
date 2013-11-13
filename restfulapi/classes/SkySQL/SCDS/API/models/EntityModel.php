@@ -44,6 +44,11 @@ abstract class EntityModel {
 	protected $insvalue = array();
 	protected $keydata = array();
 	
+	public function entityName () {
+		$classparts = explode('\\', get_class());
+		return end($classparts);
+	}
+
 	public static function getAll () {
 		$getall = AdminDatabase::getInstance()->prepare(sprintf(static::$selectAllSQL, self::getSelects(), ''));
 		$getall->execute();
@@ -354,7 +359,8 @@ abstract class EntityModel {
 		if (isset($about['forced'])) {
 			if ('datetime' == $about['forced']) $data = date('Y-m-d H:i:s');
 		}
-		if (!isset($data)) $data = $request->getParam($source, $name, (null === $priordefault ? $about['default'] : $priordefault));
+		$mask = empty($about['mask']) ? 0 : $about['mask'];
+		if (!isset($data)) $data = $request->getParam($source, $name, (null === $priordefault ? $about['default'] : $priordefault), $mask);
 		if (@$about['validate']) {
 			$method = $about['validate'];
 			if (method_exists(__CLASS__, $method)) {

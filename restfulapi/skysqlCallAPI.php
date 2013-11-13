@@ -106,6 +106,14 @@ class SkysqlCallAPI {
 		return $this->put(LOCATION_OF_SKYSQL_API."/system/$systemid/node", $parms);
 	}
 	
+	public function updateNode ($systemid, $nodeid, $name='', $state='') {
+		$parms = json_encode(array(
+			'name' => $name,
+			'state' => $state
+		));
+		return $this->put(LOCATION_OF_SKYSQL_API."/system/$systemid/node/$nodeid", "name=$name&state$state");
+	}
+	
 	public function getProperty ($systemid, $property) {
 		$this->checkProperty($systemid, $property);
 		return $this->get(LOCATION_OF_SKYSQL_API."/system/$systemid/property/".$property);

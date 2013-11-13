@@ -49,7 +49,7 @@ class MonitorLatest extends CachedSingleton {
 		$latest = $monitordb->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, Stamp FROM LatestMonitorData');
 		foreach ($latest->fetchAll() as $instance) {
 			$this->instances[$instance->MonitorID][$instance->SystemID][$instance->NodeID] = array(
-				'value' => $instance->Value, 'repeats' => $instance->Repeats, 'stamp' => $instance->Stamp
+				'value' => $instance->Value, 'repeats' => $instance->Repeats, 'timestamp' => $instance->Stamp
 			);
 		}
 	}
@@ -64,7 +64,16 @@ class MonitorLatest extends CachedSingleton {
 	}
 	
 	public function getLatestStamp ($monitorid, $systemid, $nodeid) {
-		return isset($this->instances[$monitorid][$systemid][$nodeid]) ? $this->instances[$monitorid][$systemid][$nodeid]['stamp'] : false;
+		return isset($this->instances[$monitorid][$systemid][$nodeid]) ? $this->instances[$monitorid][$systemid][$nodeid]['timestamp'] : false;
+	}
+	
+	public function getOneMonitorData ($monitorid, $systemid, $nodeid) {
+		if (isset($this->instances[$monitorid][$systemid][$nodeid])) {
+			$data = $this->instances[$monitorid][$systemid][$nodeid];
+			$data['value'] = $this->getLatestValue($monitorid, $systemid, $nodeid);
+			return $data;
+		}
+		return false;
 	}
 	
 	public function getMonitorData ($systemid, $nodeid, $ifmodifiedsince) {
@@ -83,8 +92,8 @@ class MonitorLatest extends CachedSingleton {
 				$property = $monitor->monitor;
 				$monitordata = $info[$systemid][$nodeid];
 				$monitorlatest->$property = $monitordata['value'] ? $monitordata['value'] / pow(10,@$monitor->decimals) : $monitordata['value'];
-				if ($ifmodifiedsince < $monitordata['stamp']) $modified = true;
-				$lastupdate = max($lastupdate,$monitordata['stamp']);
+				if ($ifmodifiedsince < $monitordata['timestamp']) $modified = true;
+				$lastupdate = max($lastupdate,$monitordata['timestamp']);
 			}
 		}
 		return array($monitorlatest, $lastupdate, $modified);
@@ -101,18 +110,18 @@ class MonitorLatest extends CachedSingleton {
 						$maininserts[] = array(
 							'monitorid' => $monitorids[$i],
 							'value' => $values[$i],
-							'stamp' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['stamp'],
+							'timestamp' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'],
 							'repeats' => 0);
 					}
 					$updates[] = $monitorids[$i];
 					$this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']++;
-					$this->instances[$monitorids[$i]][$systemid][$nodeid]['stamp'] = $stamp;
+					$this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'] = $stamp;
 				}
 				else {
 					$maininserts[] = array(
 						'monitorid' => $monitorids[$i],
 						'value' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['value'],
-						'stamp' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['stamp'],
+						'timestamp' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'],
 						'repeats' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']
 					);
 					$deletes[] = $monitorids[$i];
@@ -122,10 +131,10 @@ class MonitorLatest extends CachedSingleton {
 				}
 			}
 			else {
-				$this->instances[$monitorids[$i]][$systemid][$nodeid] = array('value' => $values[$i], 'repeats' => 0, 'stamp' => $stamp);
+				$this->instances[$monitorids[$i]][$systemid][$nodeid] = array('value' => $values[$i], 'repeats' => 0, 'timestamp' => $stamp);
 				$this->insertSQL($insertsql, $monitorids[$i], $systemid, $nodeid, $values[$i], $stamp);
 			}
-			$this->instances[$monitorids[$i]][$systemid][$nodeid]['stamp'] = $stamp;
+			$this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'] = $stamp;
 		}
 		if (!empty($updates)) {
 			$uplist = implode(',', $updates);

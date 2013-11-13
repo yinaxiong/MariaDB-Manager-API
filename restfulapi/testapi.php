@@ -64,6 +64,7 @@ class TestAPI {
 		<input type="radio" name="testid" value="getAllSystems" />Get all systems<br />
 		<input type="radio" name="testid" value="createSystemForm" />Create a system<br />
 		<input type="radio" name="testid" value="createNodeForm" />Create a node<br />
+		<input type="radio" name="testid" value="updateNodeForm" />Update a node<br />
 		<input type="radio" name="testid" value="getSystemForm" />Get a system<br />
 		<input type="radio" name="testid" value="getPropertyForm" />Get a property<br />
 		<input type="radio" name="testid" value="setPropertyForm" />Set a property<br />
@@ -150,7 +151,7 @@ SYSTEM_FORM;
 		<input type="text" id="systemid" name="systemid" /><br />
 		<label for="nodename">Node Name</label>
 		<input type="text" id="nodename" name="nodename" /><br />
-		<label for="status">Status</label>
+		<label for="state">Status</label>
 		<input type="text" id="status" name="status" /><br />
 		<input type="hidden" name="testid" value="createNode" />
 		<input type="submit" value="Go" />
@@ -162,9 +163,38 @@ SYSTEM_FORM;
 	
 	public function createNode () {
 		$systemid = @$_POST['systemid'];
-		$name = @$_POST['systemname'];
+		$name = @$_POST['nodename'];
 		$state = @$_POST['state'];
 		return $this->apicall->createNode($systemid, $name, $state);
+	}
+	
+	public function updateNodeForm () {
+		echo <<<SYSTEM_FORM
+   
+    <h2>Create a node</h2>
+	<form action="testapi.php" method="POST">
+		<label for="systemid">System ID</label>
+		<input type="text" id="systemid" name="systemid" /><br />
+		<label for="nodeid">Node ID</label>
+		<input type="text" id="nodeid" name="nodeid" /><br />
+		<label for="nodename">Node Name</label>
+		<input type="text" id="nodename" name="nodename" /><br />
+		<label for="state">State</label>
+		<input type="text" id="state" name="state" /><br />
+		<input type="hidden" name="testid" value="updateNode" />
+		<input type="submit" value="Go" />
+	</form>
+
+SYSTEM_FORM;
+		
+	}
+	
+	public function updateNode () {
+		$systemid = @$_POST['systemid'];
+		$nodeid = @$_POST['nodeid'];
+		$name = @$_POST['nodename'];
+		$state = @$_POST['state'];
+		return $this->apicall->updateNode($systemid, $nodeid, $name, $state);
 	}
 	
 	public function getAllSystems () {

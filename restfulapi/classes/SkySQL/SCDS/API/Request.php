@@ -523,7 +523,7 @@ abstract class Request {
 	}
 	
 	protected function addResponseInformationAndSend ($body, $status=200) {
-		$diagnostics = ob_get_clean();
+		$diagnostics = preg_replace('/[^(\x20-\x7F)]*/','', ob_get_clean());
 		if ($diagnostics) $body['diagnostics'] = explode("\n", preg_replace("=<br */?>=i", "\n", $diagnostics));
 		foreach ((array) @$body['diagnostics'] as $sub=>$value) if (empty($value)) unset ($body['diagnostics'][$sub]);
 		if (count($this->warnings)) {
@@ -626,7 +626,7 @@ PRETTY_PAGE;
 		$report = $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 		$this->log(LOG_INFO, "$this->requestmethod /$this->uri completed $report - time taken {$this->timer->mark('seconds')}");
 		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $report));
-		header('Content-type: '.$this->accept);
+		header('Content-type: '.$this->accept.'; charset=utf-8');
 		header('Cache-Control: no-store');
 		header('X-SkySQL-API-Version: '._API_VERSION_NUMBER);
 	}

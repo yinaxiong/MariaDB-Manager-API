@@ -69,9 +69,9 @@ class Node extends EntityModel {
 		'port' => array('sqlname' => 'Port', 'default' => 0),
 		'instanceid' => array('sqlname' => 'InstanceID', 'default' => ''),
 		'dbusername' => array('sqlname' => 'DBUserName', 'desc' => 'Node system override for database user name', 'default' => ''),
-		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'Node system override for database password', 'default' => ''),
+		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'Node system override for database password', 'default' => '', 'mask' => _MOS_NOTRIM),
 		'repusername' => array('sqlname' => 'RepUserName', 'desc' => 'Node system override for replication user name', 'default' => ''),
-		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '')
+		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '', 'mask' => _MOS_NOTRIM)
 	);
 	
 	protected static $derived = array(

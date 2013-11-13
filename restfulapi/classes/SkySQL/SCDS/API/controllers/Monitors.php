@@ -128,11 +128,11 @@ final class Monitors extends ImplementAPI {
 		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systems[0], $nodes[0], $monitors, $values);
 		foreach ($inserts as $insert) {
 			if (isset($insertrows)) {
-				$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d, %d, %d\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['stamp'], $insert['repeats']);
+				$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d, %d, %d\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
 			}
 			else {
 				$insertrows = "INSERT INTO MonitorData SELECT";
-				$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['stamp'], $insert['repeats']);
+				$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
 			}
 		}
 		
@@ -200,6 +200,7 @@ final class Monitors extends ImplementAPI {
 		else {
 			$this->start = $this->finish - ($this->interval * $this->count);
 		}
+		$results = array('start' => $this->start, 'finish' => $this->finish, 'count' => $this->count, 'interval' => $this->interval);
 		$this->monitordb = MonitorDatabase::getInstance();
 		$data = $this->getRawData($this->start, $this->finish);
 		$preceding = $this->getPreceding($this->start);
@@ -209,14 +210,14 @@ final class Monitors extends ImplementAPI {
 		}
 		else array_unshift($data, $preceding);
 		if ($average) {
-			$aresults = $this->getAveraged($data);
-			$mmresults = $this->getMinMax($data);
+			$aresults = $this->getAveraged($data, $results);
+			$mmresults = $this->getMinMax($data, $results);
 			foreach (array_keys($aresults['value']) as $sub) {
 				if (null === $mmresults['min'][$sub] AND null === $mmresults['max'][$sub]) $aresults['value'][$sub] = null;
 			}
 			$this->sendResponse(array('monitor_data' => $aresults));
 		}
-		else $this->sendResponse(array('monitor_data' => $this->getMinMax($data)));
+		else $this->sendResponse(array('monitor_data' => $this->getMinMax($data, $results)));
 	}
 	
 	protected function sendNullData ($average) {
@@ -225,7 +226,7 @@ final class Monitors extends ImplementAPI {
 		$this->sendResponse(array('monitor_data' => $data));
 	}
 	
-	protected function getAveraged($data) {
+	protected function getAveraged ($data, $results) {
 		$results['timestamp'][0] = $this->start + (int) ($this->interval/2);
 		$results['value'][0] = $k = 0;
 		$base = $this->start;
@@ -252,7 +253,7 @@ final class Monitors extends ImplementAPI {
 		return $results;
 	}
 	
-	protected function getMinMax ($data) {
+	protected function getMinMax ($data, $results) {
 		$results['timestamp'][0] = $this->start + (int) $this->interval/2;
 		$k = 0;
 		$base = $this->start;
@@ -320,8 +321,8 @@ final class Monitors extends ImplementAPI {
 			':to' => $to
 		));
 		$rawdata = $select->fetchALL(PDO::FETCH_ASSOC);
-		$latest = MonitorLatest::getInstance()->getLatestStamp($this->monitorid, $this->systemid, $this->nodeid);
-		if ($latest AND $latest <= strtotime($to)) arrray_push($rawdata, MonitorLatest::getInstance()->getLatestValue($this->monitorid, $this->systemid, $this->nodeid));
+		$latestdata = MonitorLatest::getInstance()->getOneMonitorData($this->monitorid, $this->systemid, $this->nodeid);
+		if ($latestdata AND $latestdata['timestamp'] <= $to) array_push($rawdata, $latestdata);
 		return $rawdata;
 	}
 	

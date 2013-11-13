@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
-    <title>Manipulate Systems via SkySQL Manager API</title>
+    <title>Manipulate Systems via API</title>
 	<link href="testresources/css/default.css" rel="stylesheet" type="text/css" />
+	<meta http-equiv="content-type" content="text/html; charset=UTF-8" />
   </head>
   <body>
 	  <div id="header">
@@ -24,7 +25,7 @@
 	  </div>	
 	<div id="page">
 	<div id="content">
-	<h2>System Management via SkySQL Manager API</h2>
+	<h2>System Management via API</h2>
 	<div class="section">
 	  <h3>Get System Types</h3>
 	  <form action="" method="post" id="getsystemtypes" target="apiresults" onsubmit="return(setFields(this.id,'systemtype'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
@@ -444,6 +445,40 @@
 			prettily, and there may well be similar addons for other browsers.  You can control how the
 			API replies by including or excluding &quot;application/json&quot; in the HTTP Accept
 			header - the API will only reply with JSON if it is included.
+		</p>
+		<h3>Results from the API</h3>
+		<p>
+			The API can provide results as either HTML or JSON.  This can be controlled
+			in two ways.  One way is to send, with the request, an &quot;Accept&quot; header
+			specifying either &quot;application/json&quot; or &quot;text/html&quot;. If 
+			neither is specified, the default is HTML.  The other way is to suffix the
+			request URI with either .json or .html.
+		</p>
+		<p>
+			Where a request to the API can result in multiple answers, for example if
+			a request is made for all nodes in a system, the result will always be an
+			array.  This will be so even if there is only one node, or if there are
+			no nodes at all.
+		</p>
+		<p>
+			In general, where a particular type of entity is expect from the API, and
+			the result is null, the API will return something of the type that would
+			be expected if the result were not null.  So if the result could be an
+			object, but is null, the API will return a null object.  If the result could
+			be a string, the API will return an empty string.  Null is only used
+			for cases such as numbers, where there is no naturally null value.
+		</p>
+		<p>
+			Many requests will accept a &quot;fields&quot; parameter, whose value is
+			a comma separate list of field names.  The API will return only the fields
+			in the list in the results, thus enabling selective retrieval of only 
+			the data required.  The efficiency of the API may be significantly
+			improved if requests are restricted to the data that is needed.
+		</p>
+		<p>
+			Date/time stamps are always returned by the API in RFC 2822 format, 
+			which allows them to be reliably interpreted regardless of differing
+			locales.
 		</p>
 		<h3>Parameters to API calls</h3>
 		<p>

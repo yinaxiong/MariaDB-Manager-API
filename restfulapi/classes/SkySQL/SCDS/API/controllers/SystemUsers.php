@@ -71,7 +71,7 @@ class SystemUsers extends ImplementAPI {
 
 	public function loginUser ($uriparts) {
 		$username = $uriparts[1];
-		$password = $this->getParam('POST', 'password');
+		$password = $this->getParam('POST', 'password', '', _MOS_NOTRIM);
 		$manager = UserManager::getInstance();
 		if ($manager->authenticate($username,$password)) {
 			$this->getUserInfo ($uriparts);

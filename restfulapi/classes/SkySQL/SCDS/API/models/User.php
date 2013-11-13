@@ -55,7 +55,7 @@ class User extends EntityModel {
 
 	protected static $fields = array(
 		'name' => array('sqlname' => 'Name', 'default' => ''),
-		'password' => array('sqlname' => 'Password', 'default' => '', 'secret' => true)
+		'password' => array('sqlname' => 'Password', 'default' => '', 'mask' => _MOS_NOTRIM, 'secret' => true)
 	);
 	
 	protected static $savedpass = '';

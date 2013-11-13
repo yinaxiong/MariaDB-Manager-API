@@ -64,9 +64,9 @@ class System extends EntityModel {
 		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime'),
 		'state' => array('sqlname' => 'State', 'desc' => 'Current state of the system', 'default' => 'created', 'validate' => 'systemstate'),
 		'dbusername' => array('sqlname' => 'DBUserName', 'desc' => 'System default for database user name', 'default' => ''),
-		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'System default for database password', 'default' => ''),
+		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'System default for database password', 'default' => '', 'mask' => _MOS_NOTRIM),
 		'repusername' => array('sqlname' => 'RepUserName', 'desc' => 'System default for replication user name', 'default' => ''),
-		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'System default for replication user name', 'default' => '')
+		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'System default for replication user name', 'default' => '', 'mask' => _MOS_NOTRIM)
 	);
 	
 	protected static $derived = array(
