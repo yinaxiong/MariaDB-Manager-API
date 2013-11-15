@@ -33,7 +33,7 @@ class ApplicationPropertyManager extends PropertyManager {
 	protected $name = 'application';
 	
 	protected $updateSQL = "UPDATE ApplicationProperties SET Value = :value, Updated = datetime('now') WHERE ApplicationID = :key AND Property = :property";
-	protected $insertSQL = "INSERT INTO ApplicationProperties (ApplicationID, Property, Updated, Value) VALUES (:key, :property, datetime('now') :value)";
+	protected $insertSQL = "INSERT INTO ApplicationProperties (ApplicationID, Property, Updated, Value) VALUES (:key, :property, datetime('now'), :value)";
 	protected $deleteSQL = 'DELETE FROM ApplicationProperties WHERE ApplicationID = :key AND Property = :property';
 	protected $selectSQL = 'SELECT Value FROM ApplicationProperties WHERE ApplicationID = :key AND Property = :property';
 	protected $selectAllSQL = 'SELECT ApplicationID AS key, Property AS property, Value AS value, Updated AS updated FROM ApplicationProperties';

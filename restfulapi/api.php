@@ -45,6 +45,7 @@ use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.0');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
+// _API_CODE_ISSUE_DATE will be defined in the code below 
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 
@@ -106,17 +107,19 @@ class API {
 			),
 			'nodestates' => array(
 				'provisioned' => array('stateid' => 10001, 'description' => 'Has agent, scripts, database', 'protected' => true),
-				'down' => array('stateid' => 100, 'description' => 'Down'),
+				'initialized' => array('stateid' => 100, 'description' => 'Initialized'),
 				'open' => array('stateid' => 101, 'description' => 'Open', 'protected' => true),
 				'primary' => array('stateid' => 102, 'description' => 'Primary', 'protected' => true),
 				'joiner' => array('stateid' => 103, 'description' => 'Joiner', 'protected' => true),
 				'joined' => array('stateid' => 104, 'description' => 'Joined', 'protected' => true),
 				'synced' => array('stateid' => 105, 'description' => 'Synced', 'protected' => true),
 				'donor' => array('stateid' => 106, 'description' => 'Donor', 'protected' => true),
-				'isolated' => array('stateid' => 99, 'description' => 'Isolated'),
-				'incorrectly-joined' => array('stateid' => 98, 'description' => 'Incorrectly Joined')
+				'incorrectly-joined' => array('stateid' => 196, 'description' => 'Incorrectly Joined'),
+				'isolated' => array('stateid' => 197, 'description' => 'Isolated'),
+				'machine-down' => array('stateid' => 198, 'description' => 'Machine Unreachable'),
+				'down' => array('stateid' => 199, 'description' => 'Down'),
 			),
-			'onecommandpersystem' => 'start,restart',
+			'onecommandpersystem' => 'start,restart,rejoin',
 			'wheretofinddb' => 'system',
 			'wheretofindrep' => 'system',
 		)

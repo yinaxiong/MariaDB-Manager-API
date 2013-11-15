@@ -87,10 +87,11 @@ class Tasks extends TaskScheduleCommon {
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$command->setPropertiesFromParams();
 		$state = $this->getParam('POST', 'state');
-		$node = NodeManager::getInstance()->getByID($command->systemid, $command->nodeid);
-		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (%d, %d) but there is no such node", $command->command, $command->systemid, $command->nodeid), 409);
+		$nodemanager = NodeManager::getInstance();
+		$node = $nodemanager->getByID($command->systemid, $command->nodeid);
+		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (S%d, N%d) but there is no such node", $command->command, $command->systemid, $command->nodeid), 409);
 		if ($state AND $state != $node->state) {
-			$this->sendErrorResponse(sprintf("Command '%s' required node (%d, %d) to be in state %s but it is in state %s", $command->command, $node->systemid, $node->nodeid, $state, $node->state), 409);
+			$this->sendErrorResponse(sprintf("Command '%s' required %s to be in state '%s' but it is in state '%s'", $command->command, $nodemanager->getDescription($node->systemid, $node->nodeid), $state, $node->state), 409);
 		}
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
 		foreach (array('LaunchCommand','RunCommand') as $script) {
@@ -101,7 +102,7 @@ class Tasks extends TaskScheduleCommon {
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
 		if (empty($command->icalentry)) {
 			if (Task::tasksNotFinished($command->command, $node)) {
-				$this->sendErrorResponse(sprintf("Command '%s' on node (%d, %d) but another command is still running on the node, or a critical command is running on the system", $command->command, $node->systemid, $node->nodeid), 409);
+				$this->sendErrorResponse(sprintf("Command '%s' on %s but another command is still running on the node, or a critical command is running on the system", $command->command, $nodemanager->getDescription($node->systemid, $node->nodeid)), 409);
 			}
 			$this->immediateCommand ($command);
 		}

@@ -160,23 +160,6 @@
 			</span>
 			</a>
 			&nbsp;
-			<a class="tooltip" href="#">level,
-			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
-			<strong>level</strong><br />
-			Only applicable to a backup command.  Indicates whether a full or
-			incremental backup is required.  1 = full, 2 = incremental.
-			</span>
-			</a>
-			&nbsp;
-			<a class="tooltip" href="#">parentid,
-			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
-			<strong>parentid</strong><br />
-			For an incremental backup, indicates the ID of the backup that is the
-			base from which the increment is computed.  For a restore, indicates 
-			the ID of the backup to be restored.
-			</span>
-			</a>
-			&nbsp;
 			<a class="tooltip" href="#">parameters,
 			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>parameters</strong><br />
@@ -210,10 +193,6 @@
 			<input type="text" name="username" id="username" /><br />
 			<label for="icalentry">iCalEntry</label>
 			<input type="text" id="icalentry" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'icalentry');" /><br />
-			<label for="level">Level (backup)</label>
-			<input type="text" id="level" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'level');" /><br />
-			<label for="parentid">Parent ID (backup)</label>
-			<input type="text"  id="parentid" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parentid');" /><br />
 			<label for="params">Parameters</label>
 			<input type="text" id="params" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parameters');" /><br />
 			<input type="submit" class="submit" value="Run Command" />

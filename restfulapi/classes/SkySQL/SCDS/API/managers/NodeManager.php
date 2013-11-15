@@ -62,6 +62,19 @@ class NodeManager extends EntityManager {
 		return isset($this->nodes[$system][$id]) ? $this->nodes[$system][$id] : null;
 	}
 	
+	public function getDescription ($systemid, $nodeid) {
+		$node = $this->getByID($systemid, $nodeid);
+		if ($node) {
+			$system = SystemManager::getInstance()->getByID($systemid);
+			if ($system) return sprintf("node called '%s' in system called '%s' (S%d, N%d)", $node->name, $system->name, $systemid, $nodeid);
+			else {
+				$systemname = 'unknown';
+				return sprintf("node called '%s' in system called '%s' (S%d, N%d)", $node->name, $systemname, $systemid, $nodeid);
+			}
+		}
+		else return "unknown node";
+	}
+	
 	public function getAll () {
 		$merged = array();
 		foreach ($this->nodes as $systemnodes) $merged = array_merge($merged, $systemnodes);

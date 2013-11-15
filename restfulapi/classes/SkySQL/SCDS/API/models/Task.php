@@ -139,7 +139,7 @@ class Task extends EntityModel {
 	
 	protected function setSteps () {
 		$this->steps = $this->getSteps();
-		if (!$this->steps) Request::getInstance()->sendErrorResponse(sprintf("Command '%s' is not valid for specified node in its current state of '%s'", $this->command, $this->node->state), 400);
+		if (!$this->steps) Request::getInstance()->sendErrorResponse(sprintf("Command '%s' is not valid for %s in its current state of '%s'", $this->command, NodeManager::getInstance()->getDescription($this->node->systemid, $this->node->nodeid), $this->node->state), 400);
 	}
 	
 	protected function derivedFields () {

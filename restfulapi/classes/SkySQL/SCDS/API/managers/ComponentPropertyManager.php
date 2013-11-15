@@ -41,10 +41,18 @@ class ComponentPropertyManager extends PropertyManager {
 	protected $deleteSQL = 'DELETE FROM ComponentProperties WHERE ComponentID = :key AND Property = :property';
 	protected $deleteAllSQL = 'DELETE FROM ComponentProperties WHERE ComponentID = :key';
 	protected $selectSQL = 'SELECT Value FROM ComponentProperties WHERE ComponentID = :key AND Property = :property';
-	protected $selectAllSQL = 'SELECT ComponentID AS key, Property AS property, Value AS value, Updated AS updated FROM ComponentProperties';
+	protected $selectAllSQL = 'SELECT ComponentID AS key, Property AS property, Value AS value, Updated AS updated FROM ComponentProperties ORDER BY ComponentId, Property';
 	
 	protected static $instance = null;
-	
+
+	protected function __construct () {
+		parent::__construct();
+		$this->properties['0|0|api']['name'] = _API_SYSTEM_NAME;
+		$this->properties['0|0|api']['api-version'] = _API_VERSION_NUMBER;
+		$this->properties['0|0|api']['version'] = _API_CODE_ISSUE_DATE;
+		$this->updates['0|0|api']['name'] = $this->updates['0|0|api']['api-version'] = $this->updates['0|0|api']['version'] = _API_CODE_ISSUE_DATE;
+	}
+
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
@@ -87,14 +95,11 @@ class ComponentPropertyManager extends PropertyManager {
 	
 	public function getAllComponents ($systemid, $nodeid) {
 		$key = $this->makeKey($systemid, $nodeid);
-		$select = AdminDatabase::getInstance()->prepare('SELECT * FROM ComponentProperties WHERE ComponentID LIKE :key ORDER BY ComponentId, Property');
-		$select->execute(array('key' => $key));
-		foreach ($select->fetchAll() as $property) {
-			$keyparts = explode('|', $property->ComponentID, 3);
-			if (3 == count($keyparts)) {
-				$name = $keyparts[2];
-				$components[$name][$property->Property] = $property->Value;
-			}
+		foreach ($this->properties as $pkey=>$properties) {
+			$checksize = strlen($key) -1;
+			if (strncmp($key, $pkey, $checksize)) continue;
+			$name = substr($pkey, $checksize);
+			foreach ($properties as $property=>$value) $components[$name][$property] = $value;
 		}
 		return isset($components) ? $components : new stdClass();
 	}

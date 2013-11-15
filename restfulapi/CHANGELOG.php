@@ -3,6 +3,17 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 15 November 2013, 14:50
+ * 
+ * Amend list of states for Galera nodes to match the Monitor
+ * Add "rejoin" to the commands that can only be running once on a system
+ * Improve some error messages by referring to nodes by System and Node Name
+ * Correct bug in Application Property related SQL
+ * Add API information to cached Component Properties
+ * Serve all component property information from cache, remove SQL request
+ * Remove obsolete backup parameters from HTML for running command (Parent ID, Level)
+ * 
+ * 
  * 13 November 2013, 12:40
  * 
  * Changes and additions to the text and appearance of the HTML front end
