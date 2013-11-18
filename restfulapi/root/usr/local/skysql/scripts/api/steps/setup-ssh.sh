@@ -30,30 +30,41 @@
 # $2 TaskID for the invoking Task
 # $3 Other parameters (root_password is necessary)
 
-nodeip=$1
-taskid=$2
-params=$(echo $3 | tr "&" "\n")
+nodeip="$1"
+taskid="$2"
+params="$3"
 
 logger -p user.info -t MariaDB-Manager-Task "Setup ssh access for node $nodeip"
 
 # Parameter parsing and validation
-for param in $params
-do
-        param_name=$(echo $param | cut -d = -f 1)
-        param_value=$(echo $param | cut -d = -f 2)
+oldIFS=$IFS
+IFS='&'
+set $params
+while [[ $# > 0 ]]; do
+        param_name="${1%%=*}"
+        param_value="${1#*=}"
 
         if [[ "$param_name" == "rootpassword" ]]; then
                 rootpwd=$param_value
         fi
+        if [[ "$param_name" == "sshkey" ]]; then
+                sshkey=$param_value
+        fi
+
+        shift
 done
+IFS=$oldIFS
 
-# Attempt to hide the parameter string that contains the password
-api_call "PUT" "task/$taskid" "parameters=*****"
-
-if [[ "$rootpwd" == "" ]]; then
-        logger -p user.error -t MariaDB-Manager-Task "Error: system root password parameter not defined."
-	set_error "Error: system root password parameter not defined."
-        exit 1
+if [[ "$sshkey" != "" ]]; then
+        ssh_key_file=$(mktemp /tmp/sshrsa.XXXXXXXX)
+        echo "$sshkey" > $ssh_key_file
+else
+        if [[ "$rootpwd" == "" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task \
+                        "Error: neither system root password nor ssh key was provided."
+                set_error "Error: neither system root password nor ssh key was provided."
+                exit 1
+        fi
 fi
 
 # Adding node ip to ssh hosts list (if there is no entry)
@@ -112,6 +123,11 @@ if [[ "$ssh_return" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to edit sudoers file."
 	set_error "Failed to setup sudoers file."
 	exit 1
+fi
+
+# Deleting temp ssh key file
+if [[ -f $ssh_key_file ]] ; then
+	rm -f $ssh_key_file
 fi
 
 logger -p user.info -t MariaDB-Manager-Task "Info: SSH successfully set up."

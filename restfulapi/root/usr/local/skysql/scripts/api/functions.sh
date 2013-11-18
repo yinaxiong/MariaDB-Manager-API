@@ -110,9 +110,14 @@ set_error() {
 # $1: node IP
 # $2: ssh command
 ssh_command() {
-	ssh_output=$(sshpass -p "$rootpwd" ssh root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
-	ssh_return=$?
-        if [[ "$ssh_return" != "0" ]]; then
+	if [[ "$ssh_key_file" != "" ]]; then
+		ssh_output=$(ssh -i "$ssh_key_file" root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
+		ssh_return=$?
+	else
+		ssh_output=$(sshpass -p "$rootpwd" ssh root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
+		ssh_return=$?
+	fi
+      if [[ "$ssh_return" != "0" ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
                 logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $nodeip with root user. $ssh_error_output"
 		set_error "Error in ssh connection to $nodeip with root user. $ssh_error_output"
@@ -133,8 +138,13 @@ ssh_command() {
 # $2: local file path (source)
 # $3: remote file path (destination)
 ssh_put_file() {
-	ssh_output=$(sshpass -p "$rootpwd" scp "$2" root@"$1":"$3" 2>/tmp/ssh_call.$$.log)
-	ssh_return=$?
+	if [[ "$ssh_key_file" != "" ]]; then
+		ssh_output=$(scp -i "$ssh_key_file" "$2" root@"$1":"$3" 2>/tmp/ssh_call.$$.log)
+		ssh_return=$?
+	else
+		ssh_output=$(sshpass -p "$rootpwd" scp "$2" root@"$1":"$3" 2>/tmp/ssh_call.$$.log)
+		ssh_return=$?
+	fi
 	if [[ "$ssh_return" != "0" ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
                 logger -p user.error -t MariaDB-Manager-Task "Error in ssh file transfer to $nodeip with root user. $ssh_error_output"

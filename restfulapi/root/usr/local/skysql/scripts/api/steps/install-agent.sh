@@ -32,24 +32,39 @@
 
 . ./functions.sh
 
-nodeip=$1
-taskid=$2
-params=$(echo $3 | tr "&" "\n")
+nodeip="$1"
+taskid="$2"
+params="$3"
 
 # Parameter parsing and validation
-for param in $params
-do
-        param_name=$(echo $param | cut -d = -f 1)
-        param_value=$(echo $param | cut -d = -f 2)
+oldIFS=$IFS
+IFS='&'
+set $params
+while [[ $# > 0 ]]; do
+        param_name="${1%%=*}"
+        param_value="${1#*=}"
 
         if [[ "$param_name" == "rootpassword" ]]; then
                 rootpwd=$param_value
         fi
-done
+        if [[ "$param_name" == "sshkey" ]]; then
+                sshkey=$param_value
+        fi
 
-if [[ "$rootpwd" == "" ]]; then
-        logger -p user.error -t MariaDB-Manager-Task "Error: system password parameter not defined."
-        exit 1
+        shift
+done
+IFS=$oldIFS
+
+if [[ "$sshkey" != "" ]]; then
+        ssh_key_file=$(mktemp /tmp/sshrsa.XXXXXXXX)
+        echo "$sshkey" > $ssh_key_file
+else
+        if [[ "$rootpwd" == "" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task \
+                        "Error: neither system root password nor ssh key was provided."
+                set_error "Error: neither system root password nor ssh key was provided."
+                exit 1
+        fi
 fi
 
 scripts_installed=0;
@@ -132,6 +147,11 @@ if [[ "$json_err" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to update the node state."
 	set_error "Failed to update the node state."
 	exit 1
+fi
+
+# Deleting temp ssh key file
+if [[ -f $ssh_key_file ]] ; then
+	rm -f $ssh_key_file
 fi
 
 logger -p user.info -t MariaDB-Manager-Task "Info: SkySQL Galera remote execution agent successfully installed."
