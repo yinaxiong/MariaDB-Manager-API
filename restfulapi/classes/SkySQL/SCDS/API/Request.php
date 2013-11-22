@@ -42,7 +42,6 @@
 namespace SkySQL\SCDS\API;
 
 use \PDOException;
-use \ReflectionMethod;
 use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
 use SkySQL\SCDS\API\controllers\Metadata;
@@ -387,9 +386,6 @@ abstract class Request {
 					else $object = new $class($this);
 				}
 				$method = $link['method'];
-				//$reflectmethod = new ReflectionMethod($class, $method);
-				//$reflectparms = $reflectmethod->getParameters();
-				//foreach ($reflectparms as $parm) echo "Parameter name: ".$parm->name;
 				if (!method_exists($object, $method)) {
 					$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 500);
 				}

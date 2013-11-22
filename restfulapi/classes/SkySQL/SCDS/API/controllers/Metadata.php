@@ -30,6 +30,7 @@ namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\COMMON\AdminDatabase;
 use stdClass;
+use ReflectionMethod;
 
 final class Metadata extends ImplementAPI {
 	private static $ignores = array('EntityModel','NodeStates');
@@ -39,6 +40,7 @@ final class Metadata extends ImplementAPI {
 			$result[] = array (
 				'http' => $entry['http'],
 				'uri' => $entry['uri'],
+				'class' => $entry['class'],
 				'method' => $entry['method'],
 				'title' => $entry['title']
 			);
@@ -62,7 +64,7 @@ final class Metadata extends ImplementAPI {
 				$entobject = new stdClass();
 				foreach ($entities as $entity) {
 					$low = strtolower($entity);
-				$entobject->$entity = "http://{$_SERVER['SERVER_NAME']}/metadata/entity/$low.json";
+					$entobject->$entity = "http://{$_SERVER['SERVER_NAME']}/metadata/entity/$low.json";
 				} 
 				$this->sendResponse(array('entities' => $entobject));
 			}
@@ -189,18 +191,47 @@ API;
 
 	protected function listAPIMML ($calls) {
 		$lhtml = '';
-		foreach ($calls as $call) $lhtml .= <<<LINK
+		foreach ($calls as $call) {
+			$class = __NAMESPACE__.'\\'.$call['class'];
+			if (class_exists($class)) {
+				$reflectmethod = new ReflectionMethod($class, $call['method']);
+				$reflectparms = $reflectmethod->getParameters();
+				for ($i = 0; $i < count($reflectparms); $i++) {
+					if ('metadata' == $reflectparms[$i]->name) $metaparm = $i;
+				}
+				if (isset($metaparm)) {
+					$factory = $call['class'].'Factory';
+					if (method_exists($class, $factory)) $controller = call_user_func (array($class, $factory), array(), $this->requestor);
+					else $controller = new $class($this->requestor);
+					for ($i = 0; $i < $metaparm; $i++) $args[$i] = array();
+					$args[$metaparm] = 'response';
+					$response = call_user_func_array(array($controller, $call['method']), $args);
+					$args[$metaparm] = 'many';
+					$many = call_user_func_array(array($controller, $call['method']), $args);
+					$args[$metaparm] = 'parameters';
+					$parameters = call_user_func_array(array($controller, $call['method']), $args);
+					unset($args, $metaparm);
+				}
+			}
+			if (empty($response)) $response = 'unknown';
+			if (empty($many)) $many = 'unknown';
+			if (empty($parameters)) $parameters = 'unknown';
+
+			$lhtml .= <<<LINK
 
 h4. {$call['title']} <br />
 <br />
 *HTTP Method:* {$call['http']} <br />
-*URI:* {$call['uri']} <br />
-*Parameters:* <br />
-*Results:* <br />
+*URI:* @{$call['uri']}@ <br />
+*Parameters:* $parameters<br />
+*Successful Response:* $response <br />
+*One or Many Resources:* $many <br />
 <br />
 			
 LINK;
 
+			unset($response, $many, $parameters);
+		}
 		return $this->callsPage($lhtml);
 	}
 	

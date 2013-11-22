@@ -31,19 +31,22 @@ use SkySQL\SCDS\API\managers\UserPropertyManager;
 use SkySQL\SCDS\API\models\User;
 
 class SystemUsers extends ImplementAPI {
+	protected $defaultResponse = 'User';
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		User::checkLegal();
 	}
 
-	public function getUsers () {
+	public function getUsers ($metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'fields');
 		$users = UserManager::getInstance()->getAllPublic();
 		foreach ($users as &$user) $user->properties = UserPropertyManager::getInstance()->getAllProperties($user->username);
         $this->sendResponse(array('users' => $this->filterResults((array) $users)));
 	}
 	
-	public function getUserInfo ($uriparts) {
+	public function getUserInfo ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		$username = @$uriparts[1];
 		$user = UserManager::getInstance()->getByName($username);
 		if ($user) {
@@ -54,7 +57,8 @@ class SystemUsers extends ImplementAPI {
 		else $this->sendErrorResponse('No user found with username '.$username, 404);
 	}
 	
-	public function putUser ($uriparts) {
+	public function putUser ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'The Data Fields of a User Resource', 'password');
 		$username = @$uriparts[1];
 		//$username = $uriparts[1];
 		if (!preg_match('/^[A-Za-z0-9_]+$/', $username)) {
@@ -64,12 +68,14 @@ class SystemUsers extends ImplementAPI {
 		$user->save();
 	}
 	
-	public function deleteUser ($uriparts) {
+	public function deleteUser ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count', false, '');
 		$username = $uriparts[1];
 		UserManager::getInstance()->deleteUser($username);
 	}
 
-	public function loginUser ($uriparts) {
+	public function loginUser ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'password');
 		$username = $uriparts[1];
 		$password = $this->getParam('POST', 'password', '', _MOS_NOTRIM);
 		$manager = UserManager::getInstance();

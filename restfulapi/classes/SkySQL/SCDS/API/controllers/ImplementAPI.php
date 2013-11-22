@@ -139,4 +139,17 @@ abstract class ImplementAPI {
 	protected function log ($severity, $message) {
 		$this->requestor->log($severity, $message);
 	}
+	
+	protected function returnMetadata ($metadata, $response, $multiple, $parameters, $mandatory='') {
+		if ('response' == $metadata) return $response ? $response : $this->defaultResponse;
+		if ('many' == $metadata) return $multiple ? 'Many' : 'One';
+		if ('parameters' == $metadata) {
+			if ($parameters) {
+				if ($mandatory) $parameters .= sprintf(' (Mandatory: %s)', $mandatory);
+				return $parameters;
+			}
+			else return 'None';
+		}
+		return 'unknown';
+	}
 }

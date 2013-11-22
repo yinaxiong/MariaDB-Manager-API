@@ -426,7 +426,7 @@ abstract class EntityModel {
 	
 	public static function getMetadataHTML () {
 		$entityname = static::$headername;
-		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowMML');
+		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowHTML');
 		if ($extrarows) $extrahtml = <<<EXTRA
 				
   <tbody>
@@ -438,6 +438,8 @@ abstract class EntityModel {
 				
 EXTRA;
 
+		else $extrahtml = '';
+		
 		echo <<<ENTITY
 		
 <div id="popup">
@@ -500,15 +502,15 @@ ENTITY;
 		$keyrows = $datarows = $extrarows = '';
 		foreach (static::$keys as $name=>$key) {
 			$description = @$key['desc'];
-			$keyrows .= self::$rowmethod($name, $key['type'], $description);
+			$keyrows .= self::$rowmethod($name, @$key['type'], $description);
 		}
 		foreach (static::$fields as $name=>$field) {
 			$description = @$field['desc'];
-			$datarows .= self::$rowmethod($name, $field['type'], $description);
+			$datarows .= self::$rowmethod($name, @$field['type'], $description);
 		}
 		if (!empty(static::$derived)) foreach (static::$derived as $name=>$field) {
 			$description = @$field['desc'];
-			$extrarows .= self::$rowmethod($name, $field['type'], $description);
+			$extrarows .= self::$rowmethod($name, @$field['type'], $description);
 		}
 		return array($keyrows, $datarows, $extrarows);
 	}

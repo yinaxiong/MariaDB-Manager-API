@@ -3,9 +3,16 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * 22 November 2013, 10:40
+ * 22 November 2013, 17:00 GMT
  * 
- * Minor failures to abort messages
+ * Fix bug in display of Resource Tables (e.g. System, Node) for front end HTML
+ *  introduced while adding automation for reference manual
+ * Additional automation for reference manual
+ * 
+ * 
+ * 22 November 2013, 10:40 GMT
+ * 
+ * Minor changes to abort messages
  * Add .mml to metadata to automate reference manual production
  * Add showheaders option in api.ini to include response headers in body of response
  * Attempt to incorporate BZR version into code
@@ -14,7 +21,7 @@
  * Change the HTML front end to send responses in HTML (prettified JSON)
  * 
  * 
- * 15 November 2013, 14:50
+ * 15 November 2013, 14:50 GMT
  * 
  * Amend list of states for Galera nodes to match the Monitor
  * Add "rejoin" to the commands that can only be running once on a system
@@ -25,7 +32,7 @@
  * Remove obsolete backup parameters from HTML for running command (Parent ID, Level)
  * 
  * 
- * 13 November 2013, 12:40
+ * 13 November 2013, 12:40 GMT
  * 
  * Changes and additions to the text and appearance of the HTML front end
  * Fix error in the database specification of the "Capacity" monitor
@@ -35,7 +42,7 @@
  * Allow passwords to have leading or trailing spaces
  * 
  * 
- * 1 November 2013, 08:35
+ * 1 November 2013, 08:35 GMT
  * 
  * Fix bug in PUT data handling.
  * 
