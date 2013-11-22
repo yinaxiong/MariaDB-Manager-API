@@ -58,6 +58,14 @@ cd $scripts_dir
 . ./restfulapicredentials.sh
 . ./functions.sh
 
+trap die SIGTERM
+die() {
+        if [[ "$stepscript" != "" ]] && [[ ! -f "./steps/$stepscript.sh" ]]; then
+                $(ssh_agent_command "$node_ip" \
+                        "sudo /usr/local/sbin/skysql/NodeCommand.sh cancel $taskid $api_host")
+        fi
+}
+
 index=1
 for stepscript in ${steps//,/ } # Iterating the list of steps for the command
 do
