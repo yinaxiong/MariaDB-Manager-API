@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -50,7 +50,8 @@ class ComponentPropertyManager extends PropertyManager {
 		$this->properties['0|0|api']['name'] = _API_SYSTEM_NAME;
 		$this->properties['0|0|api']['api-version'] = _API_VERSION_NUMBER;
 		$this->properties['0|0|api']['version'] = _API_CODE_ISSUE_DATE;
-		$this->updates['0|0|api']['name'] = $this->updates['0|0|api']['api-version'] = $this->updates['0|0|api']['version'] = _API_CODE_ISSUE_DATE;
+		$this->properties['0|0|api']['source-revision'] = _API_SOURCE_REVISION;
+		$this->updates['0|0|api']['name'] = $this->updates['0|0|api']['api-version'] = $this->updates['0|0|api']['version'] = $this->updates['0|0|api']['source-revision'] = _API_CODE_ISSUE_DATE;
 	}
 
 	public static function getInstance () {

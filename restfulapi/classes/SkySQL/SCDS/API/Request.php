@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -42,6 +42,7 @@
 namespace SkySQL\SCDS\API;
 
 use \PDOException;
+use \ReflectionMethod;
 use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
 use SkySQL\SCDS\API\controllers\Metadata;
@@ -84,100 +85,98 @@ abstract class Request {
 	
 	// Longer URI patterns must precede similar shorter ones for correct functioning
 	protected static $uriTable = array(
-		array('class' => 'Applications', 'method' => 'getApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
-		array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
-		array('class' => 'Applications', 'method' => 'deleteApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
-		array('class' => 'SystemProperties', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
-		array('class' => 'SystemProperties', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
-		array('class' => 'SystemProperties', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
-		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'SystemBackups', 'method' => 'getOneBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'GET'),
-		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET'),
-		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST'),
-		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => 'backupstate', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/latest', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/monitor/.+/latest', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/rawdata', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/rawdata', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST'),
-		array('class' => 'ComponentProperties', 'method' => 'getComponentPropertyUpdated', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+/updated', 'http' => 'GET'),
-		array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'GET'),
-		array('class' => 'ComponentProperties', 'method' => 'setComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'PUT'),
-		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE'),
-		array('class' => 'ComponentProperties', 'method' => 'getComponentProperties', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+', 'http' => 'GET'),
-		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperties', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/', 'http' => 'DELETE'),
-		array('class' => 'ComponentProperties', 'method' => 'getComponents', 'uri' => 'system/[0-9]+/node/[0-9]+/component', 'http' => 'GET'),
-		array('class' => 'ComponentProperties', 'method' => 'deleteComponents', 'uri' => 'system/[0-9]+/node/[0-9]+/component', 'http' => 'DELETE'),
-		array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/[0-9]+/node/[0-9]+/process', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/[0-9]+/node', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'updateSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'POST'),
-		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET'),
-		array('class' => 'SystemNodes', 'method' => 'getProvisionedNodes', 'uri' => 'provisionednode', 'http' => 'GET'),
-		array('class' => 'UserTags', 'method' => 'getUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'GET'),
-		array('class' => 'UserTags', 'method' => 'getAllUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'GET'),
-		array('class' => 'UserTags', 'method' => 'addUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'POST'),
-		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+/.+', 'http' => 'DELETE'),
-		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'DELETE'),
-		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'DELETE'),
-		array('class' => 'UserProperties', 'method' => 'getUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'GET'),
-		array('class' => 'UserProperties', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT'),
-		array('class' => 'UserProperties', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE'),
-		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/.*', 'http' => 'GET'),
-		array('class' => 'SystemUsers', 'method' => 'putUser', 'uri' => 'user/.*', 'http' => 'PUT'),
-		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE'),
-		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/.*', 'http' => 'POST'),
-		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET'),
-		array('class' => 'Systems', 'method' => 'getSystemProcesses', 'uri' => 'system/[0-9]+/process', 'http' => 'GET'),
-		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/[0-9]+', 'http' => 'GET'),
-		array('class' => 'Systems', 'method' => 'updateSystem', 'uri' => 'system/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'Systems', 'method' => 'createSystem', 'uri' => 'system', 'http' => 'POST'),
-		array('class' => 'Systems', 'method' => 'deleteSystem', 'uri' => 'system/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET'),
-		array('class' => 'Systems', 'method' => 'getSystemTypes', 'uri' => 'systemtype', 'http' => 'GET'),
-		array('class' => 'Buckets', 'method' => 'getData', 'uri' => 'bucket', 'http' => 'GET'),
-		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET'),
-		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET'),
-		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/.+', 'http' => 'POST'),
-		array('class' => 'Schedules', 'method' => 'runScheduledCommand', 'uri' => 'schedule/[0-9]+', 'http' => 'POST'),
-		array('class' => 'Schedules', 'method' => 'getOneSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'GET'),
-		array('class' => 'Schedules', 'method' => 'deleteOneSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'Schedules', 'method' => 'getSelectedSchedules', 'uri' => 'schedule/.+', 'http' => 'GET'),
-		array('class' => 'Schedules', 'method' => 'getSelectedSchedules', 'uri' => 'schedule', 'http' => 'GET'),
-		array('class' => 'Schedules', 'method' => 'updateSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'Schedules', 'method' => 'getMultipleSchedules', 'uri' => 'schedule', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'cancelOneTask', 'uri' => 'task/[0-9]+', 'http' => 'DELETE'),
-		array('class' => 'Tasks', 'method' => 'getSelectedTasks', 'uri' => 'task/.+', 'http' => 'GET'),
-		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT'),
-		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET'),
-		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+/key', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass//key', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET'),
-		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'PUT'),
-		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'DELETE'),
-		array('class' => 'UserData', 'method' => 'getBackupLog', 'uri' => 'userdata/(log|binlog)', 'http' => 'GET'),
-		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET'),
-		array('class' => 'Request', 'method' => 'APIDate', 'uri' => 'apidate', 'http' => 'GET'),
-		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/[A-Za-z]+', 'http' => 'GET'),
-		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET'),
-		array('class' => 'Metadata', 'method' => 'metadataSummary', 'uri' => 'metadata', 'http' => 'GET'),
+		array('class' => 'Applications', 'method' => 'getApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET', 'title' => 'Get an Application Property'),
+		array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT', 'title' => 'Create or Update an Application Property'),
+		array('class' => 'Applications', 'method' => 'deleteApplicationProperty', 'uri' => 'application/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE', 'title' => 'Delete an Application Property'),
+		array('class' => 'SystemProperties', 'method' => 'getSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'GET', 'title' => 'Get a System Property'),
+		array('class' => 'SystemProperties', 'method' => 'setSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'PUT', 'title' => 'Create or Update a System Property'),
+		array('class' => 'SystemProperties', 'method' => 'deleteSystemProperty', 'uri' => 'system/[0-9]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE', 'title' => 'Delete a System Property'),
+		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'PUT', 'title' => 'Update a Backup'),
+		array('class' => 'SystemBackups', 'method' => 'getOneBackup', 'uri' => 'system/[0-9]+/backup/[0-9]+', 'http' => 'GET', 'title' => 'Get a Backup'),
+		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/[0-9]+/backup', 'http' => 'GET', 'title' => 'Get Backups'),
+		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/[0-9]+/backup', 'http' => 'POST', 'title' => 'Create a Backup'),
+		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => 'backupstate', 'http' => 'GET', 'title' => 'Get Backup States'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/data', 'http' => 'GET', 'title' => 'Get a Range of Node Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/latest', 'http' => 'GET', 'title' => 'Get the Latest Node Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/[0-9]+/monitor/.+/data', 'http' => 'GET', 'title' => 'Get a Range of System Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/[0-9]+/monitor/.+/latest', 'http' => 'GET', 'title' => 'Get the Latest System Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/node/[0-9]+/monitor/.+/rawdata', 'http' => 'GET', 'title' => 'Get Raw Monitor Node Data'),
+		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/[0-9]+/monitor/.+/rawdata', 'http' => 'GET', 'title' => 'Get Raw Monitor System Data'),
+		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST', 'title' => 'Store Bulk Monitor Data'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentPropertyUpdated', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+/updated', 'http' => 'GET', 'title' => 'Get the Last Date a Component Property was Updated'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'GET', 'title' => 'Get a Component Property'),
+		array('class' => 'ComponentProperties', 'method' => 'setComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'PUT', 'title' => 'Create or Update a Component Property'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperty', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/property/[A-Za-z0-9_]+', 'http' => 'DELETE', 'title' => 'Delete a Component Property'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentProperties', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+', 'http' => 'GET', 'title' => 'Get All Properties for a Component'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperties', 'uri' => 'system/[0-9]+/node/[0-9]+/component/[A-Za-z0-9_:\-]+/', 'http' => 'DELETE', 'title' => 'Delete All Properties for a Component'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponents', 'uri' => 'system/[0-9]+/node/[0-9]+/component', 'http' => 'GET', 'title' => 'Get All Component Properties'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponents', 'uri' => 'system/[0-9]+/node/[0-9]+/component', 'http' => 'DELETE', 'title' => 'Delete All Component Properties'),
+		array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'GET', 'title' => 'Get a Database Process Plan'),
+		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/[0-9]+/node/[0-9]+/process/[0-9]+', 'http' => 'DELETE', 'title' => 'Kill a Database Process'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/[0-9]+/node/[0-9]+/process', 'http' => 'GET', 'title' => 'Get Database Processes'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'GET', 'title' => 'Get a Node'),
+		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'DELETE', 'title' => 'Delete a Node'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/[0-9]+/node', 'http' => 'GET', 'title' => 'Get All Nodes for a System'),
+		array('class' => 'SystemNodes', 'method' => 'updateSystemNode', 'uri' => 'system/[0-9]+/node/[0-9]+', 'http' => 'PUT', 'title' => 'Update a Node'),
+		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/[0-9]+/node', 'http' => 'POST', 'title' => 'Create a Node'),
+		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/.+', 'http' => 'GET', 'title' => 'Get All Node States for a System Type'),
+		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET', 'title' => 'Get All Node States'),
+		array('class' => 'SystemNodes', 'method' => 'getProvisionedNodes', 'uri' => 'provisionednode', 'http' => 'GET', 'title' => 'Get Provisioned Nodes'),
+		array('class' => 'UserTags', 'method' => 'getUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'GET', 'title' => 'Get Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'getAllUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'GET', 'title' => 'Get Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'addUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'POST', 'title' => 'Add a User Tag'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+/.+', 'http' => 'DELETE', 'title' => 'Delete Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag/.+', 'http' => 'DELETE', 'title' => 'Delete Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/.+/.+tag', 'http' => 'DELETE', 'title' => 'Delete Tags for a User'),
+		array('class' => 'UserProperties', 'method' => 'getUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'GET', 'title' => 'Get a User Property'),
+		array('class' => 'UserProperties', 'method' => 'putUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'PUT', 'title' => 'Create or Update a User Property'),
+		array('class' => 'UserProperties', 'method' => 'deleteUserProperty', 'uri' => 'user/.*/property/.*', 'http' => 'DELETE', 'title' => 'Delete a User Property'),
+		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/.*', 'http' => 'GET', 'title' => 'Get a User'),
+		array('class' => 'SystemUsers', 'method' => 'putUser', 'uri' => 'user/.*', 'http' => 'PUT', 'title' => 'Create or Update a User'),
+		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/.*', 'http' => 'DELETE', 'title' => 'Delete a User'),
+		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/.*', 'http' => 'POST', 'title' => 'Authenticate a User'),
+		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET', 'title' => 'Get All Users'),
+		array('class' => 'Systems', 'method' => 'getSystemProcesses', 'uri' => 'system/[0-9]+/process', 'http' => 'GET', 'title' => 'Get Database Processes on a System'),
+		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/[0-9]+', 'http' => 'GET', 'title' => 'Get a System'),
+		array('class' => 'Systems', 'method' => 'updateSystem', 'uri' => 'system/[0-9]+', 'http' => 'PUT', 'title' => 'Update a System'),
+		array('class' => 'Systems', 'method' => 'createSystem', 'uri' => 'system', 'http' => 'POST', 'title' => 'Create a System'),
+		array('class' => 'Systems', 'method' => 'deleteSystem', 'uri' => 'system/[0-9]+', 'http' => 'DELETE', 'title' => 'Delete a System'),
+		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET', 'title' => 'Get All Systems'),
+		array('class' => 'Systems', 'method' => 'getSystemTypes', 'uri' => 'systemtype', 'http' => 'GET', 'title' => 'Get All System Types'),
+		array('class' => 'Buckets', 'method' => 'getData', 'uri' => 'bucket', 'http' => 'GET', 'title' => 'Get Data from a Bucket'),
+		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET', 'title' => 'Get Command States'),
+		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET', 'title' => 'Get Command Steps'),
+		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET', 'title' => 'Get Commands'),
+		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/.+', 'http' => 'POST', 'title' => 'Run a Command'),
+		array('class' => 'Schedules', 'method' => 'runScheduledCommand', 'uri' => 'schedule/[0-9]+', 'http' => 'POST', 'title' => 'Run a Command on a Schedule'),
+		array('class' => 'Schedules', 'method' => 'getOneSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'GET', 'title' => 'Get a Schedule'),
+		array('class' => 'Schedules', 'method' => 'deleteOneSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'DELETE', 'title' => 'Delete a Schedule'),
+		array('class' => 'Schedules', 'method' => 'getSelectedSchedules', 'uri' => 'schedule/.+', 'http' => 'GET', 'title' => 'Get a Range of Schedules'),
+		array('class' => 'Schedules', 'method' => 'updateSchedule', 'uri' => 'schedule/[0-9]+', 'http' => 'PUT', 'title' => 'Update a Schedule'),
+		array('class' => 'Schedules', 'method' => 'getMultipleSchedules', 'uri' => 'schedule', 'http' => 'GET', 'title' => 'Get All Schedules'),
+		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/[0-9]+', 'http' => 'GET', 'title' => 'Get a Task'),
+		array('class' => 'Tasks', 'method' => 'cancelOneTask', 'uri' => 'task/[0-9]+', 'http' => 'DELETE', 'title' => 'Cancel a Task'),
+		array('class' => 'Tasks', 'method' => 'getSelectedTasks', 'uri' => 'task/.+', 'http' => 'GET', 'title' => 'Get a Range of Tasks'),
+		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/[0-9]+', 'http' => 'PUT', 'title' => 'Update a Task'),
+		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET', 'title' => 'Get All Tasks'),
+		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET', 'title' => 'Run a Database Query'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'GET', 'title' => 'Get a Monitor'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+/key', 'http' => 'GET', 'title' => 'Get All Monitors for a System Type'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/.+', 'http' => 'GET', 'title' => 'Get All Monitors for a System'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET', 'title' => 'Get All Monitors'),
+		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'PUT', 'title' => 'Update a Monitor'),
+		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/.+/key/.+', 'http' => 'DELETE', 'title' => 'Delete a Monitor'),
+		array('class' => 'UserData', 'method' => 'getBackupLog', 'uri' => 'userdata/(log|binlog)', 'http' => 'GET', 'title' => 'Get a Backup Log'),
+		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET', 'title' => 'List API Requests'),
+		array('class' => 'Request', 'method' => 'APIDate', 'uri' => 'apidate', 'http' => 'GET', 'title' => 'Show the API Code Date'),
+		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/[A-Za-z]+', 'http' => 'GET', 'title' => 'Get Metadata for an Resource'),
+		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET', 'title' => 'Get a List of API Resources'),
+		array('class' => 'Metadata', 'method' => 'metadataSummary', 'uri' => 'metadata', 'http' => 'GET', 'title' => 'Get a Metadata Summary'),
 	);
 	
 	protected static $uriTablePrepared = false;
 	protected static $uriregex = '([0-9a-zA-Z_\-\.\~\*\(\)]*)';
-	protected static $suffixes = array('html', 'json');
+	protected static $suffixes = array('html', 'json', 'mml');
 	
 	protected static $codes = array(
         100 => 'Continue',
@@ -229,6 +228,7 @@ abstract class Request {
 	protected $uri = '';
 	protected $apibase = array();
 	protected $headers = array();
+	protected $responseheaders = array();
 	protected $requestmethod = '';
 	protected $requestviapost = false;
 	protected $putdata = '';
@@ -336,6 +336,7 @@ abstract class Request {
 	
 	protected function handleAccept () {
 		if ('json' == $this->suffix) $this->accept = 'application/json';
+		elseif ('mml' ==  $this->suffix) $this->accept = 'application/mml';
 		else {
 			$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
 			$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
@@ -386,6 +387,9 @@ abstract class Request {
 					else $object = new $class($this);
 				}
 				$method = $link['method'];
+				//$reflectmethod = new ReflectionMethod($class, $method);
+				//$reflectparms = $reflectmethod->getParameters();
+				//foreach ($reflectparms as $parm) echo "Parameter name: ".$parm->name;
 				if (!method_exists($object, $method)) {
 					$this->sendErrorResponse("Request $this->uri no such method as $method in class $class", 500);
 				}
@@ -530,6 +534,7 @@ abstract class Request {
 			$body['warnings'] = (array) $this->warnings;
 			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 		}
+		if ('yes' == @$this->config['debug']['showheaders']) $body['responseheaders'] = $this->responseheaders;
 		if ('yes' == @$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
 		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
@@ -625,10 +630,11 @@ PRETTY_PAGE;
 	public function sendHeaders ($status) {
 		$report = $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 		$this->log(LOG_INFO, "$this->requestmethod /$this->uri completed $report - time taken {$this->timer->mark('seconds')}");
-		header(HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $report));
-		header('Content-type: '.$this->accept.'; charset=utf-8');
-		header('Cache-Control: no-store');
-		header('X-SkySQL-API-Version: '._API_VERSION_NUMBER);
+		$this->responseheaders[] = HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $report);
+		$this->responseheaders[] = 'Content-type: '.$this->accept.'; charset=utf-8';
+		$this->responseheaders[] = 'Cache-Control: no-store';
+		$this->responseheaders[] = 'X-SkySQL-API-Version: '._API_VERSION_NUMBER;
+		foreach ($this->responseheaders as $header) header($header);
 	}
 	
 	public function log ($severity, $message) {

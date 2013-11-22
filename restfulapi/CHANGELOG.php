@@ -3,6 +3,17 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 22 November 2013, 10:40
+ * 
+ * Minor failures to abort messages
+ * Add .mml to metadata to automate reference manual production
+ * Add showheaders option in api.ini to include response headers in body of response
+ * Attempt to incorporate BZR version into code
+ * Remove privateip, level, parentid from Command object; change step to steps
+ * Support "steps" parameter for run a command - block running if steps do not match - comma separated list
+ * Change the HTML front end to send responses in HTML (prettified JSON)
+ * 
+ * 
  * 15 November 2013, 14:50
  * 
  * Amend list of states for Galera nodes to match the Monitor

@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -22,10 +22,12 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * Definitions required for PHP code in the SkySQL Cloud Data Suite.
+ * Definitions required for PHP code in MariaDB Enterprise.
  */
 
 namespace SkySQL\SCDS;
+
+define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 
 define ('_SKYSQL_API_OBJECT_CACHE_TIME_DEFAULT', 3600);
 define ('_SKYSQL_API_OBJECT_CACHE_SIZE_DEFAULT', 500000);

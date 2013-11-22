@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -426,43 +426,7 @@ abstract class EntityModel {
 	
 	public static function getMetadataHTML () {
 		$entityname = static::$headername;
-		$keyrows = $datarows = $extrarows = $extrahtml = '';
-		foreach (static::$keys as $name=>$key) {
-			$description = @$key['desc'];
-			$keyrows .= <<<KEYROW
-		<tr>
-			<td>$name</td>
-			<td>{$key['type']}</td>
-			<td>$description</td>
-		</tr>
-				
-KEYROW;
-			
-		}
-		foreach (static::$fields as $name=>$field) {
-			$description = @$field['desc'];
-			$datarows .= <<<DATAROW
-		<tr>
-			<td>$name</td>
-			<td>{$field['type']}</td>
-			<td>$description</td>
-		</tr>
-				
-DATAROW;
-			
-		}
-		if (!empty(static::$derived)) foreach (static::$derived as $name=>$field) {
-			$description = @$field['desc'];
-			$extrarows .= <<<EXTRAROW
-		<tr>
-			<td>$name</td>
-			<td>{$field['type']}</td>
-			<td>$description</td>
-		</tr>
-				
-EXTRAROW;
-			
-		}
+		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowMML');
 		if ($extrarows) $extrahtml = <<<EXTRA
 				
   <tbody>
@@ -505,5 +469,68 @@ EXTRA;
 ENTITY;
 				
 		exit;
+	}
+	
+	public static function getMetadataMML () {
+		$entityname = static::$headername;
+		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowMML');
+		if ($extrarows) $extrarows .= <<<EXTRA
+| _Derived information_ | | | <br />
+				
+EXTRA;
+		echo <<<ENTITY
+		
+<div id="markup">
+<h3>$entityname</h3>
+|_. Field Name |_. Type |_. Description | <br />
+| _Key fields_ | | | <br />
+$keyrows
+| _Data fields_ | | | <br />
+$datarows
+$extrarows
+</table>
+</div>
+		
+ENTITY;
+				
+		exit;
+	}
+	
+	protected static function getMetadataRows ($rowmethod) {
+		$keyrows = $datarows = $extrarows = '';
+		foreach (static::$keys as $name=>$key) {
+			$description = @$key['desc'];
+			$keyrows .= self::$rowmethod($name, $key['type'], $description);
+		}
+		foreach (static::$fields as $name=>$field) {
+			$description = @$field['desc'];
+			$datarows .= self::$rowmethod($name, $field['type'], $description);
+		}
+		if (!empty(static::$derived)) foreach (static::$derived as $name=>$field) {
+			$description = @$field['desc'];
+			$extrarows .= self::$rowmethod($name, $field['type'], $description);
+		}
+		return array($keyrows, $datarows, $extrarows);
+	}
+	
+	protected static function dataRowHTML ($name, $type, $description) {
+	 return <<<HTMLROW
+		<tr>
+			<td>$name</td>
+			<td>$type</td>
+			<td>$description</td>
+		</tr>
+				
+HTMLROW;
+			
+	}
+	
+	protected static function dataRowMML ($name, $type, $description) {
+		return <<<MMLROW
+| $name | $type | $description | <br />
+				
+MMLROW;
+			
+		
 	}
 }

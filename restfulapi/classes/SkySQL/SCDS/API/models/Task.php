@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -138,8 +138,15 @@ class Task extends EntityModel {
 	}
 	
 	protected function setSteps () {
+		$request = Request::getInstance();
 		$this->steps = $this->getSteps();
-		if (!$this->steps) Request::getInstance()->sendErrorResponse(sprintf("Command '%s' is not valid for %s in its current state of '%s'", $this->command, NodeManager::getInstance()->getDescription($this->node->systemid, $this->node->nodeid), $this->node->state), 400);
+		if (!$this->steps) $request->sendErrorResponse(sprintf("Command '%s' is not valid for %s in its current state of '%s'", $this->command, NodeManager::getInstance()->getDescription($this->node->systemid, $this->node->nodeid), $this->node->state), 409);
+		$permitted = $request->getParam('POST', 'steps');
+		if ($permitted) {
+			$permits = array_map('trim', explode(',', $permitted));
+			$steparray = explode(',', $this->steps);
+			if ($permits != $steparray) $request->sendErrorResponse(sprintf("Command '%s' required %s to run steps '%s' but it would currently run steps '%s'", $this->command, NodeManager::getInstance()->getDescription($this->systemid, $this->nodeid), $permitted, $this->steps), 409);
+		}
 	}
 	
 	protected function derivedFields () {

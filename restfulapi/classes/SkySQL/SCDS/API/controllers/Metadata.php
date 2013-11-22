@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -39,10 +39,15 @@ final class Metadata extends ImplementAPI {
 			$result[] = array (
 				'http' => $entry['http'],
 				'uri' => $entry['uri'],
-				'method' => $entry['method']
+				'method' => $entry['method'],
+				'title' => $entry['title']
 			);
 		}
 		if ('application/json' == $this->accept) $this->sendResponse($result);
+		elseif ('application/mml' == $this->accept) {
+			echo $this->listAPIMML($result);
+			exit;
+		}
 		else {
 			echo $this->listAPIHTML($result);
 			exit;
@@ -80,6 +85,9 @@ final class Metadata extends ImplementAPI {
 		if ('application/json' == $this->accept) {
 			$metadata = call_user_func(array($modelclass, 'getMetadataJSON'));
 			$this->sendResponse(array(strtolower($model).'_metadata' => $metadata, 'return' => "http://{$_SERVER['SERVER_NAME']}/metadata/entities.json"));
+		}
+		elseif ('application/mml' == $this->accept) {
+			echo call_user_func(array($modelclass, 'getMetadataMML'));
 		}
 		else {
 			echo call_user_func(array($modelclass, 'getMetadataHTML'));
@@ -145,11 +153,15 @@ ENTITIES;
 				<tr>
 					<td>{$call['uri']}</td>
 					<td>{$call['http']}</td>
-					<td>{$call['method']}</td>
+					<td>{$call['title']}</td>
 				</tr>
 				
 LINK;
 		
+		return $this->callsPage($lhtml);
+	}
+	
+	protected function callsPage ($html) {
 		return <<<API
 		
 <?xml version="1.0" encoding="UTF-8"?>
@@ -163,7 +175,7 @@ LINK;
 	<a href="/metadata">Go to metadata home page</a>
     <h3>API Calls</h3>
 	<table>
-	$lhtml
+	$html
 	</table>
 	<p>
 		<a href="/metadata">Go to metadata home page</a>
@@ -173,6 +185,23 @@ LINK;
 		
 API;
 		
+	}
+
+	protected function listAPIMML ($calls) {
+		$lhtml = '';
+		foreach ($calls as $call) $lhtml .= <<<LINK
+
+h4. {$call['title']} <br />
+<br />
+*HTTP Method:* {$call['http']} <br />
+*URI:* {$call['uri']} <br />
+*Parameters:* <br />
+*Results:* <br />
+<br />
+			
+LINK;
+
+		return $this->callsPage($lhtml);
 	}
 	
 	public function metadataSummary () {

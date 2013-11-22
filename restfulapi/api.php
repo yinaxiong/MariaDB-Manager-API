@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -45,8 +45,8 @@ use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.0');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
+define ('_API_SOURCE_REVISION', '$Revision-Id$');
 // _API_CODE_ISSUE_DATE will be defined in the code below 
-define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 define ('_API_BASE_FILE', __FILE__);
 
 if (!function_exists('apache_request_headers')) require ('includes/apache_request_headers.php');
@@ -202,8 +202,8 @@ class API {
 
 		// Can't work without JSON
 		if (!function_exists('json_encode')) {
-			echo "The API is unable to function because PHP JSON functions are not available";
 			header(HTTP_PROTOCOL." 500 Internal Server Error");
+			die(HTTP_PROTOCOL." 500 Internal Server Error - The API is unable to function because PHP JSON functions are not available");
 			exit;
 		}
 
@@ -226,7 +226,7 @@ class API {
 			in_array($protect , array_keys($_COOKIE)) ||
 			in_array($protect , array_keys($_FILES))) {
 				header(HTTP_PROTOCOL.' 400 Bad Request');
-				die(HTTP_PROTOCOL.' 400 Bad Request.');
+				die(HTTP_PROTOCOL.' 400 Bad Request - PHP hack attempt');
 			}
 		}
 		

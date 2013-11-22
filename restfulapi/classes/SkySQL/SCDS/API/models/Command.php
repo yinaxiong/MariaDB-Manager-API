@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -47,13 +47,10 @@ class Command extends EntityModel {
 		'systemid' => array('sqlname' => 'SystemID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
-		'privateip' => array('sqlname' => 'PrivateIP', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
-		'level' => array('sqlname' => 'Level', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
-		'parentid' => array('sqlname' => 'ParentID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
 		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
 		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'varchar', 'default' => '', 'insertonly' => true),
 		'state' => array('sqlname' => 'State', 'type' => 'int', 'default' => ''),
-		'step' => array('sqlname' => 'Step', 'type' => 'int', 'default' => 0)
+		'steps' => array('sqlname' => 'Steps', 'type' => 'varchar', 'default' => 0)
 	);
 	
 	public function __construct ($command) {

@@ -234,12 +234,16 @@ sizelimit = 500000
 ;
 ; The debug section allows options to aid in development of API clients
 ;
+; Showheaders can be "yes", in which case all the headers sent by the API in
+;  the response will also be included in the body of the response as a 
+;  property "responseheaders"
 ; Reflectheaders can be "yes", in which case all responses will include a
-;  property "headers" that is an object with properties and values corresponding
+;  property "requestheaders" that is an object with properties and values corresponding
 ;  to the headers received in the request.
 ; Showhttpcode can be "yes", in which case the HTTP result code will always
 ;  be included as a property of the response.
 [debug]
+showheaders = "no"
 reflectheaders = "no"
 showhttpcode = "no"
 ;

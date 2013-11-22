@@ -46,7 +46,7 @@
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
 			<input type="submit" class="submit" value="List" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -74,7 +74,7 @@
 			<input type="text" name="fields" id="fieldscs" /><br />
 			<input type="hidden" name="uri1" value="state" /><br />
 			<input type="submit" class="submit" value="List" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -102,7 +102,7 @@
 			<input type="text" name="fields" id="fieldscp" /><br />
 			<input type="hidden" name="uri1" value="step" /><br />
 			<input type="submit" class="submit" value="List" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -136,9 +136,22 @@
 			<strong>state</strong><br />
 			Optional state code for the required state of the node when the command
 			is executed - if the node is not in the specified state, then the command
-			will be reject with an error (HTTP code 409 Conflict).  If the state code
+			will be rejected with an error (HTTP code 409 Conflict).  If the state code
 			is not specified, then the command will be run if possible.  The exact 
 			steps may vary according to the actual node state.
+			</span>
+			</a>
+			&nbsp;
+			<a class="tooltip" href="#">steps,
+			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<strong>steps</strong><br />
+			Optional comma separated list of steps for the required steps that are to be
+			run when the command is executed - if changes in the node state or the system
+			would result in the command running a different sequence of steps from the
+			one specified, then the command will be rejected with an error 
+			(HTTP code 409 Conflict).  If steps are not specified, then the command will 
+			be run if possible.  The exact steps may vary according to the actual node 
+			state or other system changes.
 			</span>
 			</a>
 			&nbsp;
@@ -189,6 +202,8 @@
 			<input type="text" name="nodeid" id="nodec" /><br />
 			<label for="statec">State of Node</label>
 			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'state');" id="statec" /><br />
+			<label for="stepsc">Steps to be Run</label>
+			<input type="text" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'steps');" id="stepsc" /><br />
 			<label for="username">Username</label>
 			<input type="text" name="username" id="username" /><br />
 			<label for="icalentry">iCalEntry</label>
@@ -196,7 +211,7 @@
 			<label for="params">Parameters</label>
 			<input type="text" id="params" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parameters');" /><br />
 			<input type="submit" class="submit" value="Run Command" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -224,7 +239,7 @@
 			<label for="fields1s">Fields to return</label>
 			<input type="text" name="fields" id="fields1s" /><br />
 			<input type="submit" class="submit" value="Get Task" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -252,7 +267,7 @@
 			<label for="fields1sr">Fields to return</label>
 			<input type="text" name="fields" id="fields1sr" /><br />
 			<input type="submit" class="submit" value="Get Tasks in Range" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -298,7 +313,7 @@
 			<label for="fieldsms">Fields to return</label>
 			<input type="text" name="fields" id="fieldsms" /><br />
 			<input type="submit" class="submit" value="Get Tasks" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -328,7 +343,7 @@
 			<label for="messagejus">Error Message</label>
 			<input type="text" id="messagejus" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'errormessage');" /><br />
 			<input type="submit" class="submit" value="Update Task" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -348,7 +363,7 @@
 			<label for="taskd">Task ID</label>
 			<input type="text" name="uri1" id="taskd" /><br />
 			<input type="submit" class="submit" value="Cancel Task" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -376,7 +391,7 @@
 			<label for="fields1">Fields to return</label>
 			<input type="text" name="fields" id="fields1" /><br />
 			<input type="submit" class="submit" value="Get Schedule" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -397,7 +412,7 @@
 			<label for="scheduleidr">Schedule ID</label>
 			<input type="text" name="uri1" id="scheduleidr" /><br />
 			<input type="submit" class="submit" value="Run Schedule" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -433,7 +448,7 @@
 			<label for="fieldsm">Fields to return</label>
 			<input type="text" name="fields" id="fieldsm" /><br />
 			<input type="submit" class="submit" value="Get Schedules" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -457,7 +472,7 @@
 			<label for="parametersu">Parameters</label>
 			<input type="text" id="parametersu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parameters');" /><br />
 			<input type="submit" class="submit" value="Update Schedule" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -477,7 +492,7 @@
 			<label for="scheduled">Schedule ID</label>
 			<input type="text" name="uri1" id="scheduleidd" /><br />
 			<input type="submit" class="submit" value="Delete Schedule" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -499,7 +514,7 @@
 			<label for="object">Object</label>
 			<input type="text" name="object" id="object" /><br />
 			<input type="submit" class="submit" value="Get Data" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />
@@ -527,7 +542,7 @@
 			<label for="fieldsq">Fields to return</label>
 			<input type="text" name="fields" id="fieldsq" /><br />
 			<input type="submit" class="submit" value="Run SQL" />
-			<input type="hidden" name="_accept" value="application/json" />
+			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
 			<input type="hidden" name="HTTP_AUTHORIZATION" />

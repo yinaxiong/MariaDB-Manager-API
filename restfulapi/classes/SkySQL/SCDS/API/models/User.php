@@ -3,7 +3,7 @@
 /*
  ** Part of the SkySQL Manager API.
  * 
- * This file is distributed as part of the SkySQL Cloud Data Suite.  It is free
+ * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
  * GNU General Public License as published by the Free Software Foundation,
  * version 2.
@@ -57,7 +57,11 @@ class User extends EntityModel {
 		'name' => array('sqlname' => 'Name', 'default' => ''),
 		'password' => array('sqlname' => 'Password', 'default' => '', 'mask' => _MOS_NOTRIM, 'secret' => true)
 	);
-	
+
+	protected static $derived = array(
+		'properties' => array('type' => 'object', 'desc' => 'An object providing properties and values for the user')
+	);
+
 	protected static $savedpass = '';
 	protected static $encrypted = '';
 	
