@@ -222,7 +222,7 @@ API;
 h4. {$call['title']} <br />
 <br />
 *HTTP Method:* {$call['http']} <br />
-*URI:* @{$call['uri']}@ <br />
+*Request URI:* @{$call['uri']}@ <br />
 *Parameters:* $parameters<br />
 *Successful Response:* $response <br />
 *One or Many Resources:* $many <br />

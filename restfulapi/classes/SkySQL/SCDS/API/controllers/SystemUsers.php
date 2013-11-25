@@ -38,7 +38,7 @@ class SystemUsers extends ImplementAPI {
 		User::checkLegal();
 	}
 
-	public function getUsers ($metadata='') {
+	public function getUsers ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'fields');
 		$users = UserManager::getInstance()->getAllPublic();
 		foreach ($users as &$user) $user->properties = UserPropertyManager::getInstance()->getAllProperties($user->username);

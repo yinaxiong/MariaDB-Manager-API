@@ -30,26 +30,30 @@ use SkySQL\SCDS\API\managers\UserPropertyManager;
 use SkySQL\SCDS\API\models\Property;
 
 class UserProperties extends ImplementAPI {
+	protected $defaultResponse = 'UserProperty';
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		Property::checkLegal();
 	}
 
-	public function getUserProperty ($uriparts) {
+	public function getUserProperty ($uriparts, $metadata) {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, '');
 		$username = $uriparts[1];
 		$property = $uriparts[3];
 		return UserPropertyManager::getInstance()->getProperty($username, $property);
 	}
 	
-	public function putUserProperty ($uriparts) {
+	public function putUserProperty ($uriparts, $metadata) {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, '');
 		$username = $uriparts[1];
 		$property = $uriparts[3];
 		$value = $this->getParam('PUT', 'value');
 		UserPropertyManager::getInstance()->setProperty($username, $property, $value);
 	}
 	
-	public function deleteUserProperty ($uriparts) {
+	public function deleteUserProperty ($uriparts, $metadata) {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count', false, '');
 		$username = $uriparts[1];
 		$property = $uriparts[3];
 		UserPropertyManager::getInstance()->deleteProperty($username, $property);

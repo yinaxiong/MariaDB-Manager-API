@@ -3,6 +3,11 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 25 November 2013, 11:50 GMT
+ * 
+ * Fix bug in getUsers caused by metadata automation
+ * 
+ * 
  * 22 November 2013, 17:00 GMT
  * 
  * Fix bug in display of Resource Tables (e.g. System, Node) for front end HTML
