@@ -59,11 +59,13 @@ class Tasks extends TaskScheduleCommon {
 	public function cancelOneTask ($uriparts) {
 		Task::checkLegal();
 		$task = Task::getByID((int) $uriparts[1]);
-		if ($task) {
+		if ($task AND $task->pid) {
+			$this->cancel($task);
 			$counter = $task->updateState('cancelled');
 			$this->sendResponse(array('deletecount' => $counter));
 		}
-		$this->sendErrorResponse(sprintf("Attempt to cancel task ID '%d' but ID does not match any task", (int) $uriparts[1]), 404);
+		if ($task) $this->sendErrorResponse(sprintf("Attempt to cancel task ID '%d' but ID does not match any task", (int) $uriparts[1]), 404);
+		else $this->sendErrorResponse(sprintf("Attempt to cancel task ID '%d' but task record has no PID", (int) $uriparts[1]), 409);
 	}
 	
 	public function getSelectedTasks ($uriparts) {

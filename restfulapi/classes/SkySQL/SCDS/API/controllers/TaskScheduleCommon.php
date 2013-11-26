@@ -96,6 +96,13 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$task->updatePIDandState($pid);
 	}
 	
+	protected function cancel ($task) {
+		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
+		$cmd = $this->makeShellCall("$scriptdir/CancelCommand.sh", $task->pid);
+		exec($cmd);
+		$this->log(LOG_INFO, "Cancelled command $task->command with task ID $task->taskid on node $task->nodeid with PID $task->pid");
+	}
+	
 	protected function makeShellCall () {
 		return implode(' ', array_map('escapeshellarg', func_get_args()));
 	}

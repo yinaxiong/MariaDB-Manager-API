@@ -38,7 +38,7 @@ class UserProperties extends ImplementAPI {
 	}
 
 	public function getUserProperty ($uriparts, $metadata) {
-		if ($metadata) return $this->returnMetadata ($metadata, '', true, '');
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, '');
 		$username = $uriparts[1];
 		$property = $uriparts[3];
 		return UserPropertyManager::getInstance()->getProperty($username, $property);

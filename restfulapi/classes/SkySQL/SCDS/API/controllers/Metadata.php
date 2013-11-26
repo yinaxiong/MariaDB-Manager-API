@@ -35,11 +35,11 @@ use ReflectionMethod;
 final class Metadata extends ImplementAPI {
 	private static $ignores = array('EntityModel','NodeStates');
 	
-	public function listAPI ($uriTable) {
+	public function listAPI ($uriTable, $fieldregex) {
 		foreach ($uriTable as $entry) {
 			$result[] = array (
 				'http' => $entry['http'],
-				'uri' => $entry['uri'],
+				'uri' => htmlentities($entry['uri']),
 				'class' => $entry['class'],
 				'method' => $entry['method'],
 				'title' => $entry['title']
@@ -47,11 +47,11 @@ final class Metadata extends ImplementAPI {
 		}
 		if ('application/json' == $this->accept) $this->sendResponse($result);
 		elseif ('application/mml' == $this->accept) {
-			echo $this->listAPIMML($result);
+			echo $this->listAPIMML($result, $fieldregex);
 			exit;
 		}
 		else {
-			echo $this->listAPIHTML($result);
+			echo $this->listAPIHTML($result, $fieldregex);
 			exit;
 		}
 	}
@@ -148,8 +148,8 @@ ENTITIES;
 		
 	}
 	
-	protected function listAPIHTML ($calls) {
-		$lhtml = '';
+	protected function listAPIHTML ($calls, $fieldregex) {
+		$lhtml = $fhtml = '';
 		foreach ($calls as $call) $lhtml .= <<<LINK
 				
 				<tr>
@@ -160,10 +160,24 @@ ENTITIES;
 				
 LINK;
 		
-		return $this->callsPage($lhtml);
+		foreach ($fieldregex as $field=>$regex) {
+			$entregex = htmlentities($regex);
+			$entfield = htmlentities($field);
+			$fhtml .= <<<FIELDCHECK
+					
+				<tr>
+					<td>$entfield</td>
+					<td>is validated by regular expression:</td>
+					<td>$entregex</td>
+				</tr>
+					
+FIELDCHECK;
+			
+		}
+		return $this->callsPage($lhtml, $fhtml);
 	}
 	
-	protected function callsPage ($html) {
+	protected function callsPage ($callhtml, $fieldhtml) {
 		return <<<API
 		
 <?xml version="1.0" encoding="UTF-8"?>
@@ -177,7 +191,11 @@ LINK;
 	<a href="/metadata">Go to metadata home page</a>
     <h3>API Calls</h3>
 	<table>
-	$html
+	$callhtml
+	</table>
+	<h3>Requirements for URI substitutions</h3>
+	<table>
+	$fieldhtml
 	</table>
 	<p>
 		<a href="/metadata">Go to metadata home page</a>
@@ -189,8 +207,8 @@ API;
 		
 	}
 
-	protected function listAPIMML ($calls) {
-		$lhtml = '';
+	protected function listAPIMML ($calls, $fieldregex) {
+		$lhtml = $fhtml = '';
 		foreach ($calls as $call) {
 			$class = __NAMESPACE__.'\\'.$call['class'];
 			if (class_exists($class)) {
@@ -217,12 +235,13 @@ API;
 			if (empty($many)) $many = 'unknown';
 			if (empty($parameters)) $parameters = 'unknown';
 
+			$uri = htmlentities($call['uri']);
 			$lhtml .= <<<LINK
 
 h4. {$call['title']} <br />
 <br />
 *HTTP Method:* {$call['http']} <br />
-*Request URI:* @{$call['uri']}@ <br />
+*Request URI:* $uri <br />
 *Parameters:* $parameters<br />
 *Successful Response:* $response <br />
 *One or Many Resources:* $many <br />
@@ -232,7 +251,17 @@ LINK;
 
 			unset($response, $many, $parameters);
 		}
-		return $this->callsPage($lhtml);
+		foreach ($fieldregex as $field=>$regex) {
+			$entregex = htmlentities($regex);
+			$entfield = htmlentities(htmlentities($field));
+			$fhtml .= <<<FIELDCHECK
+					
+| $entfield | is validated by regular expression: | @$entregex@ | <br />
+					
+FIELDCHECK;
+			
+		}
+		return $this->callsPage($lhtml, $fhtml);
 	}
 	
 	public function metadataSummary () {

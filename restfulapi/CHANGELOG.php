@@ -3,6 +3,12 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 26 November 2013, 16:30 GMT
+ * 
+ * Implement command cancellation
+ * Improvements to metadata, mainly for reference manual
+ * 
+ * 
  * 25 November 2013, 11:50 GMT
  * 
  * Fix bug in getUsers caused by metadata automation
