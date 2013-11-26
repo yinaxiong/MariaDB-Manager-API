@@ -1,8 +1,6 @@
 #!/bin/sh
 #
-#  Part of SkySQL Manager API
-#
-# This file is distributed as part of SkySQL Manager.  It is free
+# This file is distributed as part of the MariaDB Enterprise.  It is free
 # software: you can redistribute it and/or modify it under the terms of the
 # GNU General Public License as published by the Free Software Foundation,
 # version 2.
@@ -15,8 +13,6 @@
 # You should have received a copy of the GNU General Public License along with
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-#
-# Copyright 2013 (c) SkySQL Ab
 #
 # Author: Marcos Amaral
 # Date: July 2013
@@ -66,6 +62,12 @@ else
                 exit 1
         fi
 fi
+
+trap cleanup SIGTERM
+cleanup() {
+        $(ssh_command "$nodeip" "userdel -r skysqlagent")
+        exit 1
+}
 
 # Adding node ip to ssh hosts list (if there is no entry)
 scan_results=$(ssh-keygen -F $nodeip)
