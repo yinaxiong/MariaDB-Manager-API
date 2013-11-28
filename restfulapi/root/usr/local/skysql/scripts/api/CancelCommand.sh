@@ -21,19 +21,9 @@
 # This script sends all processes associated with a task the TERM signal.
 #
 # Parameters:
-# $1 TaskID
+# $1 Task PID
 
-. ./restfulapicredentials.sh
-. ./functions.sh
-export api_host='localhost'
-
-taskid=$1
-
-# Getting PID associated with task from API
-task_json=$(api_call "GET" "task/$taskid" "fields=pid")
-task_fields=$(echo $task_json | sed -e 's/{"task":{//' -e 's/}}//')
-p_PID=$(echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
-        { gsub("\"", "", $0); if ($1 == "pid") print $2; }')
+p_PID=$1
 
 # Getting list of child processes
 list_PID=$p_PID
