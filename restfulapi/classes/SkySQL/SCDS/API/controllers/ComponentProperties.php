@@ -34,6 +34,7 @@ use SkySQL\SCDS\API\managers\ComponentPropertyManager;
 use SkySQL\SCDS\API\models\Property;
 
 class ComponentProperties extends SystemNodeCommon {
+	protected $defaultResponse = 'componentproperty';
 	protected $nodeid = 0;
 	protected $component = '';
 	
@@ -42,48 +43,56 @@ class ComponentProperties extends SystemNodeCommon {
 		Property::checkLegal();
 	}
 	
-	public function setComponentProperty ($uriparts) {
+	public function setComponentProperty ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'value');
 		$property = $this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		$value = $this->getParam('PUT', 'value');
 		ComponentPropertyManager::getInstance()->setComponentProperty($this->systemid, $this->nodeid, $this->component, $property, $value);
 	}
 	
-	public function deleteComponentProperty ($uriparts) {
+	public function deleteComponentProperty ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$property = $this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		ComponentPropertyManager::getInstance()->deleteComponentProperty($this->systemid, $this->nodeid, $this->component, $property);
 	}
 	
-	public function getComponentProperty ($uriparts) {
+	public function getComponentProperty ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'componentproperty');
 		$property = $this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		ComponentPropertyManager::getInstance()->getComponentProperty($this->systemid, $this->nodeid, $this->component, $property);
 	}
 	
-	public function getComponentPropertyUpdated ($uriparts) {
+	public function getComponentPropertyUpdated ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Date last updated');
 		$property = $this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		ComponentPropertyManager::getInstance()->getComponentPropertyUpdated($this->systemid, $this->nodeid, $this->component, $property);
 	}
 	
-	public function deleteComponentProperties ($uriparts) {
+	public function deleteComponentProperties ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		$counter = ComponentPropertyManager::getInstance()->deleteAllComponentProperties($this->systemid, $this->nodeid, $this->component);
 		if ($counter) $this->sendResponse(array('deletecount' => $counter));
 		else $this->sendErrorResponse("Delete $this->component property did not match any $this->component property", 404);
 	}
 	
-	public function getComponentProperties ($uriparts) {
+	public function getComponentProperties ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'componentproperties', true);
 		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		$properties = ComponentPropertyManager::getInstance()->getAllComponentProperties($this->systemid, $this->nodeid, $this->component);
 		$this->sendResponse(array("{$this->component}properties" => $properties));
 	}
 	
-	public function deleteComponents ($uriparts) {
+	public function deleteComponents ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		$counter = ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
 		if ($counter) $this->sendResponse(array('deletecount' => $counter));
 		else $this->sendErrorResponse("Delete $this->component property did not match any $this->component property", 404);
 	}
 	
-	public function getComponents ($uriparts) {
+	public function getComponents ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'components', true);
 		$this->checkNodeIDGetProperty($uriparts);	// Sets $this->systemid;
 		$components = ComponentPropertyManager::getInstance()->getAllComponents($this->systemid, $this->nodeid);
 		$this->sendResponse(array('components' => $components));

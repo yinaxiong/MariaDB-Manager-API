@@ -36,6 +36,7 @@ use SkySQL\COMMON\MonitorDatabase;
 use \PDO;
 
 final class Monitors extends ImplementAPI {
+	protected $defaultResponse = 'monitor';
 	protected $systemid = 0;
 	protected $nodeid = 0;
 	protected $monitor = null;
@@ -57,18 +58,18 @@ final class Monitors extends ImplementAPI {
 			foreach ($monitors as $type=>$results) $monitors[$type] = $this->filterResults($results);
 			$this->sendResponse(array('monitorclasses' => $monitors));
 		}
-		elseif (empty($uriparts[3])) {
+		else {
 			$systemtype = $uriparts[1];
 			$monitors = $manager->getByType($systemtype);
 			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
 		}
-		else {
-			$systemtype = $uriparts[1];
-			$monitorkey = $uriparts[3];
-			$monitor = 	$manager->getByID($systemtype, $monitorkey);
-			$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
-		}
     }
+	
+	public function getOneMonitorClass ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
+		$monitor = 	MonitorManager::getInstance()->getByID($uriparts[1], $uriparts[3]);
+		$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
+	}
 	
 	public function putMonitorClass ($uriparts) {
 		$manager = MonitorManager::getInstance();
@@ -116,13 +117,6 @@ final class Monitors extends ImplementAPI {
 		
 		$this->monitordb = MonitorDatabase::getInstance();
 		$this->monitordb->beginExclusiveTransaction();
-		//$latest = $this->monitordb->query('SELECT Value, Repeats, MonitorID, SystemID, NodeID, rowid, MAX(Stamp) FROM MonitorData GROUP BY SystemID, MonitorID, NodeID ');
-		//foreach ($latest->fetchAll() as $instance) {
-		//	$instances[$instance->MonitorID][$instance->SystemID][$instance->NodeID] = array(
-		//		'value' => $instance->Value, 'repeats' => $instance->Repeats, 'rowid' => $instance->rowid
-		//	);
-		//}
-		//$instances = MonitorLatest::getInstance()->getForUpdate();
 		
 		$stamp = $this->getParam('POST', 'timestamp', time());
 		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systems[0], $nodes[0], $monitors, $values);
@@ -136,43 +130,6 @@ final class Monitors extends ImplementAPI {
 			}
 		}
 		
-		/*
-		for ($i = 0; $i < count($monitors); $i++) {
-			$previous = isset($instances[$monitors[$i]][$systems[$i]][$nodes[$i]]);
-			if ($previous) $value = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['value'];
-			if ($previous AND $value == $values[$i] AND $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['repeats']) {
-				//$updaterows[] = $instances[$monitors[$i]][$systems[$i]][$nodes[$i]]['rowid'];
-				$updaterows[] = $monitors[$i];
-			}
-			else {
-				if (isset($insertrows)) {
-					$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d, %d, %d\n", (int) $monitors[$i], (int) $systems[$i], (int) $nodes[$i], ('null' == $values[$i] ? 'NULL' : (int) $values[$i]), (int) $stamp, (($previous AND $value == $values[$i]) ? 1 : 0));
-				}
-				else {
-					$insertrows = "INSERT INTO MonitorData SELECT";
-					$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $monitors[$i], (int) $systems[$i], (int) $nodes[$i], ('null' == $values[$i] ? 'NULL' : (int) $values[$i]), (int) $stamp, (($previous AND $value == $values[$i]) ? 1 : 0));
-				}
-				$bind[":monitorid$i"] = (int) $monitors[$i];
-				$bind[":systemid$i"] = (int) $systems[$i];
-				$bind[":nodeid$i"] = (int) $nodes[$i];
-				$bind[":value$i"] = 'null' == $values[$i] ? null : (int) $values[$i];
-				$bind[":stamp$i"] = $stamp;
-				$bind[":repeats$i"] = ($previous AND $value == $values[$i]) ? 1 : 0;
-			}
-		}		
-		if (isset($updaterows)) {
-			$rowlist = implode(',',$updaterows);
-			$update = $this->monitordb->prepare("UPDATE MonitorData SET Repeats = Repeats + 1, Stamp = :stamp 
-				WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID IN (:rowlist) AND Repeats > 0");
-			$update->execute(array(
-				':stamp' => $stamp,
-				':systemid' => $systems[0],
-				':nodeid' => $nodes[0],
-				':rowlist' => $rowlist
-			));
-		}
-		 * 
-		 */
 		if (isset($insertrows)) {
 			$this->monitordb->query($insertrows);
 			// $insert->execute($bind);
@@ -361,4 +318,3 @@ final class Monitors extends ImplementAPI {
 		$this->count = (int) $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
 	}
 }
-

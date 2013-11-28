@@ -148,7 +148,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid} <br />
+			Request URI will be /system/&lt;systemid&gt; <br />
 			Parameters:
 			<a class="tooltip" href="#">systemtype,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Type parameter" height="48" width="48" />
@@ -218,7 +218,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid} <br />
+			Request URI will be /system/&lt;systemid&gt; <br />
 			No parameters <br />
 		</p>
 		<p class="formfields">
@@ -238,7 +238,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid} <br />
+			Request URI will be /system/&lt;systemid&gt; <br />
 			Parameters: 
 			<a class="tooltip" href="#">fields 
 			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -268,7 +268,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid}/property/{propertyname} <br />
+			Request URI will be /system/&lt;systemid&gt;/property/&lt;propertyname&gt; <br />
 			No parameters <br />
 		</p>
 		<p class="formfields">
@@ -290,7 +290,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid}/property/{propertyname} <br />
+			Request URI will be /system/&lt;systemid&gt;/property/&lt;propertyname&gt; <br />
 			Parameter is 
 			<a class="tooltip" href="#">value 
 			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -320,7 +320,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid}/property/{propertyname} <br />
+			Request URI will be /system/&lt;systemid&gt;/property/&lt;propertyname&gt; <br />
 			No parameters <br />
 		</p>
 		<p class="formfields">
@@ -342,7 +342,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /application/{appid}/property/{propertyname} <br />
+			Request URI will be /application/&lt;appid&gt;/property/&lt;propertyname&gt; <br />
 			No parameters <br />
 		</p>
 		<p class="formfields">
@@ -364,7 +364,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /application/{appid}/property/{propertyname} <br />
+			Request URI will be /application/&lt;appid&gt;/property/&lt;propertyname&gt; <br />
 			Parameter is 
 			<a class="tooltip" href="#">value 
 			<span class="custom info"><img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -377,7 +377,7 @@
 			<label for="appidp">ApplicationID</label>
 			<input type="text" name="uri1" id="appdp" /><br />
 			<label for="propertynamea">Property Name</label>
-			<input type="text" name="uri2y" id="propertynamea" /><br />
+			<input type="text" name="uri2" id="propertynamea" /><br />
 			<label for="valueap">Value</label>
 			<input type="text" name="value" id="valueap" /><br />
 			<input type="submit" class="submit" value="Create or Update Property" />
@@ -394,7 +394,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" class="httpmethod" readonly="readonly" /><br />
-			Request URI will be /system/{systemid}/property/{propertyname} <br />
+			Request URI will be /system/&lt;systemid&gt;/property/&lt;propertyname&gt; <br />
 			No parameters <br />
 		</p>
 		<p class="formfields">
@@ -490,8 +490,11 @@
 			By and large, parameters are optional.  If they are not, you will see an error return when 
 			they are omitted.  The Request URI is the information that will be added to the location
 			to which requests are being sent (shown above).  It is literal text except for items that
-			are enclosed in curly brackets.  Items in curly brackets are taken from the form field
-			with the approximately similar name.
+			are enclosed in angle brackets.  Items in angle brackets are taken from the form field
+			with a similar name.  There is one exception to this rule: &lt;daterange&gt; is not part
+			of a resource and so does not appear in any form.  It should consist of an optional date,
+			a comma and another optional date.  The two dates are from and to respectively.  They should
+			be in a format understood by the PHP strtotime() function, which only understands English.
 		</p>
 		<p>
 			When using this HTML explorer, optional parameter fields will have a pink background

@@ -27,15 +27,39 @@
 	<div id="content">
       <h2>Monitor Management via API</h2>
 	  <div class="section">
-	  <h3>Get Monitor Classes</h3>
-	  <form action="" method="post" id="getmonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','uri1','key','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+	  <h3>Get All Monitor Classes</h3>
+	  <form action="" method="post" id="getallmonitors" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
 			URI will be /monitorclass <br />
-			or /monitorclass/{systemtype}<br />
-			or /monitorclass/{systemtype}/key/{key}<br />
-			If a Monitor Class Key is specified, only that class will be returned; otherwise all will be returned.<br />
+			Parameters:
+			<a class="tooltip" href="#">fields,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>&nbsp;
+			<br />
+			Default: All fields<br />
+	</p>
+		<p class="formfields">
+			<label for="fieldsall">Fields to return</label>
+			<input type="text" name="fields" id="fieldsall" /><br />
+			<input type="submit" class="submit" value="Fetch Classes" />
+			<input type="hidden" name="_accept" value="text/html" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get Monitor Classes for System Type</h3>
+	  <form action="" method="post" id="getmonitors" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','uri1'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass/&lt;systemtype&gt;<br />
 			Parameters:
 			<a class="tooltip" href="#">fields,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
@@ -48,11 +72,40 @@
 		<p class="formfields">
 			<label for="systemtype">System Type</label>
 			<input type="text" name="uri1" id="systemtype" /><br />
+			<label for="fieldsty">Fields to return</label>
+			<input type="text" name="fields" id="fieldsty" /><br />
+			<input type="submit" class="submit" value="Fetch Classes" />
+			<input type="hidden" name="_accept" value="text/html" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
+	  <div class="section">
+	  <h3>Get One Monitor Class</h3>
+	  <form action="" method="post" id="getonemonitor" target="apiresults" onsubmit="return(setFields(this.id,'monitorclass','uri1','key','uri2'));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="explain">
+			The HTTP method to be used is: 
+			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
+			URI will be /monitorclass/&lt;systemtype&gt;/key/&lt;key&gt;<br />
+			Parameters:
+			<a class="tooltip" href="#">fields,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>fields</strong><br />
+			A comma separated list of field names to be returned, others will be omitted.
+			</span></a>&nbsp;
+			<br />
+			Default: All fields<br />
+	</p>
+		<p class="formfields">
+			<label for="systemtype1">System Type</label>
+			<input type="text" name="uri1" id="systemtype1" /><br />
 			<label for="monitorid">Monitor Key</label>
 			<input type="text" name="uri2" id="monitorid" /><br />
 			<label for="fields">Fields to return</label>
 			<input type="text" name="fields" id="fields" /><br />
-			<input type="submit" class="submit" value="Fetch Classes" />
+			<input type="submit" class="submit" value="Fetch Class" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
 			<input type="hidden" name="HTTP_DATE" /><br />
@@ -66,7 +119,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="PUT" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass/{systemtype}/key/{key} <br />
+			URI will be /monitorclass/&lt;systemtype&gt;/key/&lt;key&gt; <br />
 			Parameters:
 			<a class="tooltip" href="#">name,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Name parameter" height="48" width="48" />
@@ -170,7 +223,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="DELETE" size="6" readonly="readonly" /><br />
-			URI will be /monitorclass/{systemtype}/key/{key}<br />
+			URI will be /monitorclass/&lt;systemtype&gt;/key/&lt;key&gt;<br />
 			No parameters<br />
 	</p>
 		<p class="formfields">
@@ -233,7 +286,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/data<br />
+			URI will be /system/&lt;systemid&gt;/node/&lt;nodeid&gt;/monitor/&lt;monitor&gt;/data<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
@@ -304,7 +357,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/rawdata<br />
+			URI will be /system/&lt;systemid&gt;/node/&lt;nodeid&gt;/monitor/&lt;monitor&gt;/rawdata<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
@@ -363,7 +416,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/monitor/{monitor}/data<br />
+			URI will be /system/&lt;systemid&gt;/monitor/&lt;monitor&gt;/data<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
@@ -432,7 +485,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/monitor/{monitor}/rawdata<br />
+			URI will be /system/&lt;systemid&gt;/monitor/&lt;monitor&gt;/rawdata<br />
 			Parameters:
 			<a class="tooltip" href="#">start,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Start time parameter" height="48" width="48" />
@@ -489,7 +542,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/node/{nodeid}/monitor/{monitor}/latest<br />
+			URI will be /system/&lt;systemid&gt;/node/&lt;nodeid&gt;/monitor/&lt;monitor&gt;/latest<br />
 			Parameters: none
 			<br />
 		</p>
@@ -514,7 +567,7 @@
 		<p class="explain">
 			The HTTP method to be used is: 
 			<input type="text" name="_method" value="GET" size="6" readonly="readonly" /><br />
-			URI will be /system/{systemid}/monitor/{monitor}/latest<br />
+			URI will be /system/&lt;systemid&gt;/monitor/&lt;monitor&gt;/latest<br />
 			Parameters: none
 			<br />
 		</p>

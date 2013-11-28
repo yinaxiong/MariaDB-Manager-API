@@ -30,7 +30,8 @@ namespace SkySQL\SCDS\API\controllers;
 
 class Buckets extends ImplementAPI {
 	
-	public function getData () {
+	public function getData ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Bucket data as a stream of possibly binary characters (not JSON)', false, 'bucket, object', 'bucket, object');
 		$bucket = $this->getParam('GET', 'bucket');
 		$object = $this->getParam('GET', 'object');
 		if ($bucket AND $object) {	

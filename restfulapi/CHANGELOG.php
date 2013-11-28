@@ -3,6 +3,13 @@
 /*
  * Change log for the SkySQL Manager API
  * 
+ * 28 November 2013, 11:20 GMT
+ * 
+ * Complete removal of hostname (for the API) from api.ini
+ * Fix bug in requests involving <taskid>
+ * Change HTML front end to use e.g. <systemid> instead of {systemid}
+ * 
+ * 
  * 26 November 2013, 16:30 GMT
  * 
  * Implement command cancellation

@@ -159,7 +159,7 @@ abstract class Request {
 		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/<taskid>', 'http' => 'PUT', 'title' => 'Update a Task'),
 		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET', 'title' => 'Get All Tasks'),
 		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET', 'title' => 'Run a Database Query'),
-		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/<systemtype>/key/<monitor>', 'http' => 'GET', 'title' => 'Get a Monitor'),
+		array('class' => 'Monitors', 'method' => 'getOneMonitorClass', 'uri' => 'monitorclass/<systemtype>/key/<monitor>', 'http' => 'GET', 'title' => 'Get a Monitor'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/<systemtype>', 'http' => 'GET', 'title' => 'Get All Monitors for a System Type'),
 		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET', 'title' => 'Get All Monitors'),
 		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/<systemtype>/key/<monitor>', 'http' => 'PUT', 'title' => 'Update a Monitor'),
@@ -184,6 +184,7 @@ abstract class Request {
 		'<username>' => '([0-9a-zA-Z_\-\.\~\*\(\)]+)',
 		'<command>' => '[A-Za-z0-9]+',
 		'<scheduleid>' => '[0-9]+',
+		'<taskid>' => '[0-9]+',
 		'<monitor>' => '([0-9a-zA-Z_\-\.\~\*\(\)]+)',
 		'<logtype>' => '(log|binlog)',
 		'<resource>' => '[A-Za-z]+',
@@ -299,7 +300,6 @@ abstract class Request {
 		elseif (!is_writeable($config['cache']['directory'])) $this->warnings[] = sprintf('Caching directory %s is not writeable, cannot write cache, please check existence, permissions, SELinux',$config['cache']['directory']);
 		if (empty($config['shell']['path'])) $this->warnings[] = sprintf('Configuration at %s does not specify a path for scripts used to run commands', _API_INI_FILE_LOCATION);
 		if (empty($config['shell']['php'])) $this->warnings[] = sprintf('Configuration at %s does not specify a path to the PHP executable needed for scheduling', _API_INI_FILE_LOCATION);
-		if (empty($config['shell']['hostname'])) $this->warnings[] = sprintf('Configuration at %s does not specify the hostname for scripts to call back to the API', _API_INI_FILE_LOCATION);
 		if (empty($config['database']['pdoconnect'])) $this->warnings[] = sprintf('Configuration at %s does not specify PDO connect string for Admin DB', _API_INI_FILE_LOCATION);
 		if (empty($config['database']['monconnect'])) $this->warnings[] = sprintf('Configuration at %s does not specify PDO connect string for Monitor DB', _API_INI_FILE_LOCATION);
 		if (empty($config['cache']['timelimit'])) $config['cache']['timelimit'] = _SKYSQL_API_OBJECT_CACHE_TIME_DEFAULT;

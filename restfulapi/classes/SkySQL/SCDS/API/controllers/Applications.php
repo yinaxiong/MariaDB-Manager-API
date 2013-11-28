@@ -32,26 +32,30 @@ use SkySQL\SCDS\API\managers\ApplicationPropertyManager;
 use SkySQL\SCDS\API\models\Property;
 
 class Applications extends SystemNodeCommon {
+	protected $defaultResponse = 'applicationproperty';
 
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		Property::checkLegal();
 	}
 
-	public function setApplicationProperty ($uriparts) {
+	public function setApplicationProperty ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'value');
 		$this->appid = (int) $uriparts[1];
 		$property = $uriparts[3];
 		$value = $this->getParam('PUT', 'value');
 		ApplicationPropertyManager::getInstance()->setProperty($this->appid, $property, $value);
 	}
 	
-	public function deleteApplicationProperty ($uriparts) {
+	public function deleteApplicationProperty ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count', false, '');
 		$this->appid = (int) $uriparts[1];
 		$property = $uriparts[3];
 		ApplicationPropertyManager::getInstance()->deleteProperty($this->appid, $property);
 	}
 	
-	public function getApplicationProperty ($uriparts) {
+	public function getApplicationProperty ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, '');
 		$this->appid = (int) $uriparts[1];
 		$property = $uriparts[3];
 		return ApplicationPropertyManager::getInstance()->getProperty($this->appid, $property);

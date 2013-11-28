@@ -39,7 +39,8 @@ class Commands extends ImplementAPI {
 		Command::checkLegal();
 	}
 
-	public function getCommands () {
+	public function getCommands ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'command (only command, state, description, steps fields)', true);
 		$commands = $this->db->query("SELECT Command AS command, State AS state, Description AS description, Steps AS steps FROM NodeCommands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
 		$results = $this->filterResults($commands->fetchAll(PDO::FETCH_ASSOC));
 		foreach ($results as &$command) $command['steps'] = API::trimCommaSeparatedList($command['steps']);
@@ -47,11 +48,13 @@ class Commands extends ImplementAPI {
 		else $this->sendErrorResponse('', 404);
 	}
 	
-	public function getStates () {
+	public function getStates ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'command states (state, description, finished fields)', true);
         $this->sendResponse(array("commandStates" => $this->filterResults(API::mergeStates(API::$commandstates))));
 	}
 	
-	public function getSteps () {
+	public function getSteps ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'command steps (step, description fields)', true);
 		$knownsteps = array_keys(API::$commandsteps);
 		$select = $this->db->query("SELECT Command AS command, Steps AS steps FROM NodeCommands");
 		$commands = $select->fetchAll();
