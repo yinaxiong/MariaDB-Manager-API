@@ -62,6 +62,8 @@ die() {
                 $(ssh_agent_command "$node_ip" \
                         "sudo /usr/local/sbin/skysql/NodeCommand.sh cancel $taskid $api_host")
         fi
+
+				exit 0
 }
 
 index=1
