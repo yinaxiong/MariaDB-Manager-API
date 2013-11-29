@@ -14,6 +14,8 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
+# Copyright 2012-2014 SkySQL Ab
+#
 # Author: Marcos Amaral
 # Date: July 2013
 #
