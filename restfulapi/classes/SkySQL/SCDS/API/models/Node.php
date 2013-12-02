@@ -75,11 +75,10 @@ class Node extends EntityModel {
 	);
 	
 	protected static $derived = array(
-		'commands' => array('type' => 'array', 'desc' => 'Names of commands that could be run in the present node state'),
+		'commands' => array('type' => 'array', 'desc' => 'Command objects representing commands that could be run in the present node state'),
 		'monitorlatest' => array('type' => 'object', 'desc' => 'Latest value for node for each monitor'),
 		'lastmonitored' => array('type' => 'datetime', 'desc' => 'Date-time a monitor observation was last received'),
-		'command' => array('type' => 'varchar', 'desc' => 'Name of the command currently running on the node'),
-		'taskid' => array('type' => 'int', 'desc' => 'ID number of the task running on the node')
+		'task' => array('type' => 'object', 'desc' => 'The task currently running on the node')
 	);
 	
 	public function __construct ($systemid, $nodeid=0) {
@@ -94,7 +93,8 @@ class Node extends EntityModel {
 
 	public function getCommands () {
 		$query = AdminDatabase::getInstance()->prepare("SELECT Command AS command, Description AS description, Steps AS steps 
-			FROM NodeCommands WHERE (SystemType = :systemtype OR SystemType = 'provision') AND State = :state  ORDER BY UIOrder");
+			FROM NodeCommands WHERE (SystemType = :systemtype OR SystemType = 'provision') AND State = :state 
+			AND NOT (SystemType = 'galera' AND State = 'provisioned' AND Command = 'restore') ORDER BY UIOrder");
 		$query->execute(array(
 			':systemtype' => $this->getSystemType(),
 			':state' => $this->state

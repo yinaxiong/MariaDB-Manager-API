@@ -439,12 +439,9 @@
 			in that tab/window.  This page should remain until you choose to close it.
 		</p>
 		<p>
-			The API is capable of replying with HTML responses, but this page is configured to ask the
-			API to answer with JSON.  Different browsers will treat this in different ways (including 
-			possibly not showing it at all).  There are several addons for Firefox that will display JSON
-			prettily, and there may well be similar addons for other browsers.  You can control how the
-			API replies by including or excluding &quot;application/json&quot; in the HTTP Accept
-			header - the API will only reply with JSON if it is included.
+			The API is capable of replying with JSON responses, but this page is configured to ask the
+			API to answer with HTML.  The HTML sent by the API is actually JSON, but prettified
+			and presented as HTML so as to be readable in a browser.
 		</p>
 		<h3>Results from the API</h3>
 		<p>

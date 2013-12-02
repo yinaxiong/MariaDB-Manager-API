@@ -93,7 +93,7 @@ class MonitorLatest extends CachedSingleton {
 				$monitordata = $info[$systemid][$nodeid];
 				$monitorlatest->$property = $monitordata['value'] ? $monitordata['value'] / pow(10,@$monitor->decimals) : $monitordata['value'];
 				if ($ifmodifiedsince < $monitordata['timestamp']) $modified = true;
-				$lastupdate = max($lastupdate,$monitordata['timestamp']);
+				$lastupdate = max($lastupdate, (int) $monitordata['timestamp']);
 			}
 		}
 		return array($monitorlatest, $lastupdate, $modified);

@@ -132,6 +132,7 @@ class Task extends EntityModel {
 	}
 	
 	public function getSteps () {
+		if ('provisioned' == $this->node->state AND 'restore' == $this->command) return null;
 		$getcmd = AdminDatabase::getInstance()->prepare('SELECT Steps FROM NodeCommands WHERE Command = :command AND State = :state');
 		$getcmd->execute(array(':command' => $this->command, ':state' => $this->node->state));
 		return API::trimCommaSeparatedList($getcmd->fetchColumn());

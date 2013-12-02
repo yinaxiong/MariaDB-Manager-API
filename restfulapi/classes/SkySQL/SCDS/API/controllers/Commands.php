@@ -41,7 +41,8 @@ class Commands extends ImplementAPI {
 
 	public function getCommands ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, 'command (only command, state, description, steps fields)', true);
-		$commands = $this->db->query("SELECT Command AS command, State AS state, Description AS description, Steps AS steps FROM NodeCommands WHERE UIOrder IS NOT NULL ORDER BY UIOrder");
+		$commands = $this->db->query("SELECT SystemType AS systemtype, Command AS command, State AS state, Description AS description, Steps AS steps FROM NodeCommands 
+			WHERE UIOrder IS NOT NULL AND NOT (SystemType = 'galera' AND State = 'provisioned' AND Command = 'restore') ORDER BY UIOrder");
 		$results = $this->filterResults($commands->fetchAll(PDO::FETCH_ASSOC));
 		foreach ($results as &$command) $command['steps'] = API::trimCommaSeparatedList($command['steps']);
 		if (count($results)) $this->sendResponse(array('node_commands' => $results));
