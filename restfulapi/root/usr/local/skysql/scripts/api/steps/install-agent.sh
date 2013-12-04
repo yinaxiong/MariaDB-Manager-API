@@ -96,9 +96,9 @@ rm -f /tmp/MariaDB-Manager-$$.repo
 
 ssh_command "$nodeip" "yum -y clean all"
 if [[ "$scripts_installed" == "0" ]]; then
-	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=skysql"
+	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
 else
-	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX --disablerepo=* --enablerepo=skysql"
+	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
 fi
 
 # Check to see if the node date/time is in sync
