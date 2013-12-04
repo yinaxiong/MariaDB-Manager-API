@@ -102,9 +102,9 @@ else
 fi
 
 # Check to see if the node date/time is in sync
-localdate=$(date -u "+%Y%m%d%H%M%S")
-remdate=$(sshpass -p "$rootpwd" ssh root@"$nodeip" "date -u +%Y%m%d%H%M%S")
-datediff=$(expr "$localdate" - "$remdate")
+localdate=$(date -u +%s)
+remdate=$(sshpass -p "$rootpwd" ssh root@"$nodeip" "date -u +%s")
+datediff=$((localdate - remdate))
 if [[ "$datediff" -gt "30" || "$datediff" -lt "-30" ]]; then
 	set_error "Node date is more than 30 seconds adrift from the server"
 	logger -p user.error -t MariaDB-Manager-Task "Node date is more than 30 seconds adrift from the server"
