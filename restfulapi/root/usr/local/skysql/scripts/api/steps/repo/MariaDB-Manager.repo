@@ -1,5 +1,5 @@
-[skysql]
-name=skysql
+[MariaDB-Manager]
+name=MariaDB-Manager
 baseurl=http://###API-HOST###/repo/CentOS6_64/
 enabled=1
 gpgcheck=false
