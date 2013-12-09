@@ -103,7 +103,7 @@ fi
 
 # Check to see if the node date/time is in sync
 localdate=$(date -u +%s)
-remdate=$(sshpass -p "$rootpwd" ssh root@"$nodeip" "date -u +%s")
+remdate=$(ssh_command "$nodeip" "date -u +%s")
 datediff=$((localdate - remdate))
 if [[ "$datediff" -gt "30" || "$datediff" -lt "-30" ]]; then
 	set_error "Node date is more than 30 seconds adrift from the server"

@@ -79,15 +79,15 @@ fi
 
 # Checking if node is already prepared for command execution
 # (on a subshell to catch exits)
-$(ssh_agent_command "$nodeip" "exit 0")
-ssh_err_code=$?
-if [[ "$ssh_err_code" == "0" ]]; then
+ssh_return=$(ssh_agent_command "$nodeip" "exit 0")
+if [[ "$ssh_return" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh login already setup in target node."
 	exit 0
 fi
 
-ssh_return=$(ssh_command "$nodeip" "exit 0")
-if [[ "$ssh_return" != "0" ]]; then
+$(ssh_command "$nodeip" "exit 0")
+ssh_error_code=$?
+if [[ "$ssh_error_code" != "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh root login failed for $nodeip."
         set_error "Unable to login as root user"
         exit 1
@@ -95,16 +95,18 @@ fi
 
 
 # Creating skysqlagent user and ssh credentials directory
-ssh_return=$(ssh_command "$nodeip" "useradd skysqlagent; mkdir -p /home/skysqlagent/.ssh")
-if [[ "$ssh_return" != "0" ]]; then
+$(ssh_command "$nodeip" "useradd skysqlagent; mkdir -p /home/skysqlagent/.ssh")
+ssh_error_code=$?
+if [[ "$ssh_error_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Unable to create agent user."
 	set_error "Failed to create agent user 'skysqlagent'"
 	exit 1
 fi
 
 # Setting up credentials on the node
-ssh_return=$(ssh_put_file "$nodeip" "/var/www/.ssh/id_rsa.pub" "/home/skysqlagent/.ssh/id_rsa.pub")
-if [[ "$?" != "0" ]]; then
+$(ssh_put_file "$nodeip" "/var/www/.ssh/id_rsa.pub" "/home/skysqlagent/.ssh/id_rsa.pub")
+ssh_error_code=$?
+if [[ "$ssh_error_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Failed to install file public key for node $nodeip."
 	set_error "Failed to install public key."
 	exit 1
@@ -115,7 +117,7 @@ ssh_command "$nodeip" \
 	chown -R skysqlagent.skysqlagent /home/skysqlagent/.ssh/; chmod 600 authorized_keys"
 
 # Setting up skysqlagent sudoer permissions
-ssh_return=$(ssh_command "$nodeip" \
+$(ssh_command "$nodeip" \
 	"cat /etc/sudoers | \
 	grep -q \"^skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\"; \
 	if [ \$? == 1 ]; then \
@@ -123,7 +125,8 @@ ssh_return=$(ssh_command "$nodeip" \
 	fi; \
 	sed \"s/.*Defaults.*requiretty.*/Defaults     !requiretty/\" /etc/sudoers > /etc/sudoers.tmp && \
 	mv /etc/sudoers.tmp /etc/sudoers")
-if [[ "$ssh_return" != "0" ]]; then
+ssh_error_code=$?
+if [[ "$ssh_error_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to edit sudoers file."
 	set_error "Failed to setup sudoers file."
 	exit 1

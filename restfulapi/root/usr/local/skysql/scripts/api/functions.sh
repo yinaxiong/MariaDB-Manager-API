@@ -125,7 +125,7 @@ ssh_command() {
         elif [[ "$ssh_output" != "" ]]; then
                 logger -p user.info -t MariaDB-Manager-Task $ssh_output
         fi
-	echo 0
+	echo $ssh_output
 }
 
 # ssh_put_file()
