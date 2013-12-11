@@ -53,7 +53,11 @@ export api_host=$src_ip
 scripts_dir=$(dirname $0)
 cd $scripts_dir
 
-. ./restfulapicredentials.sh
+# Getting and defining API credentials
+export auth_key_number="1"
+export auth_key=$(awk -F " = " '/^3/ { gsub("\"", "", $2); print $2 }' \
+        /usr/local/skysql/config/components.ini)
+
 . ./functions.sh
 
 trap die SIGTERM

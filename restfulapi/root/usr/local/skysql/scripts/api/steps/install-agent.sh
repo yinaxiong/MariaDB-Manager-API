@@ -95,10 +95,33 @@ fi
 rm -f /tmp/MariaDB-Manager-$$.repo
 
 ssh_command "$nodeip" "yum -y clean all"
-if [[ "$scripts_installed" == "0" ]]; then
-	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
-else
+if [[ "$scripts_installed" != "0" ]]; then
 	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
+else
+	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
+	
+	# Generating an API key for the node
+	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
+
+	# Determining the id of the key to be generated
+	gen_key_id=10
+	while read x; do
+		if [[ "$x" -ge "$gen_key_id" ]]; then
+			gen_key_id=$((x+1));
+		fi
+	done <<<"$(sed -n '/\[apikeys\]/,$p' /etc/skysqlmgr/api.ini | tail -n +2 | \
+		sed '/^$/,$d;/^\[/,$d' | awk -F "=" '{ gsub(" ", "", $1); print $1 }')"
+
+	keyString="$gen_key_id = \"$newKey\""
+
+	# Registering it in api.ini
+	grep "^${gen_key_id} = \"" /etc/skysqlmgr/api.ini &>/dev/null
+	if [ "$?" != "0" ] ; then
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini
+	fi
+
+	# Generating credentials.ini file on remote server
+	ssh_command "$nodeip" "echo \"$gen_key_id:$newKey\" > /usr/local/sbin/skysql/credentials.ini"
 fi
 
 # Check to see if the node date/time is in sync

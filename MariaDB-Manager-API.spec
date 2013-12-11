@@ -46,16 +46,35 @@ touch /var/www/.ssh/known_hosts
 chown apache:apache /var/www/.ssh/known_hosts
 touch /var/log/skysql-test.log
 chown apache:apache /var/log/skysql-test.log
+mkdir -p /usr/local/skysql/config
 
 if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
 	ssh-keygen -q -f /var/www/.ssh/id_rsa -N "" 
 	chown apache:apache /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
 fi
 
+# Not overwriting existing API configurations
 if [ ! -f /etc/skysqlmgr/api.ini ] ; then
+	# Generating API key for the scripts
+	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
+	
+	componentID=1
+	keyString="${componentID} = \"${newKey}\""
+
+	# Registering key on components.ini file
+	componentFile=/usr/local/skysql/config/components.ini
+	grep "^${componentID} = \"" ${componentFile} &>/dev/null
+	if [ "$?" != "0" ] ; then
+		echo $keyString >> $componentFile
+	fi
+
+	# Creating api.ini file
+	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
+	if [ "$?" != "0" ] ; then
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
+	fi
 	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
 fi
-
 
 # disabling selinux! TO BE FIXED! 
 echo 0 >/selinux/enforce
