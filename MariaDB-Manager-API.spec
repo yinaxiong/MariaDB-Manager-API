@@ -58,7 +58,7 @@ if [ ! -f /etc/skysqlmgr/api.ini ] ; then
 	# Generating API key for the local scripts
 	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
 	
-	componentID=1
+	componentID=2
 	keyString="${componentID} = \"${newKey}\""
 
 	# Registering key on components.ini file
