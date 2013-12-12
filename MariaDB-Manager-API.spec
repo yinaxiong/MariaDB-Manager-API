@@ -55,7 +55,7 @@ fi
 
 # Not overwriting existing API configurations
 if [ ! -f /etc/skysqlmgr/api.ini ] ; then
-	# Generating API key for the scripts
+	# Generating API key for the local scripts
 	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
 	
 	componentID=1
@@ -67,12 +67,26 @@ if [ ! -f /etc/skysqlmgr/api.ini ] ; then
 	if [ "$?" != "0" ] ; then
 		echo $keyString >> $componentFile
 	fi
-
-	# Creating api.ini file
+	
+	# Registering key on api.ini file
 	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
 	if [ "$?" != "0" ] ; then
 		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
 	fi
+
+	# Generating API key for GREX
+	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
+	
+	componentID=4
+	keyString="${componentID} = \"${newKey}\""
+
+	# Registering key on api.ini file
+	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
+	if [ "$?" != "0" ] ; then
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
+	fi	
+
+	# Creating api.ini file
 	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
 fi
 
