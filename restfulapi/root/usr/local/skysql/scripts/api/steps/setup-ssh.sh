@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # This file is distributed as part of the MariaDB Enterprise.  It is free
 # software: you can redistribute it and/or modify it under the terms of the
@@ -124,7 +124,8 @@ $(ssh_command "$nodeip" \
 		echo \"skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\" >> /etc/sudoers; \
 	fi; \
 	sed \"s/.*Defaults.*requiretty.*/Defaults     !requiretty/\" /etc/sudoers > /etc/sudoers.tmp && \
-	mv /etc/sudoers.tmp /etc/sudoers")
+	mv /etc/sudoers.tmp /etc/sudoers;
+	chmod 440 /etc/sudoers")
 ssh_error_code=$?
 if [[ "$ssh_error_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to edit sudoers file."
