@@ -85,7 +85,7 @@ fi
 
 # Generating and copying internal repository information to node
 sed -e "s/###API-HOST###/$api_host/" steps/repo/MariaDB-Manager.repo > /tmp/MariaDB-Manager-$$.repo
-$(ssh_put_file "$nodeip" "/tmp/MariaDB-Manager-$$.repo" "/etc/yum.repos.d/MariaDB-Manager.repo")
+ssh_return=$(ssh_put_file "$nodeip" "/tmp/MariaDB-Manager-$$.repo" "/etc/yum.repos.d/MariaDB-Manager.repo")
 ssh_err_code=$?
 if [[ "$ssh_err_code" != "0" ]]; then
         logger -p user.error -t MariaDB-Manager-Task "Failed to write MariaDB-Manager repository file"

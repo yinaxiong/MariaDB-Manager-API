@@ -85,7 +85,7 @@ if [[ "$ssh_return" == "0" ]]; then
 	exit 0
 fi
 
-$(ssh_command "$nodeip" "exit 0")
+ssh_return=$(ssh_command "$nodeip" "exit 0")
 ssh_error_code=$?
 if [[ "$ssh_error_code" != "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh root login failed for $nodeip."
@@ -95,7 +95,7 @@ fi
 
 
 # Creating skysqlagent user and ssh credentials directory
-$(ssh_command "$nodeip" "useradd skysqlagent; mkdir -p /home/skysqlagent/.ssh")
+ssh_return=$(ssh_command "$nodeip" "useradd skysqlagent; mkdir -p /home/skysqlagent/.ssh")
 ssh_error_code=$?
 if [[ "$ssh_error_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Unable to create agent user."
@@ -104,7 +104,7 @@ if [[ "$ssh_error_code" != "0" ]]; then
 fi
 
 # Setting up credentials on the node
-$(ssh_put_file "$nodeip" "/var/www/.ssh/id_rsa.pub" "/home/skysqlagent/.ssh/id_rsa.pub")
+ssh_return=$(ssh_put_file "$nodeip" "/var/www/.ssh/id_rsa.pub" "/home/skysqlagent/.ssh/id_rsa.pub")
 ssh_error_code=$?
 if [[ "$ssh_error_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Failed to install file public key for node $nodeip."
@@ -117,7 +117,7 @@ ssh_command "$nodeip" \
 	chown -R skysqlagent.skysqlagent /home/skysqlagent/.ssh/; chmod 600 authorized_keys"
 
 # Setting up skysqlagent sudoer permissions
-$(ssh_command "$nodeip" \
+ssh_return=$(ssh_command "$nodeip" \
 	"cat /etc/sudoers | \
 	grep -q \"^skysqlagent ALL=NOPASSWD: /usr/local/sbin/skysql/NodeCommand.sh\"; \
 	if [ \$? == 1 ]; then \

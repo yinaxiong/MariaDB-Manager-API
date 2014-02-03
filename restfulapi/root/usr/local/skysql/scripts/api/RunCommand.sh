@@ -87,7 +87,7 @@ do
 	else
 	        # Executing step remotely
 		return=$(ssh_agent_command "$node_ip" \
-		"sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $api_host $params")
+		"sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $api_host \"$params\"")
 		ssh_exit_code=$?
 		if [[ $ssh_exit_code != 0 ]]; then
 			logger -p user.error -t MariaDB-Manager-Task "$return"
