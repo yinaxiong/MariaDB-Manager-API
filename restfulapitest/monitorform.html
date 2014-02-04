@@ -247,6 +247,16 @@
 			<input type="text" name="_method" value="POST" size="6" readonly="readonly" /><br />
 			URI will be /monitordata <br />
 			Parameters: 
+			<a class="tooltip" href="#">systemid,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
+			<strong>systemid</strong><br />
+			The System ID for this set of observations.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">nodeid,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Description parameter" height="48" width="48" />
+			<strong>nodeid</strong><br />
+			The Node ID for this set of observations
+			</span></a>&nbsp;
 			<a class="tooltip" href="#">timestamp,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Time stamp parameter" height="48" width="48" />
 			<strong>timestamp</strong><br />
@@ -254,24 +264,29 @@
 			optional, if omitted the current time will be assumed.
 			</span></a>
 			<br />
-			arrays of monitor ID, system ID, node ID, value (the form caters for up to 10,
+			arrays of monitor ID and value (the form caters for up to 10,
 			but the API will accept an arbitrary number of entries).  Each array must be of the same size.
+			To save message size, the names are m and v respectively.
 			<br />
 			Defaults: the present time, none.
 		</p>
 		<p class="formfields">
+			<label for="bsystemid">System ID</label>
+			<input type="text" name="systemid" id="bsystemid" /><br />
+			<label for="bnodeid">Node ID</label>
+			<input type="text" name="nodeid" id="bnodeid" /><br />
 			<label for="timestampb">Time stamp</label>
 			<input type="text" name="timestamp" id="timestampb" /><br />
-			<input type="text" size="10" name="m[0]" /><input type="text" size="10" name="s[0]" /><input type="text" size="10" name="n[0]" /><input type="text" size="10" name="v[0]" /><br />
-			<input type="text" size="10" name="m[1]" /><input type="text" size="10" name="s[1]" /><input type="text" size="10" name="n[1]" /><input type="text" size="10" name="v[1]" /><br />
-			<input type="text" size="10" name="m[2]" /><input type="text" size="10" name="s[2]" /><input type="text" size="10" name="n[2]" /><input type="text" size="10" name="v[2]" /><br />
-			<input type="text" size="10" name="m[3]" /><input type="text" size="10" name="s[3]" /><input type="text" size="10" name="n[3]" /><input type="text" size="10" name="v[3]" /><br />
-			<input type="text" size="10" name="m[4]" /><input type="text" size="10" name="s[4]" /><input type="text" size="10" name="n[4]" /><input type="text" size="10" name="v[4]" /><br />
-			<input type="text" size="10" name="m[5]" /><input type="text" size="10" name="s[5]" /><input type="text" size="10" name="n[5]" /><input type="text" size="10" name="v[5]" /><br />
-			<input type="text" size="10" name="m[6]" /><input type="text" size="10" name="s[6]" /><input type="text" size="10" name="n[6]" /><input type="text" size="10" name="v[6]" /><br />
-			<input type="text" size="10" name="m[7]" /><input type="text" size="10" name="s[7]" /><input type="text" size="10" name="n[7]" /><input type="text" size="10" name="v[7]" /><br />
-			<input type="text" size="10" name="m[8]" /><input type="text" size="10" name="s[8]" /><input type="text" size="10" name="n[8]" /><input type="text" size="10" name="v[8]" /><br />
-			<input type="text" size="10" name="m[9]" /><input type="text" size="10" name="s[9]" /><input type="text" size="10" name="n[9]" /><input type="text" size="10" name="v[9]" /><br />
+			<input type="text" size="10" name="m[0]" /><input type="text" size="10" name="v[0]" /><br />
+			<input type="text" size="10" name="m[1]" /><input type="text" size="10" name="v[1]" /><br />
+			<input type="text" size="10" name="m[2]" /><input type="text" size="10" name="v[2]" /><br />
+			<input type="text" size="10" name="m[3]" /><input type="text" size="10" name="v[3]" /><br />
+			<input type="text" size="10" name="m[4]" /><input type="text" size="10" name="v[4]" /><br />
+			<input type="text" size="10" name="m[5]" /><input type="text" size="10" name="v[5]" /><br />
+			<input type="text" size="10" name="m[6]" /><input type="text" size="10" name="v[6]" /><br />
+			<input type="text" size="10" name="m[7]" /><input type="text" size="10" name="v[7]" /><br />
+			<input type="text" size="10" name="m[8]" /><input type="text" size="10" name="v[8]" /><br />
+			<input type="text" size="10" name="m[9]" /><input type="text" size="10" name="v[9]" /><br />
 			<input type="submit" class="submit" value="Submit Data" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
@@ -315,7 +330,7 @@
 			the tip for the start field.  The given interval is always used and never
 			recalculated.  There is a default value in the API configuration file.
 			</span></a>&nbsp;
-			<a class="tooltip" href="#">count<span class="custom info">
+			<a class="tooltip" href="#">count,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
 			<strong>count</strong><br />
 			The number of time intervals for which interpolated observations are wanted.
@@ -323,6 +338,14 @@
 			start.  Otherwise, the start time is calculated by taking the finish time and
 			going back by the specified number of time intervals.  There is a default
 			value in the API configuration file.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">method<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
+			<strong>method</strong><br />
+			Either avg or minmax (default avg).  If you specify avg (average) then you will
+			receive back a single averaged value for each time interval.  If you specify minmax,
+			you will receive back two sets of values, one for the minimum in each time interval
+			and one for the maximum.
 			</span></a>
 			<br />
 		</p>
@@ -334,15 +357,15 @@
 			<label for="monitoridg">Monitor Key</label>
 			<input type="text" name="uri3" id="monitoridg" /><br />
 			<label for="monitorstart">Start (unix) time</label>
-			<input type="text" name="start" id="monitorstart" /><br />
+			<input type="text" id="monitorstart" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'start');" /><br />
 			<label for="monitorfinish">Finish (unix) time</label>
-			<input type="text" name="finish" id="monitorfinish" /><br />
+			<input type="text" id="monitorfinish" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'finish');" /><br />
 			<label for="monitorinterval">Interval size (secs)</label>
-			<input type="text" name="interval" id="monitorinterval" /><br />
+			<input type="text" id="monitorinterval" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'interval');" /><br />
 			<label for="monitorcount">Count of intervals</label>
-			<input type="text" name="count" id="monitorcount" /><br />
+			<input type="text" id="monitorcount" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'count');" /><br />
 			<label for="method">Method (avg or minmax)</label>
-			<input type="text" name="method" id="method" /><br />
+			<input type="text" id="method" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'method');" /><br />
 			<input type="submit" class="submit" value="Get Data" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
@@ -395,13 +418,13 @@
 			<label for="rmonitoridg">Monitor Key</label>
 			<input type="text" name="uri3" id="rmonitoridg" /><br />
 			<label for="rmonitorstart">Start (unix) time</label>
-			<input type="text" name="start" id="rmonitorstart" /><br />
+			<input type="text" id="rmonitorstart" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'start');" /><br />
 			<label for="rmonitorfinish">Finish (unix) time</label>
-			<input type="text" name="finish" id="rmonitorfinish" /><br />
+			<input type="text" id="rmonitorfinish" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'finish');" /><br />
 			<label for="rmonitorinterval">Interval size (secs)</label>
-			<input type="text" name="interval" id="rmonitorinterval" /><br />
+			<input type="text" id="rmonitorinterval" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'interval');" /><br />
 			<label for="rmonitorcount">Count of intervals</label>
-			<input type="text" name="count" id="rmonitorcount" /><br />
+			<input type="text" id="rmonitorcount" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'count');" /><br />
 			<input type="submit" class="submit" value="Get Data" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
@@ -445,7 +468,7 @@
 			the tip for the start field.  The given interval is always used and never
 			recalculated.  There is a default value in the API configuration file.
 			</span></a>&nbsp;
-			<a class="tooltip" href="#">count<span class="custom info">
+			<a class="tooltip" href="#">count,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
 			<strong>count</strong><br />
 			The number of time intervals for which interpolated observations are wanted.
@@ -453,6 +476,14 @@
 			start.  Otherwise, the start time is calculated by taking the finish time and
 			going back by the specified number of time intervals.  There is a default
 			value in the API configuration file.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">method<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Count parameter" height="48" width="48" />
+			<strong>method</strong><br />
+			Either avg or minmax (default avg).  If you specify avg (average) then you will
+			receive back a single averaged value for each time interval.  If you specify minmax,
+			you will receive back two sets of values, one for the minimum in each time interval
+			and one for the maximum.
 			</span></a>
 			<br />
 		</p>
@@ -462,15 +493,15 @@
 			<label for="monitoridgs">Monitor Key</label>
 			<input type="text" name="uri2" id="monitoridgs" /><br />
 			<label for="monitorstarts">Start (unix) time</label>
-			<input type="text" name="start" id="monitorstarts" /><br />
+			<input type="text" id="monitorstarts" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'start');" /><br />
 			<label for="monitorfinishs">Finish (unix) time</label>
-			<input type="text" name="finish" id="monitorfinishs" /><br />
+			<input type="text" id="monitorfinishs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'finish');" /><br />
 			<label for="monitorintervals">Interval size (secs)</label>
-			<input type="text" name="interval" id="monitorintervals" /><br />
+			<input type="text" id="monitorintervals" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'interval');" /><br />
 			<label for="monitorcounts">Count of intervals</label>
-			<input type="text" name="count" id="monitorcounts" /><br />
+			<input type="text" id="monitorcounts" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'count');" /><br />
 			<label for="methods">Method (avg or minmax)</label>
-			<input type="text" name="method" id="methods" /><br />
+			<input type="text" id="methods" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'method');" /><br />
 			<input type="submit" class="submit" value="Get Data" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
@@ -521,13 +552,13 @@
 			<label for="rmonitoridgs">Monitor Key</label>
 			<input type="text" name="uri2" id="rmonitoridgs" /><br />
 			<label for="rmonitorstarts">Start (unix) time</label>
-			<input type="text" name="start" id="rmonitorstarts" /><br />
+			<input type="text" id="rmonitorstarts" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'start');" /><br />
 			<label for="rmonitorfinishs">Finish (unix) time</label>
-			<input type="text" name="finish" id="rmonitorfinishs" /><br />
+			<input type="text" id="rmonitorfinishs" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'finish');" /><br />
 			<label for="rmonitorintervals">Interval size (secs)</label>
-			<input type="text" name="interval" id="rmonitorintervals" /><br />
+			<input type="text" id="rmonitorintervals" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'interval');" /><br />
 			<label for="rmonitorcounts">Count of intervals</label>
-			<input type="text" name="count" id="rmonitorcounts" /><br />
+			<input type="text" id="rmonitorcounts" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'count');" /><br />
 			<input type="submit" class="submit" value="Get Data" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->

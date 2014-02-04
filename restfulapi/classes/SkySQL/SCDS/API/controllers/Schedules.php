@@ -29,22 +29,24 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\models\Schedule;
-use SkySQL\SCDS\API\managers\ScheduleManager;
 
 class Schedules extends TaskScheduleCommon {
+	protected $defaultResponse = 'schedule';
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		Schedule::checkLegal();
 	}
 
-	public function getMultipleSchedules () {
+	public function getMultipleSchedules ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'fields');
 		list($total, $schedules) = Schedule::select($this);
 		$this->sendResponse(array('total' => $total, 'schedules' => $this->filterResults($schedules)));
 	}
 	
-	public function getOneSchedule ($uriparts) {
-		$schedule = ScheduleManager::getInstance()->getByID((int) $uriparts[1]);
+	public function getOneSchedule ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
+		$schedule = Schedule::getByID((int) $uriparts[1]);
 		if ($schedule) {
 			if ($this->ifmodifiedsince < strtotime($schedule->updated)) $this->modified = true;
 			if ($this->ifmodifiedsince AND !$this->modified) {
@@ -56,14 +58,15 @@ class Schedules extends TaskScheduleCommon {
 		$this->sendResponse(array('schedule' => $this->filterSingleResult($schedule)));
 	}
 	
-	public function getSelectedSchedules ($uriparts) {
+	public function getSelectedSchedules ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		list($total, $schedules) = Schedule::select($this, trim(@$uriparts[1]));
 		$this->sendResponse(array('total' => $total, 'schedules' => $this->filterResults($schedules)));
 	}
 	
-	public function updateSchedule ($uriparts) {
-		$manager = ScheduleManager::getInstance();
-		$schedule = $manager->getByID((int) $uriparts[1]);
+	public function updateSchedule ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for a schedule resource');
+		$schedule = Schedule::getByID((int) $uriparts[1]);
 		if (!$schedule) $this->sendResponse(array('updatecount' => 0, 'insertkey' => 0));
 		if ($schedule->atjobnumber) exec ("atrm $schedule->atjobnumber");
 		$schedule->setPropertiesFromParams();
@@ -72,12 +75,13 @@ class Schedules extends TaskScheduleCommon {
 			$this->setRunAt($schedule);
 			//if ($schedule->isDue()) $this->runScheduleNow($schedule);
 		}
-		$manager->updateSchedule((int) $uriparts[1]);
+		$schedule->update();
 	}
 	
-	public function deleteOneSchedule ($uriparts) {
-		$schedule = ScheduleManager::getInstance()->getByID((int) $uriparts[1]);
+	public function deleteOneSchedule ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
+		$schedule = Schedule::getByID((int) $uriparts[1]);
 		if ($schedule->atjobnumber) exec ("atrm $schedule->atjobnumber");
-		ScheduleManager::getInstance()->deleteSchedule((int) $uriparts[1]);
+		$schedule->delete();
 	}
 }

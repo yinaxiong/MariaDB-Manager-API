@@ -32,12 +32,11 @@ namespace SkySQL\SCDS\API\controllers;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\models\Task;
-use SkySQL\SCDS\API\managers\NodeManager;
-use SkySQL\SCDS\API\managers\SystemManager;
-use SkySQL\SCDS\API\managers\NodeStateManager;
+use SkySQL\SCDS\API\models\System;
 use SkySQL\SCDS\API\caches\CachedProvisionedNodes;
 
 class SystemNodes extends SystemNodeCommon {
+	protected $defaultResponse = 'node';
 	protected $nodeid = 0;
 	protected $monitorid = 0;
 	protected $systemtype = '';
@@ -46,25 +45,30 @@ class SystemNodes extends SystemNodeCommon {
 		parent::__construct($controller);
 	}
 	
-	public function nodeStates ($uriparts) {
-		$manager = NodeStateManager::getInstance();
+	public function nodeStates ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'state', true, 'fields');
 		if (empty($uriparts[1])) {
-			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAll())));
+			$this->sendResponse(array('nodestates' => $this->filterResults(Node::getAllStates())));
 		}
 		else {
-			$this->sendResponse(array('nodestates' => $this->filterResults($manager->getAllForType($uriparts[1]))));
+			$this->sendResponse(array('nodestates' => $this->filterResults(Node::getAllStatesForType($uriparts[1]))));
 		}
 	}
 	
-	public function getSystemAllNodes ($uriparts) {
+	public function getSystemAllNodes ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'state, fields');
 		$this->systemid = $uriparts[1];
+		$poe = $this->requestor->getHeader('Poe');
+		// Method sendPOE does not return
+		if ($poe) Node::sendPOE($this->systemid);
 		if (!$this->validateSystem()) $this->sendErrorResponse("No system with ID $this->systemid", 404);
-		$nodes = NodeManager::getInstance()->getAllForSystem($this->systemid, $this->getParam('GET', 'state'));
+		$nodes = Node::getAllForSystem($this->systemid, $this->getParam('GET', 'state'));
 		foreach ($nodes as $node) $this->extraNodeData($node);
 		$this->sendResponse(array('nodes' => $this->filterResults($nodes)));
 	}
 	
-	public function getProvisionedNodes () {
+	public function getProvisionedNodes ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'provisionednodes', true);
 		$pnodescache = CachedProvisionedNodes::getInstance();
 		$nodes = $pnodescache->getIfChangedSince($this->ifmodifiedsince);
 		if (count($nodes) OR !$this->ifmodifiedsince) $this->sendResponse(array('provisionednodes' => $nodes));
@@ -72,10 +76,11 @@ class SystemNodes extends SystemNodeCommon {
 		exit;
 	}
 	
-	public function getSystemNode ($uriparts) {
+	public function getSystemNode ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
-		$node = NodeManager::getInstance()->getByID($this->systemid, $this->nodeid);
+		$node = Node::getByID($this->systemid, $this->nodeid);
 		if ($node) {
 			if ($this->ifmodifiedsince < strtotime($node->updated)) $this->modified = true;
 			$this->extraNodeData($node);
@@ -88,13 +93,15 @@ class SystemNodes extends SystemNodeCommon {
 		else $this->sendErrorResponse("No matching node for system ID $this->systemid and node ID $this->nodeid", 404);
 	}
 	
-	public function getSystemNodeProcesses ($uriparts) {
+	public function getSystemNodeProcesses ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'process', true, 'fields');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		$this->sendResponse(array('process' => $this->filterResults($this->getNodeProcesses($this->nodeid))));
 	}
 	
-	public function getProcessPlan ($uriparts) {
+	public function getProcessPlan ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'processplan', true, 'fields');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		$processid = (int) $uriparts[5];
@@ -104,7 +111,8 @@ class SystemNodes extends SystemNodeCommon {
 		exit;
 	}
 	
-	public function killSystemNodeProcess ($uriparts) {
+	public function killSystemNodeProcess ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'none');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		$processid = (int) $uriparts[5];
@@ -122,45 +130,69 @@ class SystemNodes extends SystemNodeCommon {
 		$node->task = Task::latestForNode($node);
 	}
 
-	public function createSystemNode ($uriparts) {
+	public function createSystemNode ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for node resource');
+		$this->createSystemNodeCommon($uriparts, $metadata);
+		$this->createNode($this->systemid);
+	}
+	
+	protected function createNode ($systemid) {
+		$node = new Node($systemid);
+		$node->insert();
+	}
+	
+	public function createSystemNodeOnceOnly ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for node resource');
+		$this->createSystemNodeCommon($uriparts, $metadata);
+		$deluniqid = $this->db->prepare("DELETE FROM POE WHERE uniqid = '/system/' || :systemid || '/node/' || :partthree");
+		$deluniqid->execute(array(':partthree' => $uriparts[3]));
+		if ($deluniqid->rowCount()) $this->createNode($this->systemid);
+		$this->db->rollbackTransaction();
+		header(HTTP_PROTOCOL.' 405 Operation Not Supported');
+		exit;
+	}
+	
+	protected function createSystemNodeCommon ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for node resource');
 		Node::checkLegal();
 		$this->db->beginImmediateTransaction();
 		$this->systemid = (int) $uriparts[1];
-		if ($this->validateSystem()) NodeManager::getInstance()->createNode($this->systemid);
-		else $this->sendErrorResponse('Create node request gave non-existent system ID '.$this->systemid, 400);
+		if (!$this->validateSystem()) $this->sendErrorResponse('Create node request gave non-existent system ID '.$this->systemid, 400);
 	}
 	
-	public function updateSystemNode ($uriparts) {
+	public function updateSystemNode ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for node resource');
 		$this->db->beginImmediateTransaction();
 		Node::checkLegal('stateid');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) @$uriparts[3];
-		NodeManager::getInstance()->updateNode($this->systemid, $this->nodeid);
+		$node = new Node ($this->systemid, $this->nodeid);
+		$node->update();
 	}
 	
-	public function deleteSystemNode ($uriparts) {
+	public function deleteSystemNode ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$this->systemid = (int) $uriparts[1];
 		$this->nodeid = (int) $uriparts[3];
 		if ($this->validateSystem()) {
-			$manager = NodeManager::getInstance();
-			$node = $manager->getByID($this->systemid, $this->nodeid);
+			$node = Node::getByID($this->systemid, $this->nodeid);
 			if (!$node) $this->sendErrorResponse(sprintf("Delete node, no node with System ID '%s', Node ID '%s'",$this->systemid, $this->nodeid), 400);
 			if (!empty(API::$systemtypes[$this->systemtype]['nodestates'][$node->state]['protected'])) {
 				$this->sendErrorResponse(sprintf("Delete node System ID '%s', Node ID '%s' request, but cannot delete node in state '%s'",$this->systemid, $this->nodeid, $node->state), 400);
 			}
-			NodeManager::getInstance()->deleteNode($this->systemid, $this->nodeid);
+			$node->delete();
 			ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
 		}
 		else $this->sendErrorResponse('Delete node request gave non-existent system ID '.$this->systemid, 400);
 	}
 	
 	protected function validateSystem () {
-		$system = SystemManager::getInstance()->getByID($this->systemid);
+		$system = System::getByID($this->systemid);
 		if (@$system->systemtype) $this->systemtype = $system->systemtype;
 		return $system ? true : false;
 	}
 	
 	protected function validateNode () {
-		return NodeManager::getInstance()->getByID($this->systemid, $this->nodeid) ? true : false;
+		return Node::getByID($this->systemid, $this->nodeid) ? true : false;
 	}
 }

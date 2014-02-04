@@ -35,9 +35,11 @@ namespace SkySQL\SCDS\API\controllers;
 use SkySQL\SCDS\API\models\Backup;
 
 class SystemBackups extends ImplementAPI {
+	protected $defaultResponse = 'schedule';
 	protected $errors = array();
 
-	public function getSystemBackups ($uriparts) {
+	public function getSystemBackups ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'from, to, fields');
 		$this->keydata['systemid'] = (int) $uriparts[1];
 		$fromdate = $this->getDate('from');
 		$todate = $this->getDate('to');
@@ -49,7 +51,8 @@ class SystemBackups extends ImplementAPI {
         $this->sendResponse(array('total' => $total, 'backups' => $this->filterResults($backups)));
 	}
 	
-	public function getOneBackup ($uriparts) {
+	public function getOneBackup ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		$systemid = (int) $uriparts[1];
 		$backupid = (int) $uriparts[3];
 		$backup = Backup::getByID($systemid,$backupid);
@@ -66,20 +69,23 @@ class SystemBackups extends ImplementAPI {
 		}
 	}
 	
-	public function updateSystemBackup ($uriparts) {
+	public function updateSystemBackup ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields from backup resource');
 		$systemid = (int) $uriparts[1];
 		$backupid = (int) $uriparts[3];
 		$backup = new Backup($systemid, $backupid);
 		$backup->update();
 	}
 	
-	public function makeSystemBackup ($uriparts) {
+	public function makeSystemBackup ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields from backup resource');
 		$systemid = (int) $uriparts[1];
 		$backup = new Backup($systemid);
 		$backup->insert();
 	}
 
-	public function getBackupStates () {
+	public function getBackupStates ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'backupstates', true);
         $this->sendResponse(array("backupStates" => $this->filterResults(Backup::getBackupStates())));
 	}
 }

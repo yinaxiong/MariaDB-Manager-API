@@ -22,19 +22,9 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * The Request class is the main controller for the API.
- * 
- * The $uriTable array defines the API RESTful interface, and links calls to
- * classes and methods.  The Request class puts this into effect.
- * 
- * The constructor splits up the model URIs into their constituent parts.
- * 
- * The doControl method first fetches the request URI and extracts the relevant
- * part, then explodes it into parts.  Then the request URI is compared with 
- * the model URIs to find what is to be done (or an error return).
- * 
- * The sendResponse method is provided for the benefit of the classes that 
- * implement the API.
+ * The CommandRequest class is the main controller for the API, specific to 
+ * requests made by directly running PHP and the API.  It specialises the 
+ * abstract Request class.
  * 
  */
 
@@ -56,11 +46,14 @@ final class CommandRequest extends Request {
 		global $argv;
 		$this->requestmethod = @$argv[1];
 		$this->requestviapost = true;
+		$this->getHeaders();
+		$this->checkHeaders();
+		$this->urlencoded = false;
 		if (isset($argv[3])) {
-			$this->parse_str($argv[3], $_POST);
+			$parameters = $this->decodeJsonOrQueryString($argv[3]);
+			if (is_array($parameters)) $_POST = $parameters;
 	        $_POST['suppress_response_codes'] = 'true';
 		}
-		$this->getHeaders();
 		parent::__construct();
 	}
 
@@ -69,19 +62,16 @@ final class CommandRequest extends Request {
 	}
 
 	protected function getHeaders () {
-		if (isset($argv[4])) {
-			$headers = explode('|', $argv[4]);
-			foreach ($headers as $header) {
-				$parts = explode(':', $header);
-				if (2 == count($parts)) {
-					$key = str_replace(" ","-",ucwords(strtolower(str_replace("-"," ",$parts[0]))));
-					$this->headers[$key] = trim($parts[1]);
-				}
+		for ($i = 4; isset($argv[$i]); $i++) {
+			$parts = explode(':', $argv[$i], 2);
+			if (2 == count($parts)) {
+				$key = str_replace(" ","-",ucwords(strtolower(str_replace("-"," ",$parts[0]))));
+				$this->headers[$key] = trim($parts[1]);
 			}
 		}
 	}
 
-	public function sendHeaders ($status) {
+	protected function sendHeaders ($status, $requestURI='') {
 		// Send no headers when called from command line or script
 		return HTTP_PROTOCOL.' '.$status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 	}

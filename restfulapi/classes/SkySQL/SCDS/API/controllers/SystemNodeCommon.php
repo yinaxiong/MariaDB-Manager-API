@@ -30,11 +30,8 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use PDO;
-use stdClass;
-use SkySQL\SCDS\API\managers\MonitorManager;
-use SkySQL\SCDS\API\managers\SystemManager;
-use SkySQL\SCDS\API\managers\NodeManager;
-use SkySQL\COMMON\MonitorDatabase;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\caches\MonitorLatest;
 
 abstract class SystemNodeCommon extends ImplementAPI {
@@ -53,8 +50,8 @@ abstract class SystemNodeCommon extends ImplementAPI {
 	
 	protected function targetDatabaseQuery ($query, $nodeid) {
 		try {
-			$system = SystemManager::getInstance()->getByID($this->systemid);
-			$node = NodeManager::getInstance()->getByID($this->systemid, $nodeid);
+			$system = System::getByID($this->systemid);
+			$node = Node::getByID($this->systemid, $nodeid);
 			if (!$node) $this->sendErrorResponse("System $this->systemid and node $nodeid are not valid node identifiers", 400);
 			$connection = "mysql:host=$node->privateip;dbname=information_schema";
 			if ($node->port) $connection .= ";port=$node->port";

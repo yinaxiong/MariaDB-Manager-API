@@ -31,17 +31,14 @@ namespace SkySQL\SCDS\API\models;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
-use SkySQL\SCDS\API\managers\SystemManager;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\managers\SystemPropertyManager;
 
 class System extends EntityModel {
 	protected static $setkeyvalues = false;
 	
-	protected static $classname = __CLASS__;
 	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\SystemManager';
 
-	protected $ordinaryname = 'system';
-	protected static $headername = 'System';
-	
 	protected static $updateSQL = 'UPDATE System SET %s WHERE SystemID = :systemid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM System WHERE SystemID = :systemid';
 	protected static $countAllSQL = 'SELECT COUNT(*) FROM System';
@@ -53,7 +50,7 @@ class System extends EntityModel {
 	protected static $getAllCTO = array('systemid');
 	
 	protected static $keys = array(
-		'systemid' => array('sqlname' => 'SystemID', 'type' => 'int')
+		'systemid' => array('sqlname' => 'SystemID', 'desc' => 'ID for the System', 'type' => 'int')
 	);
 
 	protected static $fields = array(
@@ -81,6 +78,10 @@ class System extends EntityModel {
 		$this->systemid = $systemid;
 	}
 	
+	protected function requestURI () {
+		return "system/$this->systemid";
+	}
+	
 	protected function validateInsert () {
 		AdminDatabase::getInstance()->beginImmediateTransaction();
 		$this->setCorrectFormatDateWithDefault('started');
@@ -104,7 +105,7 @@ class System extends EntityModel {
 	protected function validateUpdate () {
 		$this->setCorrectFormatDate('started');
 		$this->setCorrectFormatDate('lastaccess');
-		$oldsystem = SystemManager::getInstance()->getByID($this->systemid);
+		$oldsystem = System::getByID($this->systemid);
 		if (empty($this->systemtype)) $this->systemtype = $oldsystem->systemtype;
 		if (empty($this->dbusername)) $this->dbusername = $oldsystem->dbusername;
 		if (empty($this->dbpassword)) $this->dbpassword = $oldsystem->dbpassword;
@@ -143,5 +144,22 @@ class System extends EntityModel {
 			':updated' => date('Y-m-d H:i:s', $stamp),
 			':systemid' => $this->systemid
 		));
+		$this->clearCache(true);
+	}
+
+	public static function sendPOE () {
+		$id = uniqid('/system/factory', true);
+		$new = AdminDatabase::getInstance()->prepare("INSERT INTO POE (uniqid, stamp) VALUES (:uniqid, datetime('now'))");
+		$new->execute(array(':uniqid' => $id));
+		header('POE-Links: '.$id);
+		exit;
+	}
+	
+	public function delete ($alwaysrespond=true) {
+		SystemPropertyManager::getInstance()->deleteAllProperties($this->systemid);
+		$node = new Node($this->systemid);
+		// Will delete all nodes for system and return
+		$node->delete();
+		parent::delete($alwaysrespond);
 	}
 }

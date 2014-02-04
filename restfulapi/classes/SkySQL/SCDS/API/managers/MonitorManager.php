@@ -32,15 +32,17 @@ use SkySQL\SCDS\API\models\Monitor;
 
 class MonitorManager extends EntityManager {
 	protected static $instance = null;
+	protected static $model = 'Monitor';
 	protected $monitors = array();
 	protected $allmonitors = array();
 	protected $monitorsbytype = array();
 	protected $monitorsbyid = array();
 	
 	protected function __construct () {
-		$this->allmonitors = Monitor::getAll();
+		$this->allmonitors = Monitor::getAll(false);
 		foreach ($this->allmonitors as $monitor) {
-			$this->monitors[$monitor->systemtype][$monitor->monitor] = $monitor;
+			$this->maincache[$monitor->systemtype][$monitor->monitor] = $monitor;
+			$this->simplecache[] = $monitor;
 			$this->monitorsbytype[$monitor->systemtype][] = $monitor;
 			$this->monitorsbyid[$monitor->monitorid] = $monitor;
 		}
@@ -51,11 +53,7 @@ class MonitorManager extends EntityManager {
 	}
 	
 	public function getByType ($systemtype) {
-		return isset($this->monitors[$systemtype]) ? array_values($this->monitors[$systemtype]): array();
-	}
-	
-	public function getByID ($systemtype, $id) {
-		return isset($this->monitors[$systemtype][$id]) ? $this->monitors[$systemtype][$id] : null;
+		return isset($this->maincache[$systemtype]) ? array_values($this->maincache[$systemtype]): array();
 	}
 	
 	public function getByMonitorID ($id) {
@@ -64,16 +62,5 @@ class MonitorManager extends EntityManager {
 	
 	public function getAll () {
 		return $this->monitorsbytype;
-	}
-	
-	public function putMonitor ($systemtype, $key) {
-		$monitor = new Monitor($systemtype, $key);
-		$monitor->save();
-	}
-	
-	public function deleteMonitor ($systemtype, $id) {
-		$monitor = new Monitor($systemtype, $id);
-		if (isset($this->monitors[$systemtype][$id])) unset($this->monitors[$systemtype][$id]);
-		$monitor->delete();
 	}
 }

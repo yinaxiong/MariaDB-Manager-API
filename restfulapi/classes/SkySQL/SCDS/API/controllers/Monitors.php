@@ -29,9 +29,10 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\caches\MonitorLatest;
-use SkySQL\SCDS\API\managers\MonitorManager;
-use SkySQL\SCDS\API\managers\SystemManager;
-use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\caches\MonitorQueries;
+use SkySQL\SCDS\API\models\Monitor;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\models\Node;
 use SkySQL\COMMON\MonitorDatabase;
 use \PDO;
 
@@ -46,87 +47,121 @@ final class Monitors extends ImplementAPI {
 	protected $rawvalues = array();
 	protected $rawrepeats = array();
 	protected $monitordb = null;
+	protected $start = 0;
+	protected $finish = 0;
+	protected $interval = 0;
+	protected $count = 0;
+	protected $average = true;
 	
-	public function getMonitorClasses ($uriparts) {
-		$manager = MonitorManager::getInstance();
-		if ($this->ifmodifiedsince AND $this->ifmodifiedsince > $manager->timeStamp()) {
+	public function getMonitorClasses ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
+		$this->monitorClassesModifiedSince();
+		$monitors = Monitor::getAll();
+		foreach ($monitors as $type=>$results) $monitors[$type] = $this->filterResults($results);
+		$this->sendResponse(array('monitorclasses' => $monitors));
+	}
+
+	public function getMonitorClassesByType ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
+		$this->monitorClassesModifiedSince();
+		$monitors = Monitor::getByType($uriparts[1]);
+			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
+	}
+	
+	protected function monitorClassesModifiedSince () {
+		if ($this->ifmodifiedsince AND $this->ifmodifiedsince > Monitor::lastTimeChanged()) {
 			header (HTTP_PROTOCOL.' 304 Not Modified');
 			exit;
-		}
-		if (empty($uriparts[1])) {
-			$monitors = $manager->getAll();
-			foreach ($monitors as $type=>$results) $monitors[$type] = $this->filterResults($results);
-			$this->sendResponse(array('monitorclasses' => $monitors));
-		}
-		else {
-			$systemtype = $uriparts[1];
-			$monitors = $manager->getByType($systemtype);
-			$this->sendResponse(array('monitorclasses' => $this->filterResults($monitors)));
 		}
     }
 	
 	public function getOneMonitorClass ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
-		$monitor = 	MonitorManager::getInstance()->getByID($uriparts[1], $uriparts[3]);
+		$monitor = 	Monitor::getByID($uriparts[1], $uriparts[3]);
 		$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
 	}
 	
-	public function putMonitorClass ($uriparts) {
-		$manager = MonitorManager::getInstance();
-		$oldmonitor = $manager->getByID($uriparts[1], $uriparts[3]);
+	public function putMonitorClass ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields belonging to the monitor resource');
+		$oldmonitor = Monitor::getByID($uriparts[1], $uriparts[3]);
 		if ($oldmonitor AND !$this->paramEmpty($this->requestmethod, 'decimals')) {
 			$newdecimals = (int) $this->getParam($this->requestmethod, 'decimals', 0) - (int) @$oldmonitor->decimals;
 			if ($newdecimals) {
 				$multiplier = pow(10, (int) $newdecimals);
-				$update = MonitorDatabase::getInstance()->prepare("UPDATE MonitorData SET Value = Value * :multiplier WHERE MonitorID = :monitorid");
-				$update->execute(array(
-					':multiplier' => $multiplier,
-					':monitorid' => $oldmonitor->monitorid
-				));
+				$db = MonitorDatabase::getInstance();
+				$db->splitMonitorData();
+				$db->rescaleMonitorData($oldmonitor->monitorid, $multiplier);
 			}
 		}
-		$manager->putMonitor($uriparts[1], $uriparts[3]);
+		$monitor = new Monitor($uriparts[1], $uriparts[3]);
+		Request::getInstance()->unsetParam($this->requestmethod, 'monitorid');
+		$monitor->save();
 	}
 	
-	public function deleteMonitorClass ($uriparts) {
-		MonitorManager::getInstance()->deleteMonitor($uriparts[1], $uriparts[3]);
+	public function deleteMonitorClass ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
+		$monitor = new Monitor($uriparts[1], $uriparts[3]);
+		$monitor->delete();
 	}
 	
-	public function storeBulkMonitorData () {
+	public function storeBulkMonitorData ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Text: Data Accepted', false, 'timestamp; array of m, s, n, v');
 		$monitors = $this->getParam('POST', 'm', array());
+		$values = $this->getParam('POST', 'v', array());
+		$clientversion = $this->requestor->getHeader('X-Skysql-Api-Version');
+		$newversion = ($clientversion AND version_compare('1.0', $clientversion, 'lt')) ? true : false;
+		if ($newversion) {
+			$systemid = $this->getParam('POST', 'systemid', 0);
+			$nodeid = $this->getParam('POST', 'nodeid', 0);
+			if (count($monitors) != count($values)) {
+				$errors[] = 'Bulk data must provide arrays of equal size';
+			}
+		}
+		else {
 		$systems = $this->getParam('POST', 's', array());
 		$nodes = $this->getParam('POST', 'n', array());
-		$values = $this->getParam('POST', 'v', array());
 		if (1 < count(array_unique(array(count($monitors), count($systems), count($nodes), count($values))))) {
 			$errors[] = 'Bulk data must provide arrays of equal size';
 		}
-		else if (0 == count($monitors)) $errors[] = 'No bulk data provided';
+		}
 		$limit = count($monitors);
 		for ($i = 0; $i < $limit; $i++) {
-			if (!$monitors[$i] AND !$systems[$i] AND !$nodes[$i] AND !$values[$i]) {
-				unset($monitors[$i],$systems[$i],$nodes[$i],$values[$i]);
+			if (!$monitors[$i] AND !$values[$i]) {
+				unset($monitors[$i], $values[$i]);
+				if (!$newversion) unset($systems[$i], $nodes[$i]);
 				continue;
 			}
-			$monitor = MonitorManager::getInstance()->getByMonitorID($monitors[$i]);
+			$monitor = Monitor::getByMonitorID($monitors[$i]);
 			if (!$monitor) $errors[] = "No such monitor ID {$monitors[$i]}";
-			if (!SystemManager::getInstance()->getByID($systems[$i])) $errors[] = "No such system ID: {$systems[$i]}";
-			if (0 != $nodes[$i] AND !NodeManager::getInstance()->getByID($systems[$i], $nodes[$i])) $errors[] = "No such node as system ID {$systems[$i]}, node ID {$nodes[$i]}";
+			if (!isset($systemid)) {
+				$systemid = $systems[$i];
+				$nodeid = $nodes[$i];
+			}
+			elseif (!$newversion) {
+				if ($systems[$i] != $systemid) $errors[] = sprintf("SystemID must be the same for every item in bulk data, %d not same as %d", $systems[$i], $systems[0]);
+				if ($nodes[$i] != $nodeid) $errors[] = sprintf("NodeID must be the same for every item in bulk data, %d not same as %d", $nodes[$i], $nodes[0]);
+			}
 			if (!empty($monitor->decimals)) $values[$i] = (int) round($values[$i] * pow(10,$monitor->decimals));
 		}
+		if (0 == count($monitors) OR empty($systemid) OR !isset($nodeid)) $errors[] = 'No bulk data provided';
+		if (!System::getByID($systemid)) $errors[] = "No such system ID: {$systemid}";
+		if (0 != $nodeid AND !Node::getByID($systemid, $nodeid)) $errors[] = "No such node as system ID {$systemid}, node ID {$nodeid}";
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		
 		$this->monitordb = MonitorDatabase::getInstance();
+		$this->monitordb->splitMonitorData();
+		$tablename = $this->monitordb->createMonitoringTable($systemid, $nodeid);
 		$this->monitordb->beginExclusiveTransaction();
 		
 		$stamp = $this->getParam('POST', 'timestamp', time());
-		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systems[0], $nodes[0], $monitors, $values);
+		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systemid, $nodeid, $monitors, $values);
 		foreach ($inserts as $insert) {
 			if (isset($insertrows)) {
-				$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d, %d, %d\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
+				$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d\n", (int) $insert['monitorid'], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
 			}
 			else {
-				$insertrows = "INSERT INTO MonitorData SELECT";
-				$insertrows .= sprintf(" %d AS MonitorID, %d AS SystemID, %d AS NodeID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $insert['monitorid'], (int) $systems[0], (int) $nodes[0], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
+				$insertrows = "INSERT INTO $tablename SELECT";
+				$insertrows .= sprintf(" %d AS MonitorID, %d AS Value, %d AS Stamp, %d AS Repeats\n", (int) $insert['monitorid'], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
 			}
 		}
 		
@@ -136,20 +171,22 @@ final class Monitors extends ImplementAPI {
 		}
 		
 		$this->monitordb->commitTransaction();
+		MonitorQueries::getInstance()->newData($monitors, $systemid, $nodeid, $stamp);
 		$this->sendResponse('Data accepted');
 	}
 	
-	public function monitorLatest ($uriparts) {
+	public function monitorLatest ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'A single value', false, 'The latest monitor observation');
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$latest = MonitorLatest::getInstance()->getLatestValue($this->monitorid, $this->systemid, $this->nodeid);
 		if (false === $latest) $this->sendErrorResponse('No data matches the request', 404);
 		else $this->sendResponse(array('latest' => $latest));
 	}
 	
-	public function monitorData ($uriparts) {
+	public function monitorData ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Arrays of data - see notes', false, 'method (avg or maxmin), start, finish, interval, count');
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
-		$average = ('avg' == $this->getParam('GET', 'method', 'avg'));
 		if ($this->start) {
 			$this->count = min($this->count, (int) floor(($this->finish - $this->start) / $this->interval));
 			$this->finish = $this->start + ($this->count * $this->interval);
@@ -157,16 +194,21 @@ final class Monitors extends ImplementAPI {
 		else {
 			$this->start = $this->finish - ($this->interval * $this->count);
 		}
+		if ($this->ifmodifiedsince AND MonitorQueries::getInstance()->hasBeenDone($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval)) {
+			header (HTTP_PROTOCOL.' 304 Not Modified');
+			exit;
+		}
 		$results = array('start' => $this->start, 'finish' => $this->finish, 'count' => $this->count, 'interval' => $this->interval);
 		$this->monitordb = MonitorDatabase::getInstance();
 		$data = $this->getRawData($this->start, $this->finish);
 		$preceding = $this->getPreceding($this->start);
 		if (empty($preceding)) {
-			if (empty($data)) $this->sendNullData($average);
+			if (empty($data)) $this->sendNullData($this->average);
 			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
 		}
 		else array_unshift($data, $preceding);
-		if ($average) {
+		MonitorQueries::getInstance()->newQuery($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval);
+		if ($this->average) {
 			$aresults = $this->getAveraged($data, $results);
 			$mmresults = $this->getMinMax($data, $results);
 			foreach (array_keys($aresults['value']) as $sub) {
@@ -240,7 +282,8 @@ final class Monitors extends ImplementAPI {
 		return $results;
 	}
 	
-	public function getRawMonitorData ($uriparts) {
+	public function getRawMonitorData ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Arrays of data - see notes', false, 'start, finish, interval, count');
 		$this->analyseMonitorURI($uriparts, 'monitorData');
 		$this->getSpanParameters();
 		$start = $this->start ? $this->start : $this->finish - ($this->interval * $this->count);
@@ -251,29 +294,29 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getPreceding ($start) {
-		$preceding = $this->monitordb->prepare('SELECT 1.0 * Value/:scale AS value, Stamp AS timestamp, Repeats AS repeats
-			FROM MonitorData WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
-			AND Stamp < :start ORDER BY Stamp DESC');
+		if ($this->monitordb->existsMonitoringTable ($this->systemid, $this->nodeid)) {
+			$tablename = $this->monitordb->makeTableName($this->systemid, $this->nodeid);
+			$preceding = $this->monitordb->prepare("SELECT 1.0 * Value/:scale AS value, Stamp AS timestamp, Repeats AS repeats
+				FROM $tablename WHERE MonitorID = :monitorid AND Stamp < :start ORDER BY Stamp DESC");
 		$preceding->execute(array(
 			':scale' => $this->scale,
 			':monitorid' => $this->monitorid,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid,
 			':start' => $start
 		));
 		return $preceding->fetch(PDO::FETCH_ASSOC);
 	}
+		else return null;
+	}
 	
 	protected function getRawData ($from, $to) {
-		$select = $this->monitordb->prepare('SELECT 1.0 * Value/:scale AS value, 
-			Stamp AS timestamp, Repeats AS repeats FROM MonitorData
-			WHERE SystemID = :systemid AND NodeID = :nodeid AND MonitorID = :monitorid
-			AND Stamp BETWEEN :from AND :to ORDER BY Stamp');
+		if ($this->monitordb->existsMonitoringTable ($this->systemid, $this->nodeid)) {
+			$tablename = $this->monitordb->makeTableName($this->systemid, $this->nodeid);
+			$select = $this->monitordb->prepare("SELECT 1.0 * Value/:scale AS value, 
+				Stamp AS timestamp, Repeats AS repeats FROM $tablename
+				WHERE MonitorID = :monitorid AND Stamp BETWEEN :from AND :to ORDER BY Stamp");
 		$select->execute(array(
 			':scale' => $this->scale,
 			':monitorid' => $this->monitorid,
-			':systemid' => $this->systemid,
-			':nodeid' => $this->nodeid,
 			':from' => $from,
 			':to' => $to
 		));
@@ -281,6 +324,8 @@ final class Monitors extends ImplementAPI {
 		$latestdata = MonitorLatest::getInstance()->getOneMonitorData($this->monitorid, $this->systemid, $this->nodeid);
 		if ($latestdata AND $latestdata['timestamp'] <= $to) array_push($rawdata, $latestdata);
 		return $rawdata;
+	}
+		else return array();
 	}
 	
 	protected function transformRawData ($rawdata) {
@@ -304,17 +349,23 @@ final class Monitors extends ImplementAPI {
 	}
 	
 	protected function getMonitorIDFromName ($systemid, $monitorkey) {
-		$system = SystemManager::getInstance()->getByID($systemid);
+		$system = System::getByID($systemid);
 		if (empty($system)) $this->sendErrorResponse("System $systemid does not exist", 400);
-		$this->monitor = MonitorManager::getInstance()->getByID($system->systemtype, $monitorkey);
+		$this->monitor = Monitor::getByID($system->systemtype, $monitorkey);
 		if (empty($this->monitor)) $this->sendErrorResponse("Monitor $monitorkey for system ID $systemid not available", 400);
 		return $this->monitor->monitorid;
 	}
 	
 	protected function getSpanParameters () {
 		$this->start = (int) $this->getParam('GET', 'start', 0);
-		$this->finish = (int) $this->getParam('GET', 'finish', time());
 		$this->interval = (int) $this->getParam('GET', 'interval', (int) $this->config['monitor-defaults']['interval']);
+		$this->finish = (int) $this->getParam('GET', 'finish', $this->roundedTime($this->interval));
 		$this->count = (int) $this->getParam('GET', 'count', (int) $this->config['monitor-defaults']['count']);
+		if ('minmax' == $this->getParam('GET', 'method', 'avg')) $this->average = false;
+	}
+	
+	protected function roundedTime ($interval) {
+		$time = time();
+		return $time - ($time % $interval);
 	}
 }

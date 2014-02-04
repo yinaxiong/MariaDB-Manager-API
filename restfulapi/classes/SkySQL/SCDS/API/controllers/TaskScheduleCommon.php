@@ -33,7 +33,7 @@ use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Task;
-use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\models\Node;
 
 abstract class TaskScheduleCommon extends ImplementAPI {
 	
@@ -68,7 +68,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	
 	protected function runScheduleNow ($schedule) {
 		$task = $schedule->makeTask();
-		$node = NodeManager::getInstance()->getByID($task->systemid, $task->nodeid);
+		$node = Node::getByID($task->systemid, $task->nodeid);
 		if (!$node) {
 			$task->state = 'error';
 			$task->errormessage = 'Unable to run schedule command because the relevant node does not exist';

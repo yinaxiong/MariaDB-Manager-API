@@ -28,6 +28,8 @@
 
 namespace SkySQL\SCDS\API\managers;
 
+use SkySQL\SCDS\API\models\System;
+
 class SystemPropertyManager extends PropertyManager {
 	
 	protected $name = 'system';
@@ -46,6 +48,7 @@ class SystemPropertyManager extends PropertyManager {
 	}
 	
 	protected function wasModified($key) {
-		SystemManager::getInstance()->markUpdated($key);
+		$system = new System($key);
+		$system->markUpdated();
 	}
 }

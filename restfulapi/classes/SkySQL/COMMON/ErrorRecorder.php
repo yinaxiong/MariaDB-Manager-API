@@ -93,55 +93,55 @@ final class ErrorRecorder  {
 		error_log($lmessage);
 		try {
 			$database = AdminDatabase::getInstance();
+			if ($exception instanceof PDOException) {
+				$sql = $database->getSQL();
+				$dberror = $exception->getCode();
+				$dbmessage = $exception->getMessage();
+				$dbtrace = $database->getTrace();
+				$dbcall = $database->getLastCall();
+			}
+			else $dbcall = $sql = $dberror = $dbmessage = $dbtrace = '';
+			$findid = $database->prepare('UPDATE ErrorLog SET timestamp = :timestamp, ip = :ip, referer = :referer, get = :get, post = :post, trace = :trace WHERE errorkey = :errorkey');
+			$findid->execute(array(
+				':timestamp' => date ('Y-m-d H:i:s'),
+				':ip' => API::getIP(),
+				':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
+				':get' => @$_SERVER['REQUEST_URI'],
+				':post' => base64_encode(serialize($_POST)),
+				':trace' => Diagnostics::trace(),
+				':errorkey' => $errorkey
+			));
+			if ($findid->rowCount()) return;
+			$insert = $database->prepare('INSERT INTO ErrorLog (timestamp, ip, smessage, lmessage,
+				referer, get, post, trace, sql, dberror, dbmessage, dbcall, dbtrace, errorkey)
+				VALUES (:timestamp, :ip, :smessage, :lmessage, :referer, :get, :post,
+				:trace, :sql, :dberror, :dbmessage, :dbcall, :dbtrace, :errorkey);');
+			$insert->execute(array(
+				':timestamp' => date ('Y-m-d H:i:s'),
+				':ip' => API::getIP(),
+				':smessage' => substr($smessage, 0, 250),
+				':lmessage' => ($lmessage ? $lmessage : $smessage),
+				':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
+				':get' => (string) @$_SERVER['REQUEST_URI'],
+				':post' => base64_encode(serialize($_POST)),
+				':trace' => Diagnostics::trace(),
+				':sql' => $sql,
+				':dberror' => $dberror,
+				':dbmessage' => $dbmessage,
+				':dbcall' => $dbcall,
+				':dbtrace' => $dbtrace,
+				':errorkey' => $errorkey
+			));
+			$config = Request::getInstance()->getConfig();
+			if (@$config['logging']['erroremail']) {
+				$headers = 'From: SkySQL Manager <no-reply@skysql.com>' . "\r\n";
+				mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
+			}
+			$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");
 		}
 		catch (PDOException $pe) {
-			header(HTTP_PROTOCOL.' 500 Unable to access database '.$pe->getMessage());
-			die(HTTP_PROTOCOL.' 500 Unable to access database '.$pe->getMessage());
+			error_log('Unable to record error '.$pe->getMessage());
+			exit;
 		}
-		if ($exception instanceof PDOException) {
-			$sql = $database->getSQL();
-			$dberror = $exception->getCode();
-			$dbmessage = $exception->getMessage();
-			$dbtrace = $database->getTrace();
-			$dbcall = $database->getLastCall();
-		}
-		else $dbcall = $sql = $dberror = $dbmessage = $dbtrace = '';
-		$findid = $database->prepare('UPDATE ErrorLog SET timestamp = :timestamp, ip = :ip, referer = :referer, get = :get, post = :post, trace = :trace WHERE errorkey = :errorkey');
-		$findid->execute(array(
-			':timestamp' => date ('Y-m-d H:i:s'),
-			':ip' => API::getIP(),
-			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
-			':get' => @$_SERVER['REQUEST_URI'],
-			':post' => base64_encode(serialize($_POST)),
-			':trace' => Diagnostics::trace(),
-			':errorkey' => $errorkey
-		));
-		if ($findid->rowCount()) return;
-		$insert = $database->prepare('INSERT INTO ErrorLog (timestamp, ip, smessage, lmessage,
-			referer, get, post, trace, sql, dberror, dbmessage, dbcall, dbtrace, errorkey)
-			VALUES (:timestamp, :ip, :smessage, :lmessage, :referer, :get, :post,
-			:trace, :sql, :dberror, :dbmessage, :dbcall, :dbtrace, :errorkey);');
-		$insert->execute(array(
-			':timestamp' => date ('Y-m-d H:i:s'),
-			':ip' => API::getIP(),
-			':smessage' => substr($smessage, 0, 250),
-			':lmessage' => ($lmessage ? $lmessage : $smessage),
-			':referer' => (empty($_SERVER['HTTP_REFERER']) ? 'Unknown' : $_SERVER['HTTP_REFERER']),
-			':get' => (string) @$_SERVER['REQUEST_URI'],
-			':post' => base64_encode(serialize($_POST)),
-			':trace' => Diagnostics::trace(),
-			':sql' => $sql,
-			':dberror' => $dberror,
-			':dbmessage' => $dbmessage,
-			':dbcall' => $dbcall,
-			':dbtrace' => $dbtrace,
-			':errorkey' => $errorkey
-		));
-		$config = Request::getInstance()->getConfig();
-		if (@$config['logging']['erroremail']) {
-			$headers = 'From: SkySQL Manager <no-reply@skysql.com>' . "\r\n";
-			mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
-		}
-		$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");
 	}
 }

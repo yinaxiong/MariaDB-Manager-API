@@ -34,12 +34,6 @@ use SkySQL\COMMON\AdminDatabase;
 class UserTag extends EntityModel {
 	protected static $setkeyvalues = true;
 	
-	protected static $classname = __CLASS__;
-	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\UserManager';
-
-	protected $ordinaryname = 'usertag';
-	protected static $headername = 'UserTag';
-	
 	protected static $updateSQL = 'UPDATE UserTag SET %s WHERE UserName = :username'; /* Not used */
 	protected static $countSQL = 'SELECT COUNT(*) FROM UserTag WHERE UserName = :username'; /* Not used */
 	protected static $countAllSQL = 'SELECT COUNT(*) FROM UserTag';
@@ -51,16 +45,16 @@ class UserTag extends EntityModel {
 	protected static $getAllCTO = array('id');
 	
 	protected static $keys = array(
-		'username' => array('sqlname' => 'UserName'),
-		'tagtype' => array('sqlname' => 'TagType'),
-		'tagname' => array('sqlname' => 'TagName'),
-		'tag' => array('sqlname' => 'Tag')
+		'username' => array('sqlname' => 'UserName', 'desc' => 'Username to which tag applies'),
+		'tagtype' => array('sqlname' => 'TagType', 'desc' => 'Type of tag'),
+		'tagname' => array('sqlname' => 'TagName', 'desc' => 'Name of tag'),
+		'tag' => array('sqlname' => 'Tag', 'desc' => 'Data for tag')
 	);
 
 	protected static $fields = array(
-		'systemid' => array(),
-		'nodeid' => array(),
-		'monitor' => array()
+		//'systemid' => array(),
+		//'nodeid' => array(),
+		//'monitor' => array()
 	);
 	
 	public function __construct ($username, $tagtype, $tagname, $tag) {

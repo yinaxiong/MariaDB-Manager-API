@@ -29,9 +29,10 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\ComponentPropertyManager;
 use SkySQL\SCDS\API\models\Property;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\models\Node;
 
 class ComponentProperties extends SystemNodeCommon {
 	protected $defaultResponse = 'componentproperty';
@@ -105,9 +106,9 @@ class ComponentProperties extends SystemNodeCommon {
 		$property = @$uriparts[7];
 		if (0 == $this->nodeid) {
 			if (0 == $this->systemid) return $property;
-			if (SystemManager::getInstance()->getByID($this->systemid)) return $property;
+			if (System::getByID($this->systemid)) return $property;
 		}
-		if (NodeManager::getInstance()->getByID($this->systemid, $this->nodeid)) return $property;
+		if (Node::getByID($this->systemid, $this->nodeid)) return $property;
 		$this->sendErrorResponse(sprintf("No node with System ID '%s' and Node ID '%s'", $this->systemid, $this->nodeid), 404);
 	}
 }

@@ -13,7 +13,16 @@ function setFields () {
 	}
 	form.action = getPersistent("myLink") + uri;
 	setAuth(uri.substring(1), form);
+	addHidden(form, 'HTTP_X-SkySQL-API-Version', '1.1');
 	return true;
+}
+function addHidden(theForm, key, value) {
+    // Create a hidden input element, and append it to the form:
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = key;'name-as-seen-at-the-server';
+    input.value = value;
+    theForm.appendChild(input);
 }
 function setName (id, name) {
 	var element = document.getElementById(id);

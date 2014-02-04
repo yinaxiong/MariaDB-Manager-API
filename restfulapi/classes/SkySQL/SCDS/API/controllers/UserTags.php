@@ -25,12 +25,11 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
-use SkySQL\SCDS\API\managers\UserManager;
-use SkySQL\SCDS\API\managers\SystemManager;
-use SkySQL\SCDS\API\managers\NodeManager;
-use SkySQL\SCDS\API\managers\MonitorManager;
 use SkySQL\SCDS\API\models\UserTag;
 use SkySQL\SCDS\API\models\User;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\models\Monitor;
 use stdClass;
 
 abstract class UserTags extends ImplementAPI {
@@ -55,7 +54,7 @@ abstract class UserTags extends ImplementAPI {
 	
 	protected function analyseURI ($uriparts) {
 		$this->username = $uriparts[1];
-		$user = UserManager::getInstance()->getByName($this->username);
+		$user = User::getByID($this->username);
 		if (!($user instanceof User)) $this->sendErrorResponse("Username $this->username not recognised", 400);
 		$this->tagtype = substr($uriparts[2], 0, -3);
 		$this->tagname = @$uriparts[3];
@@ -121,10 +120,10 @@ class UserTagsMonitor extends UserTags {
 	}
 	
 	protected function  isTagValid ($tag) {
-		$system = SystemManager::getInstance()->getByID($tag->systemid);
+		$system = System::getByID($tag->systemid);
 		if (!$system) return false;
-		if ($tag->nodeid AND !NodeManager::getInstance()->getByID($tag->systemid, $tag->nodeid)) return false;
-		if (!MonitorManager::getInstance()->getByID($system->systemtype, $tag->monitor)) return false;
+		if ($tag->nodeid AND !Node::getByID($tag->systemid, $tag->nodeid)) return false;
+		if (!Monitor::getByID($system->systemtype, $tag->monitor)) return false;
 		return true;
 	}
 

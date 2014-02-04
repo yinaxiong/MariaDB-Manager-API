@@ -126,9 +126,9 @@ abstract class ImplementAPI {
 		$this->db->commitTransaction();
 	}
 	
-	protected function sendResponse ($body='', $status=200, $content_type='application/json') {
+	protected function sendResponse ($body='', $status=200) {
 		$this->db->commitTransaction();
-		return $this->requestor->sendResponse($body, $status, $content_type);
+		return $this->requestor->sendResponse($body, $status);
 	}
 
 	protected function sendErrorResponse ($errors, $status=200, $content_type='application/json') {

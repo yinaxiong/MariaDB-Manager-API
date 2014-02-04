@@ -33,17 +33,12 @@ use stdClass;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\COMMON\AdminDatabase;
-use SkySQL\SCDS\API\managers\SystemManager;
-use SkySQL\SCDS\API\managers\NodeManager;
-use SkySQL\SCDS\API\managers\UserManager;
+use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\models\User;
 
 class Task extends EntityModel {
 	protected static $setkeyvalues = false;
-	
-	protected static $classname = __CLASS__;
-
-	protected $ordinaryname = 'task';
-	protected static $headername = 'Task';
 	
 	protected static $updateSQL = 'UPDATE Task SET %s WHERE TaskID = :taskid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM Task WHERE TaskID = :taskid';
@@ -56,28 +51,28 @@ class Task extends EntityModel {
 	protected static $getAllCTO = array('taskid');
 	
 	protected static $keys = array(
-		'taskid' => array('sqlname' => 'TaskID', 'type' => 'int')
+		'taskid' => array('sqlname' => 'TaskID', 'desc' => 'ID of the task')
 	);
 	public $taskid = 0;
 	
 	protected $node = null;
 
 	protected static $fields = array(
-		'systemid' => array('sqlname' => 'SystemID', 'default' => 0, 'insertonly' => true),
-		'nodeid' => array('sqlname' => 'NodeID', 'default' => 0, 'insertonly' => true),
-		'privateip' => array('sqlname' => 'PrivateIP', 'default' => '', 'insertonly' => true),
-		'scheduleid' => array('sqlname' => 'ScheduleID', 'default' => '', 'insertonly' => true),
-		'username' => array('sqlname' => 'UserName', 'default' => '', 'insertonly' => true),
-		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
-		'parameters' => array('sqlname' => 'Params', 'default' => '', 'insertonly' => true),
-		'steps' => array('sqlname' => 'Steps', 'default' => ''),
-		'started' => array('sqlname' => 'Started', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
-		'pid' => array('sqlname' => 'PID', 'default' => 0),
-		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime'),
-		'completed' => array('sqlname' => 'Completed', 'default' => '', 'validate' => 'datetime'),
-		'stepindex' => array('sqlname' => 'StepIndex', 'default' => 0),
-		'state' => array('sqlname' => 'State', 'default' => 'running'),
-		'errormessage' => array('sqlname' => 'ErrorMessage', 'default' => '')
+		'systemid' => array('sqlname' => 'SystemID', 'desc' => 'ID of the System on which task was run', 'default' => 0, 'insertonly' => true),
+		'nodeid' => array('sqlname' => 'NodeID', 'desc' => 'ID of the Node on which task was run', 'default' => 0, 'insertonly' => true),
+		'privateip' => array('sqlname' => 'PrivateIP', 'desc' => 'IP Address of the node on which the task was run', 'default' => '', 'insertonly' => true),
+		'scheduleid' => array('sqlname' => 'ScheduleID', 'desc' => 'If the task was scheduled, the ID number of the schedule', 'default' => '', 'insertonly' => true),
+		'username' => array('sqlname' => 'UserName', 'desc' => 'Username of the user who requested the task', 'default' => '', 'insertonly' => true),
+		'command' => array('sqlname' => 'Command', 'desc' => 'The command that was run', 'default' => '', 'insertonly' => true),
+		'parameters' => array('sqlname' => 'Params', 'desc' => 'The parameters supplied for the command steps', 'default' => '', 'insertonly' => true),
+		'steps' => array('sqlname' => 'Steps', 'desc' => 'The steps that were run', 'default' => ''),
+		'started' => array('sqlname' => 'Started', 'desc' => 'The date and time at which the task started', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
+		'pid' => array('sqlname' => 'PID', 'desc' => 'The PID (process ID) for the running command', 'default' => 0),
+		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date and time the task record was updated', 'forced' => 'datetime'),
+		'completed' => array('sqlname' => 'Completed', 'desc' => 'The date and time the task completed', 'default' => '', 'validate' => 'datetime'),
+		'stepindex' => array('sqlname' => 'StepIndex', 'desc' => 'If the task is running, the current step number', 'default' => 0),
+		'state' => array('sqlname' => 'State', 'desc' => 'The current state of the task', 'default' => 'running'),
+		'errormessage' => array('sqlname' => 'ErrorMessage', 'desc' => 'If the task failed, an error message', 'default' => '')
 	);
 
 	protected static $derived = array(
@@ -86,6 +81,10 @@ class Task extends EntityModel {
 
 	public function __construct ($taskid=0) {
 		$this->taskid = $taskid;
+	}
+	
+	protected function requestURI () {
+		return "task/$this->taskid";
 	}
 	
 	public function insertOnCommand ($command) {
@@ -124,29 +123,22 @@ class Task extends EntityModel {
 	}
 	
 	public function setNodeData ($systemid, $nodeid) {
-		$this->node = NodeManager::getInstance()->getByID($systemid, $nodeid);
+		$this->node = Node::getByID($systemid, $nodeid);
 		if ($this->node) {
-			$this->steps = $this->getSteps();
+			$this->steps = $this->node->getSteps($this->command);
 			$this->privateip = $this->node->privateip;
 		}
 	}
 	
-	public function getSteps () {
-		if ('provisioned' == $this->node->state AND 'restore' == $this->command) return null;
-		$getcmd = AdminDatabase::getInstance()->prepare('SELECT Steps FROM NodeCommands WHERE Command = :command AND State = :state');
-		$getcmd->execute(array(':command' => $this->command, ':state' => $this->node->state));
-		return API::trimCommaSeparatedList($getcmd->fetchColumn());
-	}
-	
 	protected function setSteps () {
 		$request = Request::getInstance();
-		$this->steps = $this->getSteps();
-		if (!$this->steps) $request->sendErrorResponse(sprintf("Command '%s' is not valid for %s in its current state of '%s'", $this->command, NodeManager::getInstance()->getDescription($this->node->systemid, $this->node->nodeid), $this->node->state), 409);
+		$this->steps = $this->node->getSteps($this->command);
+		if (!$this->steps) $request->sendErrorResponse(sprintf("Command '%s' is not valid for %s in its current state of '%s'", $this->command, Node::getDescription($this->node->systemid, $this->node->nodeid), $this->node->state), 409);
 		$permitted = $request->getParam('POST', 'steps');
 		if ($permitted) {
 			$permits = array_map('trim', explode(',', $permitted));
 			$steparray = explode(',', $this->steps);
-			if ($permits != $steparray) $request->sendErrorResponse(sprintf("Command '%s' required %s to run steps '%s' but it would currently run steps '%s'", $this->command, NodeManager::getInstance()->getDescription($this->systemid, $this->nodeid), $permitted, $this->steps), 409);
+			if ($permits != $steparray) $request->sendErrorResponse(sprintf("Command '%s' required %s to run steps '%s' but it would currently run steps '%s'", $this->command, Node::getDescription($this->systemid, $this->nodeid), $permitted, $this->steps), 409);
 		}
 	}
 	
@@ -160,9 +152,9 @@ class Task extends EntityModel {
 			if (empty($this->bind[':'.$name])) $errors[] = "Value for $name is required to run a command";
 		}
 		if (isset($errors)) $request->sendErrorResponse($errors, 400);
-		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
+		$this->node = Node::getByID($this->bind[':systemid'], $this->bind[':nodeid']);
 		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
-		if (!UserManager::getInstance()->getByName($this->bind[':username'])) {
+		if (!User::getByID($this->bind[':username'])) {
 			$request->sendErrorResponse(sprintf("User name '%s' for command not a valid user", $this->bind[':username']), 400);
 		}
 		$this->privateip = $this->node->privateip;
@@ -185,6 +177,11 @@ class Task extends EntityModel {
 			}
 			$this->bind[':stepindex'] = 0;
 		}
+		$oldtask = Task::getByID($this->taskid);
+		if ('running' != $oldtask->state AND ('cancelled' == $this->state OR 'missing' == $this->state)) {
+			$this->state = $oldtask->state;
+			$this->bind[':state'] = $oldtask->state;
+		}
 		$this->removeSensitiveParameters();
 	}
 	
@@ -205,7 +202,7 @@ class Task extends EntityModel {
 	
 	// Checks across the whole system for unfinished "risky" running tasks
 	public static function tasksNotFinished ($commandname, $node) {
-		$system = SystemManager::getInstance()->getByID($node->systemid);
+		$system = System::getByID($node->systemid);
 		if (!isset(API::$systemtypes[$system->systemtype])) Request::getInstance()->sendErrorResponse(sprintf("System with ID '%s' does not have valid system type", $node->systemid), 500);
 		$database = AdminDatabase::getInstance();
 		$unfinished = API::unfinishedCommandStates();

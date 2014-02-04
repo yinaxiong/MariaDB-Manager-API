@@ -32,17 +32,19 @@ use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Command;
 use SkySQL\SCDS\API\models\Node;
-use SkySQL\SCDS\API\managers\NodeManager;
 
 class Tasks extends TaskScheduleCommon {
+	protected $defaultResponse = 'task';
 	
-	public function getMultipleTasks () {
+	public function getMultipleTasks ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'fields');
 		Task::checkLegal();
 		list($total, $tasks) = Task::select($this);
 		$this->sendResponse(array('total' => $total, 'tasks' => $this->filterResults($tasks)));
 	}
 	
-	public function getOneTask ($uriparts) {
+	public function getOneTask ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		Task::checkLegal();
 		$task = Task::getByID((int) $uriparts[1]);
 		if ($task) {
@@ -56,7 +58,8 @@ class Tasks extends TaskScheduleCommon {
 		$this->sendResponse(array('task' => $this->filterSingleResult($task)));
 	}
 	
-	public function cancelOneTask ($uriparts) {
+	public function cancelOneTask ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		Task::checkLegal();
 		$task = Task::getByID((int) $uriparts[1]);
 		if ($task AND $task->pid) {
@@ -68,19 +71,22 @@ class Tasks extends TaskScheduleCommon {
 		else $this->sendErrorResponse(sprintf("Attempt to cancel task ID '%d' but task record has no PID", (int) $uriparts[1]), 409);
 	}
 	
-	public function getSelectedTasks ($uriparts) {
+	public function getSelectedTasks ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'fields');
 		Task::checkLegal();
 		list($total, $tasks) = Task::select($this, trim($uriparts[1]));
 		$this->sendResponse(array('total' => $total, 'tasks' => $this->filterResults($tasks)));
 	}
 	
-	public function updateTask ($uriparts) {
+	public function updateTask ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for task resource');
 		Task::checkLegal();
 		$task = new Task((int) $uriparts[1]);
 		$task->update();
 	}
 	
-	public function runCommand ($uriparts) {
+	public function runCommand ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'task or schedule', false, 'systemid, nodeid, username, parameters, state, steps, icalentry', 'systemid, nodeid, username');
 		Command::checkLegal('icalentry');
 		$command = new Command($uriparts[1]);
 		if ($this->paramEmpty($this->requestmethod,'systemid')) $errors[] = sprintf("Command '%s' requested, but required systemid not provided", $command->command);
@@ -89,11 +95,10 @@ class Tasks extends TaskScheduleCommon {
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$command->setPropertiesFromParams();
 		$state = $this->getParam('POST', 'state');
-		$nodemanager = NodeManager::getInstance();
-		$node = $nodemanager->getByID($command->systemid, $command->nodeid);
+		$node = Node::getByID($command->systemid, $command->nodeid);
 		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (S%d, N%d) but there is no such node", $command->command, $command->systemid, $command->nodeid), 409);
 		if ($state AND $state != $node->state) {
-			$this->sendErrorResponse(sprintf("Command '%s' required %s to be in state '%s' but it is in state '%s'", $command->command, $nodemanager->getDescription($node->systemid, $node->nodeid), $state, $node->state), 409);
+			$this->sendErrorResponse(sprintf("Command '%s' required %s to be in state '%s' but it is in state '%s'", $command->command, Node::getDescription($node->systemid, $node->nodeid), $state, $node->state), 409);
 		}
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
 		foreach (array('LaunchCommand','RunCommand') as $script) {
@@ -104,7 +109,7 @@ class Tasks extends TaskScheduleCommon {
 		if (isset($errors)) $this->sendErrorResponse($errors,500);
 		if (empty($command->icalentry)) {
 			if (Task::tasksNotFinished($command->command, $node)) {
-				$this->sendErrorResponse(sprintf("Command '%s' on %s but another command is still running on the node, or a critical command is running on the system", $command->command, $nodemanager->getDescription($node->systemid, $node->nodeid)), 409);
+				$this->sendErrorResponse(sprintf("Command '%s' on %s but another command is still running on the node, or a critical command is running on the system", $command->command, Node::getDescription($node->systemid, $node->nodeid)), 409);
 			}
 			$this->immediateCommand ($command);
 		}

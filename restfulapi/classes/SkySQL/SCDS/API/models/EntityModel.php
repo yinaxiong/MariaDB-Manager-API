@@ -44,22 +44,30 @@ abstract class EntityModel {
 	protected $insvalue = array();
 	protected $keydata = array();
 	
-	public function entityName () {
+	final public function entityName () {
 		$classparts = explode('\\', get_class());
 		return end($classparts);
 	}
 
-	public static function getAll () {
+	final public static function getAll ($fromcache=true) {
+		if ($fromcache AND isset(static::$managerclass)) {
+			$manager = call_user_func(array(static::$managerclass, 'getInstance'));
+			if (method_exists($manager, 'getAll')) return $manager->getAll();
+		}
 		$getall = AdminDatabase::getInstance()->prepare(sprintf(static::$selectAllSQL, self::getSelects(), ''));
 		$getall->execute();
-		$entities = $getall->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		$entities = $getall->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, get_called_class(), static::$getAllCTO);
 		foreach ($entities as &$entity) $entity = self::fixDate($entity);
 		return $entities;
 	}
 	
-	public static function getByID () {
+	final public static function getByID () {
+		if (isset(static::$managerclass)) {
+			$manager = call_user_func(array(static::$managerclass, 'getInstance'));
+			if (method_exists($manager, 'getByID')) return call_user_func_array(array($manager,'getByID'), func_get_args());
+		}
 		$request = Request::getInstance();
-		$classname = static::$headername;
+		$classname = get_called_class();
 		$actualcount = func_num_args();
 		$keycount = count(static::$keys);
 		if ($actualcount != $keycount) {
@@ -74,7 +82,7 @@ abstract class EntityModel {
 		}
 		$select->execute($bind);
 		// ->fetchObject has problems, inadvisable to use
-		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, $classname, static::$getAllCTO);
 		$entity = $entities ? $entities[0] : null;
 		if ($entity) {
 			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
@@ -83,7 +91,7 @@ abstract class EntityModel {
 		return null;
 	}
 
-	protected function removeSensitiveParameters () {
+	final protected function removeSensitiveParameters () {
 		if (!empty($this->bind[':parameters'])) {
 			Request::getInstance()->parse_str($this->bind[':parameters'], $parray);
 			if (count($parray)) {
@@ -94,28 +102,18 @@ abstract class EntityModel {
 		}
 	}
 
-	protected static function fixDate (&$entity) {
+	final private static function fixDate (&$entity) {
 		foreach (static::$fields as $name=>$about) {
 			if (!empty($entity->$name) AND ('datetime' == @$about['validate'] OR 'datetime' == @$about['forced'])) $entity->$name = date('r', strtotime($entity->$name));
 		}
 		return $entity;
 	}
 	
-	public function withDateFix () {
+	final public function withDateFix () {
 		return self::fixDate($this);
 	}
 	
-	// Unclear whether this is needed - can use ::getByID to obtain a fully populated object
-	public function loadData () {
-		$loader = AdminDatabase::getInstance()->prepare(sprintf(static::$selectSQL, self::getSelects()));
-		foreach (array_keys(static::$keys) as $key) $bind[":$key"] = $this->$key; 
-		$loader->execute((array) @$bind);
-		$data = $loader->fetch();
-		if ($data) foreach (get_object_vars($data) as $name=>$value) $this->$name = $value;
-		self::fixDate($this);
-	}
-
-	public static function select () {
+	final public static function select () {
 		$args = func_get_args();
 		$controller = array_shift($args);
 		list($where, $bind) = self::wheresAndBinds($controller, $args);
@@ -126,7 +124,7 @@ abstract class EntityModel {
 		$total = $counter->fetch(PDO::FETCH_COLUMN);
 		$select = $database->prepare(sprintf(static::$selectAllSQL, self::getSelects(), $conditions).self::limitsClause($controller));
 		$select->execute($bind);
-		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, static::$classname, static::$getAllCTO);
+		$entities = $select->fetchAll(PDO::FETCH_CLASS|PDO::FETCH_PROPS_LATE, get_called_class(), static::$getAllCTO);
 		foreach ($entities as &$entity) {
 			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
 			$entity = self::fixDate($entity);
@@ -134,7 +132,7 @@ abstract class EntityModel {
 		return array($total, $entities);
 	}
 	
-	protected static function limitsClause ($controller) {
+	final private static function limitsClause ($controller) {
 		$limit = $controller->getLimit();
 		return $limit ? " LIMIT $limit OFFSET {$controller->getOffset()}" : '';
 	}
@@ -157,7 +155,6 @@ abstract class EntityModel {
 	
 	public function insert ($alwaysrespond=true) {
 		$this->settersAndBinds(__FUNCTION__);
-		$this->setDefaults();
 		$this->validateInsert();
 		$database = AdminDatabase::getInstance();
 		$insert = $database->prepare(sprintf(static::$insertSQL, implode(',',$this->insname), implode(',',$this->insvalue)));
@@ -165,7 +162,15 @@ abstract class EntityModel {
 		$insertkey = $this->insertedKey($database->lastInsertId());
 		$database->commitTransaction();
 		$this->clearCache(true);
-		if ($alwaysrespond) Request::getInstance()->sendResponse(array('updatecount' => 0,  'insertkey' => $insertkey));
+		$request = Request::getInstance();
+		if ($alwaysrespond) {
+			if (version_compare($request->getVersion(), '1.0', 'gt') AND method_exists($this, 'requestURI')) {
+				$returncode = 201;
+				$requestURI = $this->requestURI();
+			}
+			else $returncode = 200;
+			$request->sendResponse(array('updatecount' => 0,  'insertkey' => $insertkey), $returncode, @$requestURI);
+		}
 		else return $insertkey;
 	}
 	
@@ -183,31 +188,41 @@ abstract class EntityModel {
 		else Request::getInstance()->sendResponse(array('updatecount' => (empty($this->setter) ? 0: $counter), 'insertkey' => null));
 	}
 	
-	public function delete () {
+	public function delete ($alwaysrespond=true) {
 		$this->settersAndBinds(__FUNCTION__);
 		$delete = AdminDatabase::getInstance()->prepare(static::$deleteSQL);
 		$delete->execute($this->bind);
 		$counter = $delete->rowCount();
 		if ($counter) $this->clearCache(true);
+		if ($alwaysrespond) {
 		$request = Request::getInstance();
 		if ($counter) $request->sendResponse(array('deletecount' => $counter));
-		else $request->sendErrorResponse("Delete $this->ordinaryname did not match any $this->ordinaryname", 404);
+			else $request->sendErrorResponse(sprintf("Delete %s did not match any %s", get_class(), get_class()), 404);
+		}
 	}
 	
-	protected function clearCache ($immediate=false) {
+	final public function getKeys () {
+		foreach (array_keys(static::$keys) as $name) {
+			if (empty($this->$name)) Request::getInstance()->sendErrorResponse(sprintf("Instance of %s did not have value for key field %s", get_class($this), $name), 500);
+			$keydata[] = $this->$name;
+		}
+		return (array) @$keydata;
+	}
+	
+	final protected function clearCache ($immediate=false) {
 		if (isset(static::$managerclass)) {
 			$manager = call_user_func(array(static::$managerclass,'getInstance'));
 			$manager->clearCache($immediate);
 		}
 	}
 	
-	protected function setDefaultDate ($name) {
+	final protected function setDefaultDate ($name) {
 		if (empty($this->bind[":$name"])) {
 			$this->setInsertValue($name, date('Y-m-d H:i:s'));
 		}
 	}
 	
-	protected function setCorrectFormatDate ($name) {
+	final protected function setCorrectFormatDate ($name) {
 		$bindname = ":$name";
 		if (!empty($this->bind[$bindname])) {
 			$unixtime = strtotime($this->bind[$bindname]);
@@ -215,16 +230,14 @@ abstract class EntityModel {
 		}
 	}
 	
-	protected static function formatDate ($unixtime) {
+	final protected static function formatDate ($unixtime) {
 		return date('Y-m-d H:i:s', ($unixtime ? $unixtime : time()));
 	}
 	
-	protected function setCorrectFormatDateWithDefault ($name) {
+	final protected function setCorrectFormatDateWithDefault ($name) {
 		$this->setCorrectFormatDate($name);
 		$this->setDefaultDate($name);
 	}
-	
-	protected function setDefaults () {}
 	
 	protected function insertedKey ($insertid) {
 		return $insertid;
@@ -234,7 +247,7 @@ abstract class EntityModel {
 	
 	protected function validateUpdate () {}
 	
-	public static function checkLegal ($extras=array()) {
+	final public static function checkLegal ($extras=array()) {
 		$request = Request::getInstance();
 		$okfields = array_merge(array_keys(static::$fields), array_keys(static::$keys), (array) $extras);
 		$illegals = array_diff($request->getAllParamNames($request->getMethod()),$okfields);
@@ -244,11 +257,11 @@ abstract class EntityModel {
 		}
 	}
 	
-	public function setPropertiesFromParams () {
+	final public function setPropertiesFromParams () {
 		$this->settersAndBinds('insert');
 	}
 	
-	protected function settersAndBinds ($caller) {
+	final private function settersAndBinds ($caller) {
 		$request = Request::getInstance();
 		// Source for data is always provided except for deletes; also delete has no need
 		// of setters or binds for fields, only for keys
@@ -280,11 +293,11 @@ abstract class EntityModel {
 		}
 	}
 	
-	protected function copyProperties ($from) {
+	final public function copyProperties ($from) {
 		foreach (array_keys(static::$fields) as $name) if (isset($from->$name)) $this->$name = $from->$name;
 	}
 	
-	protected function setInsertValue ($name, $value) {
+	final protected function setInsertValue ($name, $value) {
 		if (isset(static::$fields[$name])) {
 			$bindname = ":$name";
 			$this->$name = $this->bind[$bindname] = $value;
@@ -298,7 +311,7 @@ abstract class EntityModel {
 		else Request::getInstance()->sendErrorResponse(sprintf("Attempt to set an insert value for '%s' which is not a valid field", $name), 500);
 	}
 	
-	protected function calendarDate () {
+	final protected function calendarDate () {
 		$savezone = date_default_timezone_get();
 		date_default_timezone_set('UTC');
 		$date = date('Ymd\THis\Z');
@@ -306,7 +319,7 @@ abstract class EntityModel {
 		return $date;
 	}
 	
-	protected static function dateRange ($dates, $datefield, $entitiesname) {
+	final protected static function dateRange ($dates, $datefield, $entitiesname) {
 		$selectors = explode(',', $dates);
 		$request = Request::getInstance();
 		if (2 < count($selectors)) $request->sendErrorResponse(sprintf("Request for %s in date range had more than two comma separated entries", $entitiesname), 400);
@@ -327,7 +340,7 @@ abstract class EntityModel {
 		return array((array) @$where, (array) @$bind);
 	}
 
-	protected static function wheresAndBinds ($controller, $args) {
+	final private static function wheresAndBinds ($controller, $args) {
 		// Default return is a pair of empty arrays; otherwise entity specific handling of selector parameters
 		list($where, $bind) = static::specialSelected($args);
 		$request = Request::getInstance();
@@ -349,12 +362,15 @@ abstract class EntityModel {
 		return array($where, $bind);
 	}
 	
+	final private static function filterData ($controller, $args) {
+	}
+	
 	// Can be overriden by subclasses
 	protected static function specialSelected ($args) {
 		return array(array(), array());
 	}
 	
-	protected static function getParam ($source, $name, $about, $priordefault=null) {
+	final private static function getParam ($source, $name, $about, $priordefault=null) {
 		$request = Request::getInstance();
 		if (isset($about['forced'])) {
 			if ('datetime' == $about['forced']) $data = date('Y-m-d H:i:s');
@@ -397,8 +413,8 @@ abstract class EntityModel {
 		return empty($data) OR (strtotime($data) ? true : false);
 	}
 
-	protected static function getSelects ($selects=array()) {
-		foreach (static::$fields as $name=>$about) $selects[] = $about['sqlname'].' AS '.$name;
+	final private static function getSelects ($selects=array()) {
+		foreach (static::$fields as $name=>$about) $selects[] = "{$about['sqlname']} AS $name";
 		foreach (static::$keys as $name=>$about) $selects[] = "{$about['sqlname']} AS $name";
 		return implode(',', $selects);
 	}
@@ -425,7 +441,7 @@ abstract class EntityModel {
 	}
 	
 	public static function getMetadataHTML () {
-		$entityname = static::$headername;
+		$entityname = get_called_class();
 		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowHTML');
 		if ($extrarows) $extrahtml = <<<EXTRA
 				
@@ -474,10 +490,11 @@ ENTITY;
 	}
 	
 	public static function getMetadataMML () {
-		$entityname = static::$headername;
+		$entityname = get_called_class();
 		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowMML');
-		if ($extrarows) $extrarows .= <<<EXTRA
+		if ($extrarows) $extrarows = <<<EXTRA
 | _Derived information_ | | | <br />
+$extrarows
 				
 EXTRA;
 		echo <<<ENTITY
@@ -490,7 +507,31 @@ $keyrows
 | _Data fields_ | | | <br />
 $datarows
 $extrarows
-</table>
+</div>
+		
+ENTITY;
+				
+		exit;
+	}
+	
+	public static function getMetadataCRL () {
+		$entityname = get_called_class();
+		list($keyrows, $datarows, $extrarows) = self::getMetadataRows('dataRowCRL');
+		if ($extrarows) $extrarows = <<<EXTRA
+| =**Derived information** |= |= | <br />
+$extrarows
+				
+EXTRA;
+		echo <<<ENTITY
+		
+<div id="markup">
+<h3>$entityname</h3>
+|=Field Name |=Type |=Description | <br />
+| //Key fields// | | | <br />
+$keyrows
+| //Data fields// | | | <br />
+$datarows
+$extrarows
 </div>
 		
 ENTITY;
@@ -528,6 +569,15 @@ HTMLROW;
 	}
 	
 	protected static function dataRowMML ($name, $type, $description) {
+		return <<<MMLROW
+| $name | $type | $description | <br />
+				
+MMLROW;
+			
+		
+	}
+	
+	protected static function dataRowCRL ($name, $type, $description) {
 		return <<<MMLROW
 | $name | $type | $description | <br />
 				

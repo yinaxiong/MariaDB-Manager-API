@@ -22,19 +22,9 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * The Request class is the main controller for the API.
- * 
- * The $uriTable array defines the API RESTful interface, and links calls to
- * classes and methods.  The Request class puts this into effect.
- * 
- * The constructor splits up the model URIs into their constituent parts.
- * 
- * The doControl method first fetches the request URI and extracts the relevant
- * part, then explodes it into parts.  Then the request URI is compared with 
- * the model URIs to find what is to be done (or an error return).
- * 
- * The sendResponse method is provided for the benefit of the classes that 
- * implement the API.
+ * The TunnelRequest class is the main controller for the API when the request
+ * is made from a form, with POST data simulating the various possible HTTP
+ * requests.  It specialises the abstract Request class.
  * 
  */
 
@@ -61,7 +51,7 @@ final class TunnelRequest extends Request {
 		$this->headers = apache_request_headers();
 		foreach ($_POST as $key=>$value) {
 			if ('HTTP_' == substr($key,0,5)) {
-				$nicekey = str_replace(" ","-",ucwords(strtolower(str_replace("_"," ",substr($key,5)))));
+				$nicekey = str_replace(" ","-",ucwords(strtolower(str_replace(array("_", "-")," ",substr($key,5)))));
 				$this->headers[$nicekey] = trim($value);
 				unset($_POST[$key]);
 			}

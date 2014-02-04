@@ -34,7 +34,8 @@ use stdClass;
 class RunSQL extends SystemNodeCommon {
     protected $subjectdb = null;
 
-    public function runQuery () {
+    public function runQuery ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, 'Result from running SQL query', false, 'systemid, nodeid, sql');
         try {
 			$this->systemid = $this->getParam('GET', 'systemid', 0);
 			$nodeid = $this->getParam('GET', 'nodeid', 0);
