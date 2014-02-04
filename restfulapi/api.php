@@ -177,7 +177,7 @@ class API {
 		'probe' => array('description' => 'Explore what services are already installed on a new node'),
 		'install-packages' => array('description' => 'Install the packages needed for managing the new node'),
 		'firewall-setup' => array('description' => 'Set up the firewall'),
-		'configure' => array('description' => 'Presumably this does some configuration')
+		'configure' => array('description' => 'Set initial configuration values')
 	);
 	
 	public static $encryptedfields = array('rootpassword', 'sshkey');
