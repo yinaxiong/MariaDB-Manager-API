@@ -1,6 +1,6 @@
 [MariaDB-Manager]
 name=MariaDB-Manager
-baseurl=http://###API-HOST###/repo/CentOS6_64/
+baseurl=http://###API-HOST###/repo/CentOS/$releasever/$basearch/
 enabled=1
 gpgcheck=false
 
