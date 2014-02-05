@@ -3,41 +3,6 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * 5 February 2014, 11:45
- * 
- * Internal Changes
- *
- * Added class MonitorQueries to cache the results of requests for monitor data
- * Started to move encryption code into its own class, EncryptionManager
- * Introduced NodeCommandManager to cache commands for nodes, and NodeCommand class as model object for commands
- * Split monitor data into one database per system/node
- * Tidied HTTP request header handling and introduced some validity checks
- * Made caching managers of model objects (e.g. System, Node) internal to the model classes
- * Make caching of model objects more consistent with more common code
- * Remove redundant class properties
- * Make abstract class methods final where not intended to be overriden
- * 
- * 
- * External - developments
- * 
- * Added interface for Post Once Exactly (POE) for System and Node (not fully tested)
- * Send HTTP return code 201 and Location header when new System or Node created (API version > 1.0)
- * Allow PUT or POST to provide either JSON or URL encoded parameters (API version > 1.0)
- * Require "Content-Type" header for JSON PUT or POST (API version > 1.0)
- * Added support for Creole metadata; extended provision of metadata; add more descriptions for metadata
- * Accept bulk node data from monitor with single systemid and nodeid parameter (API version < 1.0)
- * Support If-Modified-Since for monitor data requests
- * Round times in monitor data requests to the value of the monitoring interval
- * Change monitor form to match monitor data changes
- * 
- * External - fixes
- * 
- * Suppressed non-JSON error messages from the ErrorRecorder class when there is a database error
- * Added validation that requests consist of correct UTF-8 characters
- * Extend node check for duplicate IP address to take account of port
- * Prevent task state from being set to missing or cancelled if already error or done
- * 
- * 
  * 28 November 2013, 11:20 GMT
  * 
  * Complete removal of hostname (for the API) from api.ini
