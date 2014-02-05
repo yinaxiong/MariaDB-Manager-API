@@ -56,6 +56,7 @@ class Task extends EntityModel {
 	public $taskid = 0;
 	
 	protected $node = null;
+	protected $xparameters = array();
 
 	protected static $fields = array(
 		'systemid' => array('sqlname' => 'SystemID', 'desc' => 'ID of the System on which task was run', 'default' => 0, 'insertonly' => true),
@@ -164,7 +165,8 @@ class Task extends EntityModel {
 		}
 		$this->setCorrectFormatDate('completed');
 		$this->setCorrectFormatDateWithDefault('started');
-		$this->removeSensitiveParameters();
+		if (version_compare($request->getVersion(), '1.0', 'gt')) $this->processParameters();
+		else $this->removeSensitiveParameters();
 	}
 	
 	protected function validateUpdate () {

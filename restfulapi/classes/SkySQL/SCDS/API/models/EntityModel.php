@@ -91,15 +91,32 @@ abstract class EntityModel {
 		return null;
 	}
 
+	// Method and all calls to it can be removed when API version 1.0 is obsolete
 	final protected function removeSensitiveParameters () {
+		$request = Request::getInstance();
 		if (!empty($this->bind[':parameters'])) {
-			Request::getInstance()->parse_str($this->bind[':parameters'], $parray);
+			$request->parse_str($this->bind[':parameters'], $parray);
 			if (count($parray)) {
 				foreach (API::$encryptedfields as $field) if (isset($parray[$field])) unset($parray[$field]);
 				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
 				$this->bind[':parameters'] = implode('&', (array) @$newparray);
 			}
 		}
+	}
+	
+	final protected function processParameters () {
+		$request = Request::getInstance();
+		foreach ($request->getAllParamNames($request->getMethod()) as $paramname) {
+			$split = explode('param-', $paramname);
+			if (!empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $split[1]);
+			$split = explode('xparam-', $paramname);
+			if (!empty($split[1])) {
+				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
+				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $split[1]), $request->getAPIKey());
+			}
+		}
+		if (isset($parameters)) $this->setInsertValue('parameters', json_encode($parameters));
+		if (isset($encrypted)) $this->xparameters = json_encode($parameters);
 	}
 
 	final private static function fixDate (&$entity) {
