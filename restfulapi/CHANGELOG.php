@@ -3,7 +3,10 @@
 /*
  * Change log for the SkySQL Manager API
  * 
- * Testing Git branching
+ * 5 February 2014, 14:00
+ * 
+ * Remove option JSON_UNESCAPED_UNICODE (only available PHP >= 5.4.0)
+ * 
  * 
  * 5 February 2014, 11:45
  * 

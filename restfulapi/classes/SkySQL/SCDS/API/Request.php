@@ -463,7 +463,7 @@ abstract class Request {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
 		$charset = $this->getHeader('Accept-Charset');
-		$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body, JSON_UNESCAPED_UNICODE);
+		$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
 		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 	}
 	
