@@ -82,7 +82,118 @@ abstract class Request {
 	
 	public $warnings = array();
 	
-	protected static $suffixes = array('html', 'json', 'mml', 'crl');
+	// Longer URI patterns must precede similar shorter ones for correct functioning
+	protected static $uriTable = array(
+		array('class' => 'Applications', 'method' => 'getApplicationProperty', 'uri' => 'application/<appid>/property/<property>', 'http' => 'GET', 'title' => 'Get an Application Property'),
+		array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/<appid>/property/<property>', 'http' => 'PUT', 'title' => 'Create or Update an Application Property'),
+		array('class' => 'Applications', 'method' => 'deleteApplicationProperty', 'uri' => 'application/<appid>/property/<property>', 'http' => 'DELETE', 'title' => 'Delete an Application Property'),
+		array('class' => 'SystemProperties', 'method' => 'getSystemProperty', 'uri' => 'system/<systemid>/property/<property>', 'http' => 'GET', 'title' => 'Get a System Property'),
+		array('class' => 'SystemProperties', 'method' => 'setSystemProperty', 'uri' => 'system/<systemid>/property/<property>', 'http' => 'PUT', 'title' => 'Create or Update a System Property'),
+		array('class' => 'SystemProperties', 'method' => 'deleteSystemProperty', 'uri' => 'system/<systemid>/property/<property>', 'http' => 'DELETE', 'title' => 'Delete a System Property'),
+		array('class' => 'SystemBackups', 'method' => 'updateSystemBackup', 'uri' => 'system/<systemid>/backup/<backupid>', 'http' => 'PUT', 'title' => 'Update a Backup'),
+		array('class' => 'SystemBackups', 'method' => 'getOneBackup', 'uri' => 'system/<systemid>/backup/<backupid>', 'http' => 'GET', 'title' => 'Get a Backup'),
+		array('class' => 'SystemBackups', 'method' => 'getSystemBackups', 'uri' => 'system/<systemid>/backup', 'http' => 'GET', 'title' => 'Get Backups'),
+		array('class' => 'SystemBackups', 'method' => 'makeSystemBackup', 'uri' => 'system/<systemid>/backup', 'http' => 'POST', 'title' => 'Create a Backup'),
+		array('class' => 'SystemBackups', 'method' => 'getBackupStates', 'uri' => 'backupstate', 'http' => 'GET', 'title' => 'Get Backup States'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/<systemid>/node/<nodeid>/monitor/<monitor>/data', 'http' => 'GET', 'title' => 'Get a Range of Node Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/<systemid>/node/<nodeid>/monitor/<monitor>/latest', 'http' => 'GET', 'title' => 'Get the Latest Node Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'monitorData', 'uri' => 'system/<systemid>/monitor/<monitor>/data', 'http' => 'GET', 'title' => 'Get a Range of System Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'monitorLatest', 'uri' => 'system/<systemid>/monitor/<monitor>/latest', 'http' => 'GET', 'title' => 'Get the Latest System Monitor Data'),
+		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/<systemid>/node/<nodeid>/monitor/<monitor>/rawdata', 'http' => 'GET', 'title' => 'Get Raw Monitor Node Data'),
+		array('class' => 'Monitors', 'method' => 'getRawMonitorData', 'uri' => 'system/<systemid>/monitor/<monitor>/rawdata', 'http' => 'GET', 'title' => 'Get Raw Monitor System Data'),
+		array('class' => 'Monitors', 'method' => 'storeBulkMonitorData', 'uri' => 'monitordata', 'http' => 'POST', 'title' => 'Store Bulk Monitor Data'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentPropertyUpdated', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>/property/<property>/updated', 'http' => 'GET', 'title' => 'Get the Last Date a Component Property was Updated'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>/property/<property>', 'http' => 'GET', 'title' => 'Get a Component Property'),
+		array('class' => 'ComponentProperties', 'method' => 'setComponentProperty', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>/property/<property>', 'http' => 'PUT', 'title' => 'Create or Update a Component Property'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperty', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>/property/<property>', 'http' => 'DELETE', 'title' => 'Delete a Component Property'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponentProperties', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>', 'http' => 'GET', 'title' => 'Get All Properties for a Component'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponentProperties', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>/', 'http' => 'DELETE', 'title' => 'Delete All Properties for a Component'),
+		array('class' => 'ComponentProperties', 'method' => 'getComponents', 'uri' => 'system/<systemid>/node/<nodeid>/component', 'http' => 'GET', 'title' => 'Get All Component Properties'),
+		array('class' => 'ComponentProperties', 'method' => 'deleteComponents', 'uri' => 'system/<systemid>/node/<nodeid>/component', 'http' => 'DELETE', 'title' => 'Delete All Component Properties'),
+		array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/<systemid>/node/<nodeid>/process/<processid>', 'http' => 'GET', 'title' => 'Get a Database Process Plan'),
+		array('class' => 'SystemNodes', 'method' => 'killSystemNodeProcess', 'uri' => 'system/<systemid>/node/<nodeid>/process/<processid>', 'http' => 'DELETE', 'title' => 'Kill a Database Process'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/<systemid>/node/<nodeid>/process', 'http' => 'GET', 'title' => 'Get Database Processes'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/<systemid>/node/<nodeid>', 'http' => 'GET', 'title' => 'Get a Node'),
+		array('class' => 'SystemNodes', 'method' => 'deleteSystemNode', 'uri' => 'system/<systemid>/node/<nodeid>', 'http' => 'DELETE', 'title' => 'Delete a Node'),
+		array('class' => 'SystemNodes', 'method' => 'getSystemAllNodes', 'uri' => 'system/<systemid>/node', 'http' => 'GET', 'title' => 'Get All Nodes for a System'),
+		array('class' => 'SystemNodes', 'method' => 'updateSystemNode', 'uri' => 'system/<systemid>/node/<nodeid>', 'http' => 'PUT', 'title' => 'Update a Node'),
+		array('class' => 'SystemNodes', 'method' => 'createSystemNode', 'uri' => 'system/<systemid>/node', 'http' => 'POST', 'title' => 'Create a Node'),
+		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate/<systemtype>', 'http' => 'GET', 'title' => 'Get All Node States for a System Type'),
+		array('class' => 'SystemNodes', 'method' => 'nodeStates', 'uri' => 'nodestate', 'http' => 'GET', 'title' => 'Get All Node States'),
+		array('class' => 'SystemNodes', 'method' => 'getProvisionedNodes', 'uri' => 'provisionednode', 'http' => 'GET', 'title' => 'Get Provisioned Nodes'),
+		array('class' => 'UserTags', 'method' => 'getUserTags', 'uri' => 'user/<username>/.+tag/.+', 'http' => 'GET', 'title' => 'Get Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'getAllUserTags', 'uri' => 'user/<username>/.+tag', 'http' => 'GET', 'title' => 'Get Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'addUserTags', 'uri' => 'user/<username>/.+tag/.+', 'http' => 'POST', 'title' => 'Add a User Tag'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/<username>/.+tag/.+/.+', 'http' => 'DELETE', 'title' => 'Delete Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/<username>/.+tag/.+', 'http' => 'DELETE', 'title' => 'Delete Tags for a User'),
+		array('class' => 'UserTags', 'method' => 'deleteUserTags', 'uri' => 'user/<username>/.+tag', 'http' => 'DELETE', 'title' => 'Delete Tags for a User'),
+		array('class' => 'UserProperties', 'method' => 'getUserProperty', 'uri' => 'user/<username>/property/<property>', 'http' => 'GET', 'title' => 'Get a User Property'),
+		array('class' => 'UserProperties', 'method' => 'putUserProperty', 'uri' => 'user/<username>/property/<property>', 'http' => 'PUT', 'title' => 'Create or Update a User Property'),
+		array('class' => 'UserProperties', 'method' => 'deleteUserProperty', 'uri' => 'user/<username>/property/<property>', 'http' => 'DELETE', 'title' => 'Delete a User Property'),
+		array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/<username>', 'http' => 'GET', 'title' => 'Get a User'),
+		array('class' => 'SystemUsers', 'method' => 'putUser', 'uri' => 'user/<username>', 'http' => 'PUT', 'title' => 'Create or Update a User'),
+		array('class' => 'SystemUsers', 'method' => 'deleteUser', 'uri' => 'user/<username>', 'http' => 'DELETE', 'title' => 'Delete a User'),
+		array('class' => 'SystemUsers', 'method' => 'loginUser', 'uri' => 'user/<username>', 'http' => 'POST', 'title' => 'Authenticate a User'),
+		array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'http' => 'GET', 'title' => 'Get All Users'),
+		array('class' => 'Systems', 'method' => 'getSystemProcesses', 'uri' => 'system/<systemid>/process', 'http' => 'GET', 'title' => 'Get Database Processes on a System'),
+		array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/<systemid>', 'http' => 'GET', 'title' => 'Get a System'),
+		array('class' => 'Systems', 'method' => 'updateSystem', 'uri' => 'system/<systemid>', 'http' => 'PUT', 'title' => 'Update a System'),
+		array('class' => 'Systems', 'method' => 'createSystem', 'uri' => 'system', 'http' => 'POST', 'title' => 'Create a System'),
+		array('class' => 'Systems', 'method' => 'deleteSystem', 'uri' => 'system/<systemid>', 'http' => 'DELETE', 'title' => 'Delete a System'),
+		array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'http' => 'GET', 'title' => 'Get All Systems'),
+		array('class' => 'Systems', 'method' => 'getSystemTypes', 'uri' => 'systemtype', 'http' => 'GET', 'title' => 'Get All System Types'),
+		array('class' => 'Buckets', 'method' => 'getData', 'uri' => 'bucket', 'http' => 'GET', 'title' => 'Get Data from a Bucket'),
+		array('class' => 'Commands', 'method' => 'getStates', 'uri' => 'command/state', 'http' => 'GET', 'title' => 'Get Command States'),
+		array('class' => 'Commands', 'method' => 'getSteps', 'uri' => 'command/step', 'http' => 'GET', 'title' => 'Get Command Steps'),
+		array('class' => 'Commands', 'method' => 'getCommands', 'uri' => 'command', 'http' => 'GET', 'title' => 'Get Commands'),
+		array('class' => 'Tasks', 'method' => 'runCommand', 'uri' => 'command/<command>', 'http' => 'POST', 'title' => 'Run a Command'),
+		array('class' => 'Schedules', 'method' => 'runScheduledCommand', 'uri' => 'schedule/<scheduleid>', 'http' => 'POST', 'title' => 'Run a Command on a Schedule'),
+		array('class' => 'Schedules', 'method' => 'getOneSchedule', 'uri' => 'schedule/<scheduleid>', 'http' => 'GET', 'title' => 'Get a Schedule'),
+		array('class' => 'Schedules', 'method' => 'deleteOneSchedule', 'uri' => 'schedule/<scheduleid>', 'http' => 'DELETE', 'title' => 'Delete a Schedule'),
+		array('class' => 'Schedules', 'method' => 'getSelectedSchedules', 'uri' => 'schedule/<daterange>', 'http' => 'GET', 'title' => 'Get a Range of Schedules'),
+		array('class' => 'Schedules', 'method' => 'updateSchedule', 'uri' => 'schedule/<scheduleid>', 'http' => 'PUT', 'title' => 'Update a Schedule'),
+		array('class' => 'Schedules', 'method' => 'getMultipleSchedules', 'uri' => 'schedule', 'http' => 'GET', 'title' => 'Get All Schedules'),
+		array('class' => 'Tasks', 'method' => 'getOneTask', 'uri' => 'task/<taskid>', 'http' => 'GET', 'title' => 'Get a Task'),
+		array('class' => 'Tasks', 'method' => 'cancelOneTask', 'uri' => 'task/<taskid>', 'http' => 'DELETE', 'title' => 'Cancel a Task'),
+		array('class' => 'Tasks', 'method' => 'getSelectedTasks', 'uri' => 'task/<daterange>', 'http' => 'GET', 'title' => 'Get a Range of Tasks'),
+		array('class' => 'Tasks', 'method' => 'updateTask', 'uri' => 'task/<taskid>', 'http' => 'PUT', 'title' => 'Update a Task'),
+		array('class' => 'Tasks', 'method' => 'getMultipleTasks', 'uri' => 'task', 'http' => 'GET', 'title' => 'Get All Tasks'),
+		array('class' => 'RunSQL', 'method' => 'runQuery', 'uri' => 'runsql', 'http' => 'GET', 'title' => 'Run a Database Query'),
+		array('class' => 'Monitors', 'method' => 'getOneMonitorClass', 'uri' => 'monitorclass/<systemtype>/key/<monitor>', 'http' => 'GET', 'title' => 'Get a Monitor'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass/<systemtype>', 'http' => 'GET', 'title' => 'Get All Monitors for a System Type'),
+		array('class' => 'Monitors', 'method' => 'getMonitorClasses', 'uri' => 'monitorclass', 'http' => 'GET', 'title' => 'Get All Monitors'),
+		array('class' => 'Monitors', 'method' => 'putMonitorClass', 'uri' => 'monitorclass/<systemtype>/key/<monitor>', 'http' => 'PUT', 'title' => 'Update a Monitor'),
+		array('class' => 'Monitors', 'method' => 'deleteMonitorClass', 'uri' => 'monitorclass/<systemtype>/key/<monitor>', 'http' => 'DELETE', 'title' => 'Delete a Monitor'),
+		array('class' => 'UserData', 'method' => 'getBackupLog', 'uri' => 'userdata/<logtype>', 'http' => 'GET', 'title' => 'Get a Backup Log'),
+		array('class' => 'Request', 'method' => 'listAPI', 'uri' => 'metadata/apilist', 'http' => 'GET', 'title' => 'List API Requests'),
+		array('class' => 'Request', 'method' => 'APIDate', 'uri' => 'apidate', 'http' => 'GET', 'title' => 'Show the API Code Date'),
+		array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/<resource>', 'http' => 'GET', 'title' => 'Get Metadata for an Resource'),
+		array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'http' => 'GET', 'title' => 'Get a List of API Resources'),
+		array('class' => 'Metadata', 'method' => 'metadataSummary', 'uri' => 'metadata', 'http' => 'GET', 'title' => 'Get a Metadata Summary'),
+	);
+	
+	protected static $fieldregex = array(
+		'<appid>' => '[0-9]+',
+		'<property>' => '[A-Za-z0-9_\.]+',
+		'<systemid>' => '[0-9]+',
+		'<backupid>' => '[0-9]+',
+		'<nodeid>' => '[0-9]+',
+		'<component>' => '[A-Za-z0-9_:\-]+',
+		'<processid>' => '[0-9]+',
+		'<systemtype>' =>'[A-Za-z0-9]+',
+		'<username>' => '([0-9a-zA-Z_\-\.\~\*\(\)]+)',
+		'<command>' => '[A-Za-z0-9]+',
+		'<scheduleid>' => '[0-9]+',
+		'<taskid>' => '[0-9]+',
+		'<monitor>' => '([0-9a-zA-Z_\-\.\~\*\(\)]+)',
+		'<logtype>' => '(log|binlog)',
+		'<resource>' => '[A-Za-z]+',
+		'<daterange>' => '.+'
+	);
+	
+	protected static $uriTablePrepared = false;
+	protected static $uriregex = '([0-9a-zA-Z_\-\.\~\*\(\)]*)';
+	protected static $suffixes = array('html', 'json', 'mml');
 	
 	protected static $codes = array(
         100 => 'Continue',
@@ -132,24 +243,32 @@ abstract class Request {
 	protected $micromarker = 0;
 	protected $config = array();
 	protected $uri = '';
+	protected $apibase = array();
 	protected $headers = array();
 	protected $responseheaders = array();
 	protected $requestmethod = '';
 	protected $requestviapost = false;
-	protected $putdata = array();
+	protected $putdata = '';
 	protected $accept = '';
 	protected $suffix = '';
 	protected $suppress = false;
 	protected $clientip = '';
 	protected $apikey = '';
-	protected $apikeyid = null;
-	protected $requestversion = '1.0';
-	protected $urlencoded = true;
 	
 	protected function __construct() {
 		$this->timer = new aliroProfiler();
 		$this->micromarker = $this->timer->getMicroSeconds();
 		$this->clientip = API::getIP();
+		if (!self::$uriTablePrepared) {
+			foreach (self::$uriTable as &$uridata) {
+				$parts = explode('/', trim($uridata['uri'],'/'));
+				foreach ($parts as $part) $uridata['uriparts'][] = str_replace(array_keys(self::$fieldregex), array_values(self::$fieldregex), $part);
+// str_replace('.*', self::$uriregex, $part);
+				$this->apibase[$parts[0]] = 1;
+			}
+			$this->apibase = array_keys($this->apibase);
+			self::$uriTablePrepared = true;
+		}
         $this->config = $this->readAndCheckConfig();
 		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
@@ -157,40 +276,8 @@ abstract class Request {
 		$this->uri = $this->getURI();
 		$this->getSuffix();
 		$this->handleAccept();
-		$suppressor = $this->getParam($this->requestmethod, 'suppress_response_codes');
-		if (true === $suppressor OR 'true' == $suppressor) $this->suppress = true;
+		if ('true' == $this->getParam($this->requestmethod, 'suppress_response_codes')) $this->suppress = true;
 		$this->getQueryString();
-	}
-	
-	protected function checkHeaders () {
-		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
-		if (isset($this->headers['Content-Type'])) {
-			switch (strtolower($this->headers['Content-Type'])) {
-				case 'application/x-www-form-urlencoded': 
-					$this->urlencoded = true;
-					break;
-				case 'application/json':
-					$this->urlencoded = false;
-					break;
-				default:
-					$this->sendErrorResponse(sprintf('Content-Type header of %s is not supported', $this->headers['Content-Type']), 501);
-			}
-		}
-		else $this->urlencoded = true;
-		if (isset($this->headers['Accept-Charset'])) {
-			$parts = explode(':', $this->headers['Accept-Charset'], 2);
-			if (isset($parts[1])) {
-				$charsets = array_map('trim', explode(',', strtolower($parts[1])));
-				if (!in_array('utf-8', $charsets)) $this->sendErrorResponse (sprintf("Accept-Charset header '%s' does not include utf-8", $parts[1]), 501);
-			}
-		}
-	}
-	
-	protected function decodeJsonOrQueryString ($string) {
-		$dejson = json_decode($string, true);
-		if ($this->urlencoded) parse_str($string, $dequery);
-		else $this->parse_str($string, $dequery);
-		return (is_null($dejson) OR (is_array($dequery) AND count($dejson) < count($dequery))) ? $dequery : $dejson;
 	}
 
 	public function parse_str ($string, &$array) {
@@ -236,9 +323,6 @@ abstract class Request {
 		return isset($this->headers[$name]) ? $this->headers[$name] : null;
 	}
 	
-	public function getVersion () {
-		return $this->requestversion;
-	}
 	protected function fatalError ($error, $status=500) {
 		error_log($error);
 		$this->log(LOG_CRIT, $error);
@@ -252,8 +336,7 @@ abstract class Request {
 		$sepindex = explode('index.php', $sepquery[0]);
 		$afterindex = trim(end($sepindex), '/');
 		$sepapi = explode('/', $afterindex);
-		$baseparts = RequestParser::getInstance()->getBaseParts();
-		while (count($sepapi) AND !in_array($sepapi[0], $baseparts)) array_shift($sepapi);
+		while (count($sepapi) AND !in_array($sepapi[0],$this->apibase)) array_shift($sepapi);
 		return count($sepapi) ? implode('/',$sepapi) : $afterindex;
 	}
 	
@@ -271,7 +354,6 @@ abstract class Request {
 	protected function handleAccept () {
 		if ('json' == $this->suffix) $this->accept = 'application/json';
 		elseif ('mml' ==  $this->suffix) $this->accept = 'application/mml';
-		elseif ('crl' ==  $this->suffix) $this->accept = 'application/crl';
 		else {
 			$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
 			$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
@@ -307,10 +389,7 @@ abstract class Request {
 			if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
 		}
 		$uriparts = array_map('urldecode', explode('/', $this->uri));
-		$parser = RequestParser::getInstance();
-		// Method sendOptions sends answer, does not return to caller
-		if ('OPTIONS' == $this->requestmethod) $parser->sendOptions($uriparts);
-		$link = $parser->getLinkByURI($uriparts, $this->requestmethod);
+		$link = $this->getLinkByURI($uriparts);
 		if ($link) {
 			try {
 				if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0] AND 'apidate' != $uriparts[0]) $this->checkSecurity();
@@ -340,8 +419,7 @@ abstract class Request {
 	
 	protected function listAPI () {
 		$controller = new Metadata($this);
-		$prototypes = new RequestPrototypes();
-		$controller->listAPI($prototypes->getUriTable(), $prototypes->getFieldRegex());
+		$controller->listAPI(self::$uriTable, self::$fieldregex);
 	}
 	
 	protected function APIDate () {
@@ -358,7 +436,6 @@ abstract class Request {
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
 				if (isset($this->config['apikeys'][$matches[1]])) {
-					$this->apikeyid = $matches[1];
 					$this->apikey = $this->config['apikeys'][$matches[1]];
 					$checkstring = \md5($this->uri.$this->apikey.$this->headers['Date']);
 					if ($matches[2] == $checkstring) return;
@@ -373,6 +450,27 @@ abstract class Request {
 		return $this->apikey;
 	}
 	
+	protected function getLinkByURI ($uriparts) {
+		$partcount = count($uriparts);
+		foreach (self::$uriTable as $link) {
+			if ($this->requestmethod != $link['http']) continue;
+			if (count($link['uriparts']) != $partcount) continue;
+			$matched = true;
+			foreach ($link['uriparts'] as $i=>$part) {
+				if (!($part == $uriparts[$i]) AND !$this->uriMatch($part, $uriparts[$i])) {
+					$matched = false;
+					break;
+				}
+			}
+			if ($matched) return $link;
+		}
+		return false;
+	}
+
+	protected function uriMatch ($pattern, $actual) {
+		return @preg_match("/^$pattern$/", $actual);
+	}
+        
 	public function getConfig () {
 		return $this->config;
 	}
@@ -403,7 +501,6 @@ abstract class Request {
 	            if (!($mask&_MOS_NOTRIM)) $result = trim($result);
 	            if (!is_numeric($result)) {
 	            	if (get_magic_quotes_gpc() AND !($mask & _MOS_NOSTRIP)) $result = stripslashes($result);
-					if (!(bool) preg_match('//u', $result)) $this->sendErrorResponse('Request contained one or more characters that are not UTF-8', 501);
 	                if (!($mask&_MOS_ALLOWRAW) AND is_numeric($def)) $result = $def;
 	            }
 	        }
@@ -421,16 +518,10 @@ abstract class Request {
 		return (is_array($arr)) ? !isset($arr[$name]) : true;
 	}
 	
-	public function unsetParam ($arrname, $name) {
-		$arr = &$this->getArrayFromName($arrname);
-		if (is_array($arr) AND isset($arr[$name])) unset($arr[$name]);
-	}
-
 	protected function &getArrayFromName ($arrname) {
 		if (is_array($arrname)) $arr =& $arrname;
 		elseif ($this->requestviapost) $arr =& $_POST;
 		elseif ('GET' == $arrname) $arr =& $_GET;
-		elseif ('HEAD' == $arrname) $arr =& $_GET;
 		elseif ('POST' == $arrname) $arr =& $_POST;
 		elseif ('PUT' == $arrname OR 'DELETE' == $arrname) $arr =& $this->putdata;
 		if (is_array(@$arr)) {
@@ -443,9 +534,9 @@ abstract class Request {
 	}
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
-	public function sendResponse ($body='', $status=200, $requestURI='') {
-		$this->sendHeaders($status, $requestURI);
-		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body), $status);
+	public function sendResponse ($body='', $status=200) {
+		$this->sendHeaders($status);
+		$this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body), $status);
 		exit;
 	}
 	
@@ -462,14 +553,13 @@ abstract class Request {
 		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
-		$charset = $this->getHeader('Accept-Charset');
-		$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body, JSON_UNESCAPED_UNICODE);
+		$output = json_encode($body);
 		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
 		$this->sendHeaders($status);
-		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(array('errors' => (array) $errors), $status);
+		$this->addResponseInformationAndSend(array('errors' => (array) $errors), $status);
 
 		// Record errors in the log and in the ErrorLog table
 		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);
@@ -551,30 +641,18 @@ PRETTY_PAGE;
 	    return $result;
 	}
 
-	protected function sendHeaders ($status, $requestURI='') {
+	public function sendHeaders ($status) {
 		$report = $status.' '.(isset(self::$codes[$status]) ? self::$codes[$status] : '');
 		$this->log(LOG_INFO, "$this->requestmethod /$this->uri completed $report - time taken {$this->timer->mark('seconds')}");
-		$this->addResponseHeader('X-SkySQL-API-Version: '._API_VERSION_NUMBER);
-		$this->addResponseHeader(HTTP_PROTOCOL.' '.(('HEAD' != $this->requestmethod AND $this->suppress) ? '200 OK' : $report));
-		if ('HEAD' != $this->requestmethod) {
-			$this->addResponseHeader('Content-type: '.$this->accept.'; charset=utf-8');
-			$this->addResponseHeader('Cache-Control: no-store');
-			if (201 == $status AND $requestURI) {
-				$scheme = isset($_SERVER['HTTP_SCHEME']) ? $_SERVER['HTTP_SCHEME'] : ((isset($_SERVER['HTTPS']) AND strtolower($_SERVER['HTTPS'] != 'off')) ? 'https' : 'http');
-				$this->addResponseHeader("Location: $scheme://{$_SERVER['SERVER_NAME']}/$requestURI");
-			}
-		}
+		$this->responseheaders[] = HTTP_PROTOCOL.' '.($this->suppress ? '200 OK' : $report);
+		$this->responseheaders[] = 'Content-type: '.$this->accept.'; charset=utf-8';
+		$this->responseheaders[] = 'Cache-Control: no-store';
+		$this->responseheaders[] = 'X-SkySQL-API-Version: '._API_VERSION_NUMBER;
 		foreach ($this->responseheaders as $header) header($header);
 	}
 	
-	public function addResponseHeader ($header) {
-		$this->responseheaders[] = $header;
-	}
-	
 	public function log ($severity, $message) {
-		$prefix = "[$this->clientip] ";
-		$prefix .= is_null($this->apikeyid) ? "[null] " : "[$this->apikeyid] ";
-		$prefix .= "[$this->micromarker] ";
+		$prefix = "[$this->clientip] [$this->micromarker] ";
 		syslog($severity, $prefix.$message);
 	}
 }

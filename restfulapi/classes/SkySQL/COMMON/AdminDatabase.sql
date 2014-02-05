@@ -195,10 +195,6 @@ begin
 update Node set PublicIP = new.PublicIP, PrivateIP = new.PrivateIP where SystemID = old.SystemID and NodeID = old.NodeID;
 end;
 
-create table POE (
-	uniqid		varchar(100) PRIMARY KEY,				/* Unique ID for Post Once Exactly */
-	stamp		datetime							/* Time stamp */
-)
 create table ComponentProperties (
 	ComponentID	varchar(40),						/* ComponentID allocated by System Manager */ 
 	Property	varchar(40),						/* Name of property */

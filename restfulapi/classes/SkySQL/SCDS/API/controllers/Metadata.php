@@ -29,17 +29,16 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\COMMON\AdminDatabase;
-use SkySQL\SCDS\API\Request;
 use stdClass;
 use ReflectionMethod;
 
 final class Metadata extends ImplementAPI {
-	private static $ignores = array('EntityModel','NodeProvisioningStates','NodeStatesWithTransitions');
+	private static $ignores = array('EntityModel','NodeStates');
 	
 	public function listAPI ($uriTable, $fieldregex) {
-		foreach ($uriTable as $httprequest=>$requests) foreach ($requests as $entry) {
+		foreach ($uriTable as $entry) {
 			$result[] = array (
-				'http' => $httprequest,
+				'http' => $entry['http'],
 				'uri' => htmlentities($entry['uri']),
 				'class' => $entry['class'],
 				'method' => $entry['method'],
@@ -48,11 +47,7 @@ final class Metadata extends ImplementAPI {
 		}
 		if ('application/json' == $this->accept) $this->sendResponse($result);
 		elseif ('application/mml' == $this->accept) {
-			echo $this->listAPIMarkup($result, $fieldregex, 'MML');
-			exit;
-		}
-		elseif ('application/crl' == $this->accept) {
-			echo $this->listAPIMarkup($result, $fieldregex, 'CRL');
+			echo $this->listAPIMML($result, $fieldregex);
 			exit;
 		}
 		else {
@@ -96,9 +91,6 @@ final class Metadata extends ImplementAPI {
 		elseif ('application/mml' == $this->accept) {
 			echo call_user_func(array($modelclass, 'getMetadataMML'));
 		}
-		elseif ('application/crl' == $this->accept) {
-			echo call_user_func(array($modelclass, 'getMetadataCRL'));
-		}
 		else {
 			echo call_user_func(array($modelclass, 'getMetadataHTML'));
 			exit;
@@ -125,14 +117,12 @@ final class Metadata extends ImplementAPI {
 	}
 	
 	protected function entitiesHTML ($entities) {
-		$accept = Request::getInstance()->getAccept();
-		$suffix = 'application/crl' == $accept ? '.crl' : ('application/mml' == $accept ? '.mml': '.html');
 		$ehtml = '';
 		foreach ($entities as $entity) {
 			$elower = strtolower($entity);
 			$ehtml .= <<<ONE_ENTITY
 			<p>
-				<a href="/metadata/entity/{$elower}{$suffix}">$entity</a>
+				<a href="/metadata/entity/$elower.html">$entity</a>
 			</p>
 
 ONE_ENTITY;
@@ -148,7 +138,7 @@ ONE_ENTITY;
     <title>SkySQL Manager - API Entities</title>
   </head>
   <body>
-	<a href="/metadata$suffix">Go to metadata home page</a>
+	<a href="/metadata">Go to metadata home page</a>
     <h3>API Entities (Resources)</h3>
 	$ehtml
   </body>
@@ -188,8 +178,6 @@ FIELDCHECK;
 	}
 	
 	protected function callsPage ($callhtml, $fieldhtml) {
-		$accept = Request::getInstance()->getAccept();
-		$suffix = 'application/crl' == $accept ? '.crl' : ('application/mml' == $accept ? '.mml': '');
 		return <<<API
 		
 <?xml version="1.0" encoding="UTF-8"?>
@@ -200,7 +188,7 @@ FIELDCHECK;
     <title>SkySQL Manager - API Calls</title>
   </head>
   <body>
-	<a href="/metadata$suffix">Go to metadata home page</a>
+	<a href="/metadata">Go to metadata home page</a>
     <h3>API Calls</h3>
 	<table>
 	$callhtml
@@ -219,7 +207,7 @@ API;
 		
 	}
 
-	protected function listAPIMarkup ($calls, $fieldregex, $type='MML') {
+	protected function listAPIMML ($calls, $fieldregex) {
 		$lhtml = $fhtml = '';
 		foreach ($calls as $call) {
 			$class = __NAMESPACE__.'\\'.$call['class'];
@@ -248,7 +236,7 @@ API;
 			if (empty($parameters)) $parameters = 'unknown';
 
 			$uri = htmlentities($call['uri']);
-			if ('MML' == $type) $lhtml .= <<<LINK_MML
+			$lhtml .= <<<LINK
 
 h4. {$call['title']} <br />
 <br />
@@ -259,20 +247,7 @@ h4. {$call['title']} <br />
 *One or Many Resources:* $many <br />
 <br />
 			
-LINK_MML;
-
-			else $lhtml .= <<<LINK_CRL
-					
-===={$call['title']}==== <br />
-<br />
-**HTTP Method:** {$call['http']} <br />
-**Request URI:** $uri <br />
-**Parameters:** $parameters<br />
-**Successful Response:** $response <br />
-**One or Many Resources:** $many <br />
-<br />
-					
-LINK_CRL;
+LINK;
 
 			unset($response, $many, $parameters);
 		}
@@ -292,8 +267,6 @@ FIELDCHECK;
 	public function metadataSummary () {
 		$codedate = _API_CODE_ISSUE_DATE;
 		$version = _API_VERSION_NUMBER;
-		$accept = Request::getInstance()->getAccept();
-		$suffix = 'application/crl' == $accept ? '.crl' : ('application/mml' == $accept ? '.mml': '');
 		echo <<<METADATA
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
@@ -309,8 +282,8 @@ FIELDCHECK;
 	There are other metadata resources available:
 	</p>
 	<ul>
-		<li><a href="/metadata/apilist$suffix">List of legal API calls</a></li>
-		<li><a href="/metadata/entities$suffix">List of the main entities handled by the API</a></li>
+		<li><a href="/metadata/apilist">List of legal API calls</a></li>
+		<li><a href="/metadata/entities">List of the main entities handled by the API</a></li>
   </body>
 </html>		
 				

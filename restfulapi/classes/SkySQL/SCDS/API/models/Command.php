@@ -32,20 +32,25 @@ namespace SkySQL\SCDS\API\models;
 class Command extends EntityModel {
 	protected static $setkeyvalues = false;
 	
+	protected static $classname = __CLASS__;
+
+	protected $ordinaryname = 'command';
+	protected static $headername = 'Command';
+	
 	protected static $getAllCTO = array('command');
 	
 	protected static $keys = array(
-		'command' => array('sqlname' => 'Command', 'type' => 'varchar', 'desc'  => 'Name of the Command')
+		'command' => array('sqlname' => 'Command', 'type'  => 'varchar')
 	);
 	
 	protected static $fields = array(
-		'systemid' => array('sqlname' => 'SystemID', 'type'  => 'int', 'desc' => 'ID for the System', 'default' => 0, 'insertonly' => true),
-		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'desc' => 'ID for the Node', 'default' => 0, 'insertonly' => true),
-		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'desc' => 'Username for user who issued command', 'default' => '', 'insertonly' => true),
-		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'desc' => 'Parameters for the command scripts', 'default' => '', 'insertonly' => true),
-		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'varchar', 'desc' => 'For a scheduled command, iCalendar Entry', 'default' => '', 'insertonly' => true),
-		'state' => array('sqlname' => 'State', 'type' => 'int', 'desc' => 'State of node if command is to run', 'default' => ''),
-		'steps' => array('sqlname' => 'Steps', 'type' => 'varchar', 'desc' => 'Command steps if command is to run', 'default' => 0)
+		'systemid' => array('sqlname' => 'SystemID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
+		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
+		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => '', 'insertonly' => true),
+		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => '', 'insertonly' => true),
+		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'varchar', 'default' => '', 'insertonly' => true),
+		'state' => array('sqlname' => 'State', 'type' => 'int', 'default' => ''),
+		'steps' => array('sqlname' => 'Steps', 'type' => 'varchar', 'default' => 0)
 	);
 	
 	public function __construct ($command) {

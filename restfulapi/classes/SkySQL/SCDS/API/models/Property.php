@@ -31,11 +31,16 @@ namespace SkySQL\SCDS\API\models;
 abstract class Property extends EntityModel {
 	protected static $setkeyvalues = true;
 	
+	protected static $classname = __CLASS__;
+
+	protected $ordinaryname = 'property';
+	protected static $headername = 'Property';
+	
 	protected static $keys = array(
-		'systemid' => array('sqlname' => 'SystemID', 'type' => 'int', 'desc' => 'ID for the System'),
-		'username' => array('sqlname' => 'UserName', 'type' => 'varchar', 'desc' => 'Identifying name for user'),
-		'appid' => array('sqlname' => 'ApplicationID', 'type' => 'int', 'desc' => 'ID for the application'),
-		'property' => array('sqlname' => 'Property', 'type' => 'varchar', 'desc' => 'Name of the property')
+		'systemid' => array('sqlname' => 'SystemID', 'type' => 'int'),
+		'username' => array('sqlname' => 'UserName', 'type' => 'varchar'),
+		'appid' => array('sqlname' => 'ApplicationID', 'type' => 'int'),
+		'property' => array('sqlname' => 'Property', 'type' => 'varchar')
 	);
 
 	protected static $fields = array(

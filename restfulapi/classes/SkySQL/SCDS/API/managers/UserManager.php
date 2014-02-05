@@ -32,10 +32,11 @@ use SkySQL\SCDS\API\models\User;
 
 class UserManager extends EntityManager {
 	protected static $instance = null;
+	protected $users = array();
 	
 	protected function __construct () {
-		foreach (User::getAll(false) as $user) {
-			$this->maincache[$user->username] = $this->simplecache[] = $user;
+		foreach (User::getAll() as $user) {
+			$this->users[$user->username] = $user;
 		}
 	}
 	
@@ -43,9 +44,44 @@ class UserManager extends EntityManager {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
 	}
 	
+	public function getByName ($username) {
+		return isset($this->users[$username]) ? $this->users[$username] : null;
+	}
+	
+	public function authenticate ($username, $password) {
+		$user = $this->getByName($username);
+		return $user ? $user->authenticate($password) : false;
+	}
+	
 	public function getAllPublic () {
-		$users = array_values($this->maincache);
+		$users = array_values($this->users);
 		foreach ($users as $user) $results[] = $user->publicCopy();
 		return (array) @$results;
+	}
+	
+	public function createUser ($username) {
+		$user = new User($username);
+		$user->insert();
+		// Above method does not return - sends a response and exits
+	}
+	
+	public function updateUser ($username) {
+		$user = new User($username);
+		$user->update();
+		// Above method does not return - sends a response and exits
+	}
+	
+	public function saveUser ($username) {
+		$user = new User($username);
+		$user->save();
+		// Above method does not return - sends a response and exits
+	}
+	
+	public function deleteUser ($username) {
+		$user = new User($username);
+		if (isset($this->users[$username])) unset($this->users[$username]);
+		UserPropertyManager::getInstance()->deleteAllProperties($username);
+		$user->delete();
+		// Above method does not return - sends a response and exits
 	}
 }

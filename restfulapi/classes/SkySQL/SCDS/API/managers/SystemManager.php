@@ -32,12 +32,50 @@ use SkySQL\SCDS\API\models\System;
 
 class SystemManager extends EntityManager {
 	protected static $instance = null;
+	protected $systems = array();
 	
 	protected function __construct () {
-		foreach (System::getAll(false) as $system) $this->maincache[$system->systemid] = $this->simplecache[] = $system;
+		foreach (System::getAll() as $system) {
+			$this->systems[$system->systemid] = $system;
+		}
 	}
 	
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
+	}
+	
+	public function getByID ($id) {
+		return isset($this->systems[$id]) ? $this->systems[$id] : null;
+	}
+	
+	public function getAll () {
+		return array_values($this->systems);
+	}
+
+	public function createSystem () {
+		$system = new System();
+		$system->insert();
+		// Above method does not return - clears cache, sends a response and exits
+	}
+	
+	public function updateSystem ($id) {
+		$system = new System($id);
+		$system->update();
+		// Above method does not return - clears cache, sends a response and exits
+	}
+	
+	public function markUpdated ($system, $stamp=0) {
+		$system = new System($system);
+		$system->markUpdated($stamp);
+		$this->clearCache(true);
+	}
+	
+	public function deleteSystem ($id) {
+		$system = new System($id);
+		if (isset($this->systems[$id])) unset($this->systems[$id]);
+		SystemPropertyManager::getInstance()->deleteAllProperties($id);
+		NodeManager::getInstance()->deleteNode($id);
+		$system->delete();
+		// Above method does not return - clears cache, sends a response and exits
 	}
 }

@@ -29,7 +29,7 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\models\Backup;
-use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\managers\NodeManager;
 
 class UserData extends ImplementAPI {
 
@@ -39,7 +39,7 @@ class UserData extends ImplementAPI {
 		$backupid = $this->getParam($this->requestmethod, 'backupid', 0);
 		$backup = Backup::getByID($systemid, $backupid);
 		if (!($backup instanceof Backup) OR empty($backup->$field)) $this->sendErrorResponse('Not Found', 404);
-		$node = Node::getByID($backup->systemid, $backup->nodeid);
+		$node = NodeManager::getInstance()->getByID($backup->systemid, $backup->nodeid);
 		if (empty($node)) $this->sendErrorResponse('Not Found', 404);
 		$filepath = $backup->$field;
 		$log = shell_exec("ssh root@$node->privateip \"cat $filepath\"");

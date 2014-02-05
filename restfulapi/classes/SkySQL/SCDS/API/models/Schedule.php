@@ -30,15 +30,18 @@ namespace SkySQL\SCDS\API\models;
 
 use DateTime;
 use SkySQL\SCDS\API\Request;
-use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\COMMON\WHEN\When;
 use SkySQL\COMMON\AdminDatabase;
 
 class Schedule extends EntityModel {
 	protected static $setkeyvalues = false;
 	
+	protected static $classname = __CLASS__;
 	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\ScheduleManager';
 
+	protected $ordinaryname = 'command';
+	protected static $headername = 'Command';
 
 	protected static $updateSQL = 'UPDATE Schedule SET %s WHERE ScheduleID = :scheduleid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM Schedule WHERE ScheduleID = :scheduleid';
@@ -51,19 +54,19 @@ class Schedule extends EntityModel {
 	protected static $getAllCTO = array('command');
 	
 	protected static $keys = array(
-		'scheduleid' => array('sqlname' => 'ScheduleID', 'desc'  => 'ID for the schedule')
+		'scheduleid' => array('sqlname' => 'ScheduleID', 'type'  => 'int')
 	);
 	
 	protected static $fields = array(
-		'systemid' => array('sqlname' => 'SystemID', 'desc' => 'ID for the System on which scheduled command will run', 'default' => 0, 'insertonly' => true),
-		'nodeid' => array('sqlname' => 'NodeID', 'desc'  => 'ID for the Node on which to run', 'default' => 0, 'insertonly' => true),
-		'username' => array('sqlname' => 'UserName', 'desc'  => 'Username for user who created the schedule', 'default' => ''),
-		'command' => array('sqlname' => 'Command', 'desc' => 'The name of the command to be run', 'default' => '', 'insertonly' => true),
-		'parameters' => array('sqlname' => 'Params', 'desc'  => 'Parameters for the command scripts', 'default' => ''),
-		'icalentry' => array('sqlname' => 'iCalEntry', 'desc' => 'An iCalendar entry defining when the scheduled command will run', 'default' => 'running'),
-		'nextstart' => array('sqlname' => 'NextStart', 'desc' => 'The date and time at which the command will next be run', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
-		'atjobnumber' => array('sqlname' => 'ATJobNumber', 'desc' => 'The number of the operation scheduled by the Linux at command', 'default' => 0, 'insertonly' => true),
-		'created' => array('sqlname' => 'Created', 'desc' => 'The date and time the schedule was created', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
+		'systemid' => array('sqlname' => 'SystemID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
+		'nodeid' => array('sqlname' => 'NodeID', 'type'  => 'int', 'default' => 0, 'insertonly' => true),
+		'username' => array('sqlname' => 'UserName', 'type'  => 'varchar', 'default' => ''),
+		'command' => array('sqlname' => 'Command', 'default' => '', 'insertonly' => true),
+		'parameters' => array('sqlname' => 'Params', 'type'  => 'text', 'default' => ''),
+		'icalentry' => array('sqlname' => 'iCalEntry', 'type' => 'text', 'default' => 'running'),
+		'nextstart' => array('sqlname' => 'NextStart', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
+		'atjobnumber' => array('sqlname' => 'ATJobNumber', 'default' => 0, 'insertonly' => true),
+		'created' => array('sqlname' => 'Created', 'default' => '', 'validate' => 'datetime', 'insertonly' => true),
 		'updated' => array('sqlname' => 'Updated', 'desc' => 'Last date the system record was updated', 'forced' => 'datetime')
 	);
 	
@@ -72,10 +75,6 @@ class Schedule extends EntityModel {
 	
 	public function __construct ($scheduleid=0) {
 		$this->scheduleid = $scheduleid;
-	}
-	
-	protected function requestURI () {
-		return "schedule/$this->scheduleid";
 	}
 	
 	public function insertOnCommand ($command) {
@@ -110,7 +109,7 @@ class Schedule extends EntityModel {
 			if (empty($this->bind[':'.$name])) $errors[] = "Value for $name is required to schedule a command";
 		}
 		if (isset($errors)) $request->sendErrorResponse($errors, 400);
-		$this->node = Node::getByID($this->bind[':systemid'], $this->bind[':nodeid']);
+		$this->node = NodeManager::getInstance()->getByID($this->bind[':systemid'], $this->bind[':nodeid']);
 		if (!$this->node) $request->sendErrorResponse("No node with system ID {$this->bind[':systemid']} and node ID {$this->bind[':nodeid']}", 400);
 		if (!$this->icalentry) $request->sendErrorResponse("Cannot create a schedule without an iCalendar specification", 400);
 		$this->processCalendarEntry();

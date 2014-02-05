@@ -29,14 +29,16 @@
 namespace SkySQL\SCDS\API\models;
 
 use SkySQL\SCDS\API\Request;
-use SkySQL\SCDS\API\managers\UserManager;
-use SkySQL\SCDS\API\managers\UserPropertyManager;
 
 class User extends EntityModel {
 	protected static $setkeyvalues = true;
 	
+	protected static $classname = __CLASS__;
 	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\UserManager';
 
+	protected $ordinaryname = 'user';
+	protected static $headername = 'User';
+	
 	protected static $updateSQL = 'UPDATE User SET %s WHERE UserName = :username';
 	protected static $countSQL = 'SELECT COUNT(*) FROM User WHERE UserName = :username';
 	protected static $countAllSQL = 'SELECT COUNT(*) FROM User';
@@ -48,12 +50,12 @@ class User extends EntityModel {
 	protected static $getAllCTO = array('id');
 	
 	protected static $keys = array(
-		'username' => array('sqlname' => 'UserName', 'desc' => 'The unique identifying name for a user')
+		'username' => array('sqlname' => 'UserName')
 	);
 
 	protected static $fields = array(
-		'name' => array('sqlname' => 'Name', 'desc' => 'The ordinary name of a user', 'default' => ''),
-		'password' => array('sqlname' => 'Password', 'desc' => 'Password for a user', 'default' => '', 'mask' => _MOS_NOTRIM, 'secret' => true)
+		'name' => array('sqlname' => 'Name', 'default' => ''),
+		'password' => array('sqlname' => 'Password', 'default' => '', 'mask' => _MOS_NOTRIM, 'secret' => true)
 	);
 
 	protected static $derived = array(
@@ -67,19 +69,10 @@ class User extends EntityModel {
 		$this->username = $username;
 	}
 	
-	protected function requestURI () {
-		return "user/$this->username";
-	}
-	
 	public function authenticate ($password) {
 		return $this->password === crypt($password, $this->password);
 	}
 	
-	public function delete ($alwaysrespond=true) {
-		UserPropertyManager::getInstance()->deleteAllProperties($this->username);
-		parent::delete($alwaysrespond);
-	}
-
 	public function publicCopy () {
 		$copy = new self($this->username);
 		foreach (self::$fields as $name=>$field) {
@@ -118,9 +111,5 @@ class User extends EntityModel {
 
 	protected function insertedKey ($insertid) {
 		return $this->username;
-	}
-	
-	public static function getAllPublic () {
-		return UserManager::getInstance()->getAllPublic();
 	}
 }

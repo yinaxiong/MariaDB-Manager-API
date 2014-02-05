@@ -30,8 +30,8 @@
 namespace SkySQL\SCDS\API\caches;
 
 use SkySQL\COMMON\CACHE\CachedSingleton;
-use SkySQL\SCDS\API\models\System;
-use SkySQL\SCDS\API\models\Node;
+use SkySQL\SCDS\API\managers\SystemManager;
+use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\API;
 use stdClass;
 
@@ -89,7 +89,7 @@ class CachedProvisionedNodes extends CachedSingleton {
 	}
 	
 	protected function getProvisionedNodes () {
-		$nodes = Node::getAll();
+		$nodes = NodeManager::getInstance()->getAll();
 		if ($nodes) foreach ($nodes as $node) {
 			if (isset(API::$provisionstates[$node->state])) continue;
 			$pnode = new stdClass();
@@ -102,7 +102,7 @@ class CachedProvisionedNodes extends CachedSingleton {
 	}
 	
 	protected function getRelevantSystemData () {
-		foreach (System::getAll() as $system) {
+		foreach (SystemManager::getInstance()->getAll() as $system) {
 			$this->types[$system->systemid] = $system->systemtype;
 			$psystem = new stdClass();
 			foreach (self::$systemfields as $field) $psystem->$field = @$system->$field;

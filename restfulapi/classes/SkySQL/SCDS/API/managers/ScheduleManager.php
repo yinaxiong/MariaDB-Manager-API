@@ -32,13 +32,41 @@ use SkySQL\SCDS\API\models\Schedule;
 
 class ScheduleManager extends EntityManager {
 	protected static $instance = null;
+	protected $schedules = array();
 	
 	protected function __construct () {
-		$schedules = Schedule::getAll(false);
-		foreach ($schedules as $schedule) $this->maincache[$schedule->scheduleid] = $this->simplecache[] = $schedule;
+		$schedules = Schedule::getAll();
+		foreach ($schedules as $schedule) $this->schedules[$schedule->scheduleid] = $schedule;
 	}
 	
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
+	}
+	
+	public function getByID ($id) {
+		return isset($this->schedules[$id]) ? $this->schedules[$id] : null;
+	}
+	
+	public function getAll () {
+		return $this->schedules;
+	}
+	
+	public function createSchedule () {
+		$schedule = new Schedule();
+		$schedule->insert();
+		// Above method does not return - clears cache, sends a response and exits
+	}
+	
+	public function updateSchedule ($id) {
+		$schedule = new Schedule($id);
+		$schedule->update();
+		// Above method does not return - clears cache, sends a response and exits
+	}
+	
+	public function deleteSchedule ($id) {
+		$schedule = new Schedule($id);
+		if (isset($this->schedules[$id])) unset($this->schedules[$id]);
+		$schedule->delete();
+		// Above method does not return - clears cache, sends a response and exits
 	}
 }

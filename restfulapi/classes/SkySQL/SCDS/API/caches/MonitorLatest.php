@@ -31,8 +31,8 @@ namespace SkySQL\SCDS\API\caches;
 use stdClass;
 use SkySQL\COMMON\CACHE\CachedSingleton;
 use SkySQL\COMMON\MonitorDatabase;
-use SkySQL\SCDS\API\models\Monitor;
-use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\managers\MonitorManager;
+use SkySQL\SCDS\API\managers\SystemManager;
 
 class MonitorLatest extends CachedSingleton {
 	protected static $instance = null;
@@ -56,7 +56,7 @@ class MonitorLatest extends CachedSingleton {
 	
 	public function getLatestValue ($monitorid, $systemid, $nodeid) {
 		if (isset($this->instances[$monitorid][$systemid][$nodeid])) {
-			$monitor = Monitor::getByMonitorID($monitorid);
+			$monitor = MonitorManager::getInstance()->getByMonitorID($monitorid);
 			$value = $this->instances[$monitorid][$systemid][$nodeid]['value'];
 			return $value ? $value / pow(10,@$monitor->decimals) : $value;
 		}
@@ -77,8 +77,8 @@ class MonitorLatest extends CachedSingleton {
 	}
 	
 	public function getMonitorData ($systemid, $nodeid, $ifmodifiedsince) {
-		$system = System::getByID($systemid);
-		$monitors = Monitor::getByType(@$system->systemtype);
+		$system = SystemManager::getInstance()->getByID($systemid);
+		$monitors = MonitorManager::getInstance()->getByType(@$system->systemtype);
 		$monitorlatest = new stdClass;
 		foreach ($monitors as $monitor) {
 			$property = $monitor->monitor;
@@ -87,7 +87,7 @@ class MonitorLatest extends CachedSingleton {
 		$lastupdate = 0;
 		$modified = false;
 		foreach ($this->instances as $monitorid=>$info) if (isset($info[$systemid][$nodeid])) {
-			$monitor = Monitor::getByMonitorID($monitorid);
+			$monitor = MonitorManager::getInstance()->getByMonitorID($monitorid);
 			if ($monitor) {
 				$property = $monitor->monitor;
 				$monitordata = $info[$systemid][$nodeid];

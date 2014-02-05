@@ -36,6 +36,11 @@ use SkySQL\SCDS\API\Request;
 class Backup extends EntityModel {
 	protected static $setkeyvalues = true;
 
+	protected static $classname = __CLASS__;
+
+	protected $ordinaryname = 'backup';
+	protected static $headername = 'Backup';
+	
 	protected static $updateSQL = 'UPDATE Backup SET %s WHERE SystemID = :systemid AND BackupID = :backupid';
 	protected static $countSQL = 'SELECT COUNT(*) FROM Backup WHERE SystemID = :systemid AND BackupID = :backupid';
 	protected static $countAllSQL = 'SELECT COUNT(*) FROM Backup';
@@ -57,11 +62,11 @@ class Backup extends EntityModel {
 		'parentid' => array('sqlname' => 'ParentID', 'desc' => 'Base for an incremental backup', 'default' => 0),
 		'state' => array('sqlname' => 'State', 'validate' => 'backupstate', 'desc' => 'Current state of the backup', 'default' => 'running'),
 		'started' => array('sqlname' => 'Started', 'validate' => 'datetime', 'desc' => 'Date and time backup started', 'default' => ''),
-		'updated' => array('sqlname' => 'Updated', 'forced' => 'datetime', 'desc' => 'Date and time backup updated'),
+		'updated' => array('sqlname' => 'Updated', 'validate' => 'datetime', 'desc' => 'Date and time backup updated', 'default' => ''),
 		'restored' => array('sqlname' => 'Restored', 'validate' => 'datetime', 'desc' => 'Date and time backup restored', 'default' => ''),
 		'size' => array('sqlname' => 'Size', 'desc' => 'Size of the backup', 'default' => 0),
 		'backupurl' => array('sqlname' => 'BackupURL', 'default' => ''),
-		'binlog' => array('sqlname' => 'BinLog', 'desc' => 'binlog position of the previous backup that took place, only used to create incremental backups with accurate start positions and should not be modified by the user', 'default' => ''),
+		'binlog' => array('sqlname' => 'BinLog', 'default' => ''),
 		'log' => array('sqlname' => 'Log', 'default' => '')
 	);
 	
@@ -72,15 +77,6 @@ class Backup extends EntityModel {
 	
 	public static function getBackupStates () {
 		return API::mergeStates(API::$backupstates);
-	}
-	
-	protected function requestURI () {
-		return "system/$this->systemid/backup/$this->backupid";
-	}
-	
-	protected function insertedKey ($insertid) {
-		$this->backupid = $insertid;
-		return $insertid;
 	}
 	
 	protected function validateInsert () {

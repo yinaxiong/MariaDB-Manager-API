@@ -22,8 +22,19 @@
  * Author: Martin Brampton
  * Date: February 2013
  * 
- * The StandardRequest class is the main controller for the API when the request
- * is made by a standard HTTP request.  It specialises the abstract Request class.
+ * The Request class is the main controller for the API.
+ * 
+ * The $uriTable array defines the API RESTful interface, and links calls to
+ * classes and methods.  The Request class puts this into effect.
+ * 
+ * The constructor splits up the model URIs into their constituent parts.
+ * 
+ * The doControl method first fetches the request URI and extracts the relevant
+ * part, then explodes it into parts.  Then the request URI is compared with 
+ * the model URIs to find what is to be done (or an error return).
+ * 
+ * The sendResponse method is provided for the benefit of the classes that 
+ * implement the API.
  * 
  */
 
@@ -41,20 +52,20 @@ final class StandardRequest extends Request {
 	
 	protected function __construct () {
 		$this->getHeaders();
-		$this->checkHeaders();
-		$rawparameters = file_get_contents("php://input");
 		if ('PUT' == $_SERVER['REQUEST_METHOD'] OR 'DELETE' == $_SERVER['REQUEST_METHOD']) {
-			if ('1.0' == $this->requestversion) {
-				$parameters = $this->decodeJsonOrQueryString($rawparameters);
-				if (is_array($parameters)) $this->putdata = $parameters;
-			}
+			$rawput = file_get_contents("php://input");
+			$dejson = json_decode($rawput, true);
+			if (false === stripos($rawput, '=')) $dequery = $rawput;
 			else {
-				if ($this->urlencoded) parse_str($rawparameters, $this->putdata);
-				else $this->putdata = json_decode($rawparameters, true);
+				if ('application/x-www-form-urlencoded' == @$this->headers['Content-Type']) {
+					parse_str($rawput, $dequery);
 				}
+				else $this->parse_str($rawput, $dequery);
 			}
-		elseif ('POST' == $_SERVER['REQUEST_METHOD'] AND !$this->urlencoded) {
-			$_POST = json_decode($rawparameters, true);
+			$this->putdata = (is_null($dejson) OR (is_array($dequery) AND count($dejson) < count($dequery))) ? $dequery : $dejson;
+			if (is_array($this->putdata)) foreach ($this->putdata as $key=>$value) {
+				if (is_null($value)) $this->putdata[$key] = '';
+			}
 		}
 		$this->requestmethod = $_SERVER['REQUEST_METHOD'];
 		parent::__construct();

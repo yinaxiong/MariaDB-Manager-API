@@ -30,12 +30,12 @@ namespace SkySQL\SCDS\API\controllers;
 
 use stdClass;
 use SkySQL\SCDS\API\API;
+use SkySQL\SCDS\API\managers\SystemManager;
+use SkySQL\SCDS\API\managers\NodeManager;
 use SkySQL\SCDS\API\managers\SystemPropertyManager;
 use SkySQL\SCDS\API\models\System;
-use SkySQL\SCDS\API\models\Node;
 
 class Systems extends SystemNodeCommon {
-	protected $defaultResponse = 'system';
 	protected $backups_query = null;
 	
 	public function __construct ($controller) {
@@ -44,19 +44,14 @@ class Systems extends SystemNodeCommon {
 		System::checkLegal();
 	}
 	
-	public function getAllData ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, '', true, 'fields');
-		$poe = $this->requestor->getHeader('Poe');
-		// Method sendPOE does not return
-		if ($poe) System::sendPOE();
-		foreach (System::getAll() as $system) {
+	public function getAllData () {
+		foreach (SystemManager::getInstance()->getAll() as $system) {
 			$results[] = $this->retrieveOneSystem($system);
 		}
         $this->sendResponse(array("systems" => $this->filterResults((array) @$results)));
 	}
 	
-	public function getSystemTypes ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'systemtype', true);
+	public function getSystemTypes () {
 		$result = new stdClass();
 		foreach (API::$systemtypes as $type=>$about) {
 			$result->$type = $about['description'];
@@ -64,10 +59,9 @@ class Systems extends SystemNodeCommon {
 		$this->sendResponse(array('systemtypes' => $result));
 	}
 
-	public function getSystemData ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
+	public function getSystemData ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
-		$data = System::getByID($this->systemid);
+		$data = SystemManager::getInstance()->getByID($this->systemid);
 		if ($data) {
 			if ($this->ifmodifiedsince < strtotime($data->updated)) $this->modified = true;
 			$system = $this->retrieveOneSystem($data);
@@ -80,49 +74,28 @@ class Systems extends SystemNodeCommon {
 		else $this->sendErrorResponse("No system with ID of $this->systemid was found", 404);
 	}
 	
-	public function createSystem ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for system resource');
+	public function createSystem () {
 		$this->db->beginImmediateTransaction();
-		$system = new System();
-		$system->insert();
+		SystemManager::getInstance()->createSystem();
 	}
 	
-	public function createSystemOnceOnly ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for system resource');
-		$this->db->beginImmediateTransaction();
-		$deluniqid = $this->db->prepare("DELETE FROM POE WHERE uniqid = '/system/' || :partone");
-		$deluniqid->execute(array(':partone' => $uriparts[1]));
-		if ($deluniqid->rowCount()) {
-			$system = new System();
-			$system->insert();
-		}
-		$this->db->rollbackTransaction();
-		header(HTTP_PROTOCOL.' 405 Operation Not Supported');
-		exit;
-	}
-	
-	public function updateSystem ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for system resource');
+	public function updateSystem ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
 		$this->db->beginImmediateTransaction();
-		if (!System::getByID($this->systemid)) {
+		if (!SystemManager::getInstance()->getByID($this->systemid)) {
 			$this->sendErrorResponse(sprintf("Cannot update system with ID '%s' - does not exist", $this->systemid), 400);
 		}
-		$system = new System($this->systemid);
-		$system->update();
+		SystemManager::getInstance()->updateSystem($this->systemid);
 	}
 	
-	public function deleteSystem ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata);
+	public function deleteSystem ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
-		$system = new System($this->systemid);
-		$system->delete();
+		SystemManager::getInstance()->deleteSystem($this->systemid);
 	}
 	
-	public function getSystemProcesses ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'process', true);
+	public function getSystemProcesses ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
-		$nodes = Node::getAllIDsForSystem($this->systemid);
+		$nodes = NodeManager::getInstance()->getAllIDsForSystem($this->systemid);
 		$processes = array();
 		foreach ($nodes as $nodeid) $processes = array_merge($processes, $this->getNodeProcesses ($nodeid));
 		$this->sendResponse(array('process' => $this->filterResults($processes)));
@@ -130,7 +103,7 @@ class Systems extends SystemNodeCommon {
 	
 	protected function retrieveOneSystem ($system) {
 		$this->systemid = (int) $system->systemid;
-		$system->nodes = Node::getAllIDsForSystem($this->systemid);
+		$system->nodes = NodeManager::getInstance()->getAllIDsForSystem($this->systemid);
 		$system->lastbackup = $this->isFilterWord('lastbackup') ? $this->retrieveLastBackup() : null;
 		$system->properties = $this->isFilterWord('properties') ? SystemPropertyManager::getInstance()->getAllProperties($this->systemid) : null;
 		// Not sure if there are any system commands

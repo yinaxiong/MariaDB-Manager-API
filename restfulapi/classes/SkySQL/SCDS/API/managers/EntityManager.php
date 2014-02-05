@@ -33,23 +33,5 @@ use SkySQL\COMMON\CACHE\CachedSingleton;
 
 
 abstract class EntityManager extends CachedSingleton {
-	protected $maincache = array();
-	protected $simplecache = array();
 	
-	final private function getKeys () {
-		
-	}
-	
-	public function getByID () {
-		$data = $this->maincache;
-		foreach (func_get_args() as $arg) {
-			if (!isset($data[$arg])) return null;
-			$data = $data[$arg];
-		}
-		return $data;
-	}
-
-	public function getAll () {
-		return array_values($this->maincache);
-	}
 }

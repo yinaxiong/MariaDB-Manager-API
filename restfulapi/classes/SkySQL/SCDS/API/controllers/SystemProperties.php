@@ -29,40 +29,36 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\managers\SystemManager;
 use SkySQL\SCDS\API\managers\SystemPropertyManager;
 use SkySQL\SCDS\API\models\Property;
-use SkySQL\SCDS\API\models\System;
 
 class SystemProperties extends SystemNodeCommon {
-	protected $defaultResponse = 'systemproperty';
 	
 	public function __construct ($controller) {
 		parent::__construct($controller);
 		Property::checkLegal();
 	}
 	
-	public function setSystemProperty ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'value');
+	public function setSystemProperty ($uriparts) {
 		$property = $this->checkSystemIDGetProperty($uriparts);	// Sets $this->systemid;
 		$value = $this->getParam('PUT', 'value');
 		SystemPropertyManager::getInstance()->setProperty($this->systemid, $property, $value);
 	}
 	
-	public function deleteSystemProperty ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
+	public function deleteSystemProperty ($uriparts) {
 		$property = $this->checkSystemIDGetProperty($uriparts);	// Sets $this->systemid;
 		SystemPropertyManager::getInstance()->deleteProperty($this->systemid, $property);
 	}
 	
-	public function getSystemProperty ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata);
+	public function getSystemProperty ($uriparts) {
 		$property = $this->checkSystemIDGetProperty($uriparts);	// Sets $this->systemid;
 		return SystemPropertyManager::getInstance()->getProperty($this->systemid, $property);
 	}
 	
 	protected function checkSystemIDGetProperty ($uriparts) {
 		$this->systemid = (int) $uriparts[1];
-		if (System::getByID($this->systemid)) return $uriparts[3];
+		if (SystemManager::getInstance()->getByID($this->systemid)) return $uriparts[3];
 		$this->sendErrorResponse("No system with ID $this->systemid", 404);
 	}
 }

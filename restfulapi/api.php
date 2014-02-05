@@ -43,10 +43,9 @@ use PDOException;
 use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
-define ('_API_VERSION_NUMBER','1.1');
+define ('_API_VERSION_NUMBER','1.0');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_SOURCE_REVISION', '$Revision-Id$');
-define ('_API_DEFAULT_SQL_PORT', 3306);
 // _API_CODE_ISSUE_DATE will be defined in the code below 
 define ('_API_BASE_FILE', __FILE__);
 
@@ -261,12 +260,10 @@ class API {
 		}
 		// The request handling code should catch all exceptions
 		catch (PDOException $pe) {
-			header(HTTP_PROTOCOL.' 500 Server Error, unhandled database error');
-			die(HTTP_PROTOCOL.' 500 Server Error, Unhandled database error: '.$pe->getMessage());
+			echo 'Unhandled database error: '.$pe->getMessage().API::trace();
 		}
 		catch (Exception $e) {
-			header(HTTP_PROTOCOL.' 500 Server Error, unhandled general error');
-			die(HTTP_PROTOCOL.' 500 Server Error, Unhandled general error: '.$e->getMessage());
+			echo 'Unhandled general error: '.$e->getMessage().API::trace();
 		}
 	}
 

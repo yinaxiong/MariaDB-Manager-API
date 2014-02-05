@@ -41,7 +41,7 @@ abstract class PropertyManager extends EntityManager {
 	protected function __construct () {
 		$selectall = AdminDatabase::getInstance()->prepare($this->selectAllSQL);
 		$selectall->execute();
-		foreach ($selectall->fetchAll() as $property) {
+		foreach ($selectall->fetchALL() as $property) {
 			$this->properties[$property->key][$property->property] = $property->value;
 			$this->updates[$property->key][$property->property] = date('r', strtotime($property->updated));
 		}
