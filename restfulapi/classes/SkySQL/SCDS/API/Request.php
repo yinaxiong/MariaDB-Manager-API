@@ -152,6 +152,10 @@ abstract class Request {
 		$this->micromarker = $this->timer->getMicroSeconds();
 		$this->clientip = API::getIP();
         $this->config = $this->readAndCheckConfig();
+		if ('yes' == @$this->config['logging']['verbose']) {
+			ini_set('display_errors', 1);
+			error_reporting(-1);
+		}
 		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
 		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
@@ -303,12 +307,6 @@ abstract class Request {
 	}
 
 	public function doControl () {
-		$this->log(LOG_INFO, "$this->requestmethod /$this->uri".($this->suffix ? '.'.$this->suffix : ''));
-		if ('yes' == @$this->config['logging']['verbose']) {
-			if (count($_POST)) $this->log(LOG_DEBUG, print_r($_POST,true));
-			if (count($_GET)) $this->log(LOG_DEBUG, print_r($_GET,true));
-			if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
-		}
 		$uriparts = array_map('urldecode', explode('/', $this->uri));
 		$parser = RequestParser::getInstance();
 		// Method sendOptions sends answer, does not return to caller
@@ -317,6 +315,12 @@ abstract class Request {
 		if ($link) {
 			try {
 				if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0] AND 'apidate' != $uriparts[0]) $this->checkSecurity();
+				$this->log(LOG_INFO, "$this->requestmethod /$this->uri".($this->suffix ? '.'.$this->suffix : ''));
+				if ('yes' == @$this->config['logging']['verbose']) {
+					if (count($_POST)) $this->log(LOG_DEBUG, print_r($_POST,true));
+					if (count($_GET)) $this->log(LOG_DEBUG, print_r($_GET,true));
+					if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
+				}
 				if ('Request' == $link['class']) $object = $this;
 				else {
 					$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
@@ -338,7 +342,10 @@ abstract class Request {
 				$this->sendErrorResponse('Unexpected database error: '.$pe->getMessage(), 500, $pe);
 			}
 		}
-		else $this->sendErrorResponse ("Request $this->uri with HTTP request $this->requestmethod does not match the API", 404);
+		else {
+			$this->log(LOG_INFO, "$this->requestmethod /$this->uri".($this->suffix ? '.'.$this->suffix : '').' does not match the API');
+			$this->sendErrorResponse ("Request $this->uri with HTTP request $this->requestmethod does not match the API", 404);
+		}
 	}
 	
 	protected function listAPI () {

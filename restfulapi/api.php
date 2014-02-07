@@ -340,8 +340,4 @@ class API {
 	}
 }
 
-// Adjust for testing
-ini_set('display_errors', 0);
-error_reporting(-1);
-
 API::getInstance()->startup(true);
