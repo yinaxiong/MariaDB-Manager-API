@@ -89,6 +89,7 @@ class Node extends EntityModel {
 	}
 
 	public function getSystemType () {
+		if (self::isProvisioningState($this->state)) return 'provision';
 		$system = System::getByID($this->systemid);
 		return @$system->systemtype;
 	}

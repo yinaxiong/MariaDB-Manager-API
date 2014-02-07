@@ -187,6 +187,36 @@ class Task extends EntityModel {
 		$this->removeSensitiveParameters();
 	}
 	
+	public static function select () {
+		list($total, $tasks) = call_user_func_array('parent::select', func_get_args());
+		foreach ($tasks as &$task) $task = self::formatParameters($task);
+		return array($total, $tasks);
+	}
+	
+	public static function getByID () {
+		$task = call_user_func_array('parent::getByID', func_get_args());
+		return self::formatParameters(@$task);
+	}
+	
+	private static function formatParameters ($task) {
+		if (!empty($task->parameters)) {
+			$parmarray = json_decode($task->parameters, true);
+			if (!$parmarray) {
+				$pairs = explode('|', $task->parameters);
+				foreach ($pairs as $pair) {
+					$parts = explode('=', $pair, 2);
+					if (isset($parts[1])) $parmarray[$parts[0]] = $parts[1];
+				}
+			}
+			if (version_compare(Request::getInstance()->getVersion(), '1.0', 'gt')) $task->parameters = (array) @$parmarray;
+			else {
+				foreach ($parmarray as $name=>$value) $parmparts[] = "$name=$value";
+				$task->parameters = implode('|', (array) @$parmparts);
+			}
+		}
+		return $task;
+	}
+	
 	public static function latestForNode ($node) {
 		$latest = AdminDatabase::getInstance()->prepare("SELECT TaskID FROM Task WHERE SystemID = :systemid AND NodeID = :nodeid ORDER BY Updated DESC");
 		$latest->execute(array(

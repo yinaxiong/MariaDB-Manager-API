@@ -61,7 +61,7 @@ abstract class EntityModel {
 		return $entities;
 	}
 	
-	final public static function getByID () {
+	public static function getByID () {
 		if (isset(static::$managerclass)) {
 			$manager = call_user_func(array(static::$managerclass, 'getInstance'));
 			if (method_exists($manager, 'getByID')) return call_user_func_array(array($manager,'getByID'), func_get_args());
@@ -88,7 +88,7 @@ abstract class EntityModel {
 			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
 			return self::fixDate($entity);
 		}
-		return null;
+		else return null;
 	}
 
 	// Method and all calls to it can be removed when API version 1.0 is obsolete
@@ -130,7 +130,7 @@ abstract class EntityModel {
 		return self::fixDate($this);
 	}
 	
-	final public static function select () {
+	public static function select () {
 		$args = func_get_args();
 		$controller = array_shift($args);
 		list($where, $bind) = self::wheresAndBinds($controller, $args);
