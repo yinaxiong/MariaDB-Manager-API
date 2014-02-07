@@ -87,8 +87,13 @@ class Node extends EntityModel {
 	protected function requestURI () {
 		return "system/$this->systemid/node/$this->nodeid";
 	}
-
+	
 	public function getSystemType () {
+		if (self::isProvisioningState($this->state)) return 'provision';
+		else return $this->getNaturalSystemType ();
+	}
+
+	public function getNaturalSystemType () {
 		$system = System::getByID($this->systemid);
 		return @$system->systemtype;
 	}
@@ -114,7 +119,7 @@ class Node extends EntityModel {
 		if (!$old) $request->sendErrorResponse(sprintf("Update node, no node with system ID '%s' and node ID '%s'", $this->systemid, $this->nodeid), 400);
 		$stateid = $request->getParam($request->getMethod(), 'stateid', 0);
 		if ($stateid) {
-			$newstate = self::getStateByID($this->getSystemType(), $stateid);
+			$newstate = self::getStateByID($this->getNaturalSystemType(), $stateid);
 			$request->putParam($request->getMethod(), 'state', $newstate);
 		}
 		else $newstate = $request->getParam($request->getMethod(), 'state');
@@ -199,7 +204,7 @@ class Node extends EntityModel {
 	}
 
 	protected function checkCredentials () {
-		$systemtype = $this->getSystemType();
+		$systemtype = $this->getNaturalSystemType();
 		if ('node' == @API::$systemtypes[$systemtype]['wheretofinddb']) {
 			if (empty($this->dbusername)) $errors[] = sprintf("A node in a system of type '%s' must have database user set", $systemtype);
 			elseif ('root' == $this->dbusername) $errors[] = "A node cannot have a database user of 'root'";
