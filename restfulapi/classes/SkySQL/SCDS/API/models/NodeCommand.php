@@ -33,6 +33,8 @@ use SkySQL\SCDS\API\managers\NodeCommandManager;
 class NodeCommand extends EntityModel {
 	protected static $setkeyvalues = false;
 	
+	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\NodeCommandManager';
+
 	protected static $updateSQL = 'UPDATE NodeCommands SET %s WHERE Command = :command AND SystemType = :systemtype AND State = :state';
 	protected static $countSQL = 'SELECT COUNT(*) FROM NodeCommands WHERE Command = :command AND SystemType = :systemtype AND State = :state';
 	protected static $countAllSQL = 'SELECT COUNT(*) FROM NodeCommands WHERE UIOrder IS NOT NULL';
