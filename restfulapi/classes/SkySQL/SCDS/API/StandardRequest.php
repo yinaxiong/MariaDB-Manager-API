@@ -41,6 +41,7 @@ final class StandardRequest extends Request {
 	
 	protected function __construct () {
 		$this->getHeaders();
+		$this->requestmethod = $_SERVER['REQUEST_METHOD'];
 		$this->checkHeaders();
 		$rawparameters = file_get_contents("php://input");
 		if ('PUT' == $_SERVER['REQUEST_METHOD'] OR 'DELETE' == $_SERVER['REQUEST_METHOD']) {
@@ -56,7 +57,6 @@ final class StandardRequest extends Request {
 		elseif ('POST' == $_SERVER['REQUEST_METHOD'] AND !$this->urlencoded) {
 			$_POST = json_decode($rawparameters, true);
 		}
-		$this->requestmethod = $_SERVER['REQUEST_METHOD'];
 		parent::__construct();
 	}
 	

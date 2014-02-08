@@ -147,18 +147,10 @@ abstract class Request {
 	protected $urlencoded = true;
 	
 	protected function __construct() {
-		$this->timer = new aliroProfiler();
-		$this->micromarker = $this->timer->getMicroSeconds();
-		$this->clientip = API::getIP();
-        $this->config = $this->readAndCheckConfig();
 		if ('yes' == @$this->config['logging']['verbose']) {
 			ini_set('display_errors', 1);
 			error_reporting(-1);
 		}
-		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
-		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
-		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
-		$this->uri = $this->getURI();
 		$this->getSuffix();
 		$this->handleAccept();
 		$suppressor = $this->getParam($this->requestmethod, 'suppress_response_codes');
@@ -167,6 +159,14 @@ abstract class Request {
 	}
 	
 	protected function checkHeaders () {
+		$this->timer = new aliroProfiler();
+		$this->micromarker = $this->timer->getMicroSeconds();
+		$this->clientip = API::getIP();
+		$this->uri = $this->getURI();
+        $this->config = $this->readAndCheckConfig();
+		define ('_SKYSQL_API_CACHE_DIRECTORY', rtrim(@$this->config['cache']['directory'],'/').'/');
+		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
+		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
 		if (isset($this->headers['Content-Type'])) {
 			switch (strtolower($this->headers['Content-Type'])) {
