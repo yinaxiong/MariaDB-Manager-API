@@ -145,6 +145,7 @@ abstract class Request {
 	protected $apikeyid = null;
 	protected $requestversion = '1.0';
 	protected $urlencoded = true;
+	protected $authcode = null;
 	
 	protected function __construct() {
 		if ('yes' == @$this->config['logging']['verbose']) {
@@ -168,6 +169,14 @@ abstract class Request {
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
 		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
+		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
+			if (isset($matches[1]) AND isset($matches[2])) {
+				if (isset($this->config['apikeys'][$matches[1]])) {
+					$this->apikeyid = $matches[1];
+					$this->authcode = $matches[2];
+				}
+			}
+		}
 		if (isset($this->headers['Content-Type'])) {
 			switch (strtolower($this->headers['Content-Type'])) {
 				case 'application/x-www-form-urlencoded': 
@@ -362,15 +371,10 @@ abstract class Request {
 			$this->sendErrorResponse('Date header out of range '.(empty($this->headers['Date']) ? '*empty*' : $this->headers['Date']).', current '.date('r'), 401);
 		}
 		$matches = array();
-		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
-			if (isset($matches[1]) AND isset($matches[2])) {
-				if (isset($this->config['apikeys'][$matches[1]])) {
-					$this->apikeyid = $matches[1];
-					$this->apikey = $this->config['apikeys'][$matches[1]];
-					$checkstring = \md5($this->uri.$this->apikey.$this->headers['Date']);
-					if ($matches[2] == $checkstring) return;
-				}
-			}
+		if (!is_null($this->apikeyid)) {
+			$this->apikey = $this->config['apikeys'][$this->apikeyid];
+			$checkstring = \md5($this->uri.$this->apikey.$this->headers['Date']);
+			if ($this->authcode == $checkstring) return;
 		}
 		$this->log(LOG_ERR, 'Auth error - Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->headers['Date']);
 		$this->sendErrorResponse('Invalid Authorization header', 401);
@@ -580,7 +584,7 @@ PRETTY_PAGE;
 	
 	public function log ($severity, $message) {
 		$prefix = "[$this->clientip] ";
-		$prefix .= is_null($this->apikeyid) ? "[null] " : "[$this->apikeyid] ";
+		$prefix .= is_null($this->apikeyid) ? "[unknown] " : "[$this->apikeyid] ";
 		$prefix .= "[$this->micromarker] ";
 		syslog($severity, $prefix.$message);
 	}
