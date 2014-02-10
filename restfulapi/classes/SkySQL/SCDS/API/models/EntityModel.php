@@ -181,7 +181,7 @@ abstract class EntityModel {
 		$this->clearCache(true);
 		$request = Request::getInstance();
 		if ($alwaysrespond) {
-			if (version_compare($request->getVersion(), '1.0', 'gt') AND method_exists($this, 'requestURI')) {
+			if ($request->compareVersion('1.0', 'gt') AND method_exists($this, 'requestURI')) {
 				$returncode = 201;
 				$requestURI = $this->requestURI();
 			}

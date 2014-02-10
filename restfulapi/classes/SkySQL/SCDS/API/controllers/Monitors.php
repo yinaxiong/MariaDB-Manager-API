@@ -108,9 +108,7 @@ final class Monitors extends ImplementAPI {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Text: Data Accepted', false, 'timestamp; array of m, s, n, v');
 		$monitors = $this->getParam('POST', 'm', array());
 		$values = $this->getParam('POST', 'v', array());
-		$clientversion = $this->requestor->getHeader('X-Skysql-Api-Version');
-		$newversion = ($clientversion AND version_compare('1.0', $clientversion, 'lt')) ? true : false;
-		if ($newversion) {
+		if ($this->compareVersion('1.0', 'gt')) {
 			$systemid = $this->getParam('POST', 'systemid', 0);
 			$nodeid = $this->getParam('POST', 'nodeid', 0);
 			if (count($monitors) != count($values)) {

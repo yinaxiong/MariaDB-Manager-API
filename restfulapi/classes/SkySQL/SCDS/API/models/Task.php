@@ -165,7 +165,7 @@ class Task extends EntityModel {
 		}
 		$this->setCorrectFormatDate('completed');
 		$this->setCorrectFormatDateWithDefault('started');
-		if (version_compare($request->getVersion(), '1.0', 'gt')) $this->processParameters();
+		if ($request->compareVersion('1.0', 'gt')) $this->processParameters();
 		else $this->removeSensitiveParameters();
 	}
 	
@@ -208,7 +208,7 @@ class Task extends EntityModel {
 					if (isset($parts[1])) $parmarray[$parts[0]] = $parts[1];
 				}
 			}
-			if (version_compare(Request::getInstance()->getVersion(), '1.0', 'gt')) $task->parameters = (array) @$parmarray;
+			if (Request::getInstance()->compareVersion('1.0', 'gt')) $task->parameters = (array) @$parmarray;
 			else {
 				foreach ($parmarray as $name=>$value) $parmparts[] = "$name=$value";
 				$task->parameters = implode('|', (array) @$parmparts);

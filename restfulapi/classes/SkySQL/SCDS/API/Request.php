@@ -250,8 +250,8 @@ abstract class Request {
 		return isset($this->headers[$name]) ? $this->headers[$name] : null;
 	}
 	
-	public function getVersion () {
-		return $this->requestversion;
+	public function compareVersion ($version, $operation) {
+		return version_compare($this->requestversion, $version, $operation);
 	}
 	protected function fatalError ($error, $status=500) {
 		error_log($error);
