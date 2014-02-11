@@ -24,6 +24,44 @@ function addHidden(theForm, key, value) {
     input.value = value;
     theForm.appendChild(input);
 }
+function addParameter(image,type) {
+	var form = findparentForm(image);
+	var pfield = document.getElementById('addparm-'+type+'-name');
+	checkdiv = document.getElementById('addparm-'+type+'-div-'+pfield.value);
+	if (checkdiv !== null) {
+		alert('Cannot add '+pfield.value+' - already exists');
+		pfield.value = '';
+		return;
+	}
+	var divforadd = document.getElementById('addparm-'+type+'-div');
+	var newdiv = document.createElement('div');
+	newdiv.id = 'addparm-'+type+'-div-'+pfield.value;
+	var label = document.createElement('label');
+	label.for = type+'-'+pfield.value;
+	label.innerHTML = pfield.value;
+	newdiv.appendChild(label);
+	var input = document.createElement('input');
+	input.type = 'text';
+	input.id = type+'-'+pfield.value;
+	input.name = type+'-'+pfield.value;
+	newdiv.appendChild(input);
+	var image = document.createElement('img');
+	image.src = 'testresources/images/removeParameter.png';
+	image.alt = 'Remove parameter';
+	image.height = 16;
+	image.width = 16;
+	image.onclick = function() { removeParameter(this.parentNode); };
+	newdiv.appendChild(image);
+	divforadd.appendChild(newdiv);
+	pfield.value = '';
+}
+function removeParameter(div) {
+	div.parentNode.removeChild(div);
+}
+function findparentForm(what){
+      while(what && what.nodeName!='FORM') what=what.parentNode;
+      return what;
+}
 function setName (id, name) {
 	var element = document.getElementById(id);
 	element.name = name;
