@@ -108,11 +108,11 @@ abstract class EntityModel {
 		$request = Request::getInstance();
 		foreach ($request->getAllParamNames($request->getMethod()) as $paramname) {
 			$split = explode('param-', $paramname);
-			if (!empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $split[1]);
+			if (!empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $paramname);
 			$split = explode('xparam-', $paramname);
 			if (!empty($split[1])) {
 				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
-				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $split[1]), $request->getAPIKey());
+				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
 			}
 		}
 		if (isset($parameters)) $this->setInsertValue('parameters', json_encode($parameters));
@@ -268,6 +268,11 @@ abstract class EntityModel {
 		$request = Request::getInstance();
 		$okfields = array_merge(array_keys(static::$fields), array_keys(static::$keys), (array) $extras);
 		$illegals = array_diff($request->getAllParamNames($request->getMethod()),$okfields);
+		$myclassbits = explode('\\', get_called_class());
+		$myclass = end($myclassbits);
+		if ('Task' == $myclass OR 'Schedule' == $myclass OR 'Command' == $myclass) {
+			foreach ($illegals as $name=>$value) if (0 === strpos($value,'param-') OR 0 === strpos($value,'xparam-')) unset($illegals[$name]);
+		}
 		if (count($illegals)) {
 			$illegalist = implode (', ', $illegals);
 			$request->sendErrorResponse("Parameter(s) $illegalist not recognised",400);

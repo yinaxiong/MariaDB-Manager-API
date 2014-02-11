@@ -22,7 +22,7 @@
  * Author: Martin Brampton
  * Date: May 2013
  * 
- * The Command class is not instantiated, but is used for checking.
+ * The Schedule class is the model class for scheduled commands.
  * 
  */
 
@@ -34,7 +34,7 @@ use SkySQL\SCDS\API\models\Node;
 use SkySQL\COMMON\WHEN\When;
 use SkySQL\COMMON\AdminDatabase;
 
-class Schedule extends EntityModel {
+class Schedule extends TaskScheduleCommon {
 	protected static $setkeyvalues = false;
 	
 	protected static $managerclass = 'SkySQL\\SCDS\\API\\managers\\ScheduleManager';
@@ -122,7 +122,8 @@ class Schedule extends EntityModel {
 	
 	protected function validateUpdate () {
 		$this->processCalendarEntry();
-		$this->removeSensitiveParameters();
+		if ($request->compareVersion('1.0', 'gt')) $this->processParameters();
+		else $this->removeSensitiveParameters();
 	}
 	
 	public function processCalendarEntry () {
