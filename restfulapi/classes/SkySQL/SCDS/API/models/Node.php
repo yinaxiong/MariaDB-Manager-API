@@ -33,6 +33,7 @@ use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\managers\NodeManager;
+use SkySQL\SCDS\API\managers\NodeStateManager;
 use SkySQL\SCDS\API\managers\ComponentPropertyManager;
 use SkySQL\SCDS\API\models\System;
 use SkySQL\SCDS\API\models\NodeCommand;
