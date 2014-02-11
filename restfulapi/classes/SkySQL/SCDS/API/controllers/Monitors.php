@@ -108,7 +108,8 @@ final class Monitors extends ImplementAPI {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Text: Data Accepted', false, 'timestamp; array of m, s, n, v');
 		$monitors = $this->getParam('POST', 'm', array());
 		$values = $this->getParam('POST', 'v', array());
-		if ($this->compareVersion('1.0', 'gt')) {
+		$newversion = $this->requestor->compareVersion('1.0', 'gt');
+		if ($newversion) {
 			$systemid = $this->getParam('POST', 'systemid', 0);
 			$nodeid = $this->getParam('POST', 'nodeid', 0);
 			if (count($monitors) != count($values)) {
