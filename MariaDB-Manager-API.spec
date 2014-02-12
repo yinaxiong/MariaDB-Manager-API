@@ -2,7 +2,6 @@
 %define name		MariaDB-Manager-API
 %define release         ##RELEASE_TAG##
 %define version         ##VERSION_TAG##
-%define buildroot 	%{_topdir}/%{name}-%{version}-%{release}root
 %define install_path	/var/www/html/
 
 BuildRoot:		%{buildroot}
@@ -31,21 +30,21 @@ and management functionality.
 %build
 
 %post
-mkdir -p /usr/local/skysql/log
-chown apache:apache /usr/local/skysql/log
+
 chown -R apache:apache /var/www
 ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
 timezone=`grep ZONE /etc/sysconfig/clock | sed 's/ZONE="\([^"]*\)"/\1/'`
 sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
-touch /var/log/SDS.log
-chown apache:apache /var/log/SDS.log
+
 mkdir -p /usr/local/skysql/cache/api
 chown -R apache:apache /usr/local/skysql/cache
 mkdir -p /var/www/.ssh
 touch /var/www/.ssh/known_hosts
 chown apache:apache /var/www/.ssh/known_hosts
-touch /var/log/skysql-test.log
-chown apache:apache /var/log/skysql-test.log
+
+mkdir -p /usr/local/skysql/SQLite/AdminConsole
+chown -R apache:apache /usr/local/skysql/SQLite
+
 mkdir -p /usr/local/skysql/config
 
 if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
