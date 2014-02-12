@@ -43,7 +43,7 @@ touch /var/www/.ssh/known_hosts
 chown apache:apache /var/www/.ssh/known_hosts
 
 mkdir -p /usr/local/skysql/SQLite/AdminConsole
-chown -R apache:apache %{install_path}SQLite
+chown -R apache:apache /usr/local/skysql/SQLite
 
 mkdir -p /usr/local/skysql/config
 
