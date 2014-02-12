@@ -213,11 +213,11 @@ class Task extends EntityModel {
 		$nodecommands = $database->prepare("SELECT COUNT(*) FROM Task WHERE $nconditions");
 		$nodecommands->execute($bind);
 		if ($nodecommands->fetch(PDO::FETCH_COLUMN)) return true;
-		$onepersystem = API::$systemtypes[$system->systemtype]['onecommandpersystem'];
+		$onepersystem = @API::$systemtypes[$system->systemtype]['onecommandpersystem'];
 		if (!$onepersystem) return false;
-		unset($where, $bind);
 		$persystems = array_map('trim', explode(',', $onepersystem));
 		if (!in_array($commandname, $persystems)) return false;
+		unset($where, $bind);
 		$systemcondition = "'".implode("','", $persystems)."'";
 		$where[] = "State IN ($unfinished)";
 		$where[] = "SystemID = :systemid";

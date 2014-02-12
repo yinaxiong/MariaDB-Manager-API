@@ -100,11 +100,15 @@ class Node extends EntityModel {
 	}
 
 	public function getCommands () {
-		return NodeCommand::getRunnable($this->getSystemType(), $this->state);	
+		$commands = NodeCommand::getRunnable($this->getSystemType(), $this->state);
+		foreach ($commands as $sub=>$command) {
+			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
+		}
+		return $commands;
 	}
 	
-	public function getSteps ($command) {
-		$commandobject = NodeCommand::getByID($command, $this->getSystemType(), $this->state);
+	public function getSteps ($commandname) {
+		$commandobject = NodeCommand::getByID($commandname, $this->getSystemType(), $this->state);
 		return $commandobject ? $commandobject->steps : '';
 	}
 	

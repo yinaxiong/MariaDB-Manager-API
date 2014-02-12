@@ -108,39 +108,19 @@ final class Monitors extends ImplementAPI {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Text: Data Accepted', false, 'timestamp; array of m, s, n, v');
 		$monitors = $this->getParam('POST', 'm', array());
 		$values = $this->getParam('POST', 'v', array());
-		$clientversion = $this->requestor->getHeader('X-Skysql-Api-Version');
-		$newversion = ($clientversion AND version_compare('1.0', $clientversion, 'lt')) ? true : false;
-		if ($newversion) {
-			$systemid = $this->getParam('POST', 'systemid', 0);
-			$nodeid = $this->getParam('POST', 'nodeid', 0);
-			if (count($monitors) != count($values)) {
-				$errors[] = 'Bulk data must provide arrays of equal size';
-			}
-		}
-		else {
-		$systems = $this->getParam('POST', 's', array());
-		$nodes = $this->getParam('POST', 'n', array());
-		if (1 < count(array_unique(array(count($monitors), count($systems), count($nodes), count($values))))) {
+		$systemid = $this->getParam('POST', 'systemid', 0);
+		$nodeid = $this->getParam('POST', 'nodeid', 0);
+		if (count($monitors) != count($values)) {
 			$errors[] = 'Bulk data must provide arrays of equal size';
-		}
 		}
 		$limit = count($monitors);
 		for ($i = 0; $i < $limit; $i++) {
 			if (!$monitors[$i] AND !$values[$i]) {
 				unset($monitors[$i], $values[$i]);
-				if (!$newversion) unset($systems[$i], $nodes[$i]);
 				continue;
 			}
 			$monitor = Monitor::getByMonitorID($monitors[$i]);
 			if (!$monitor) $errors[] = "No such monitor ID {$monitors[$i]}";
-			if (!isset($systemid)) {
-				$systemid = $systems[$i];
-				$nodeid = $nodes[$i];
-			}
-			elseif (!$newversion) {
-				if ($systems[$i] != $systemid) $errors[] = sprintf("SystemID must be the same for every item in bulk data, %d not same as %d", $systems[$i], $systems[0]);
-				if ($nodes[$i] != $nodeid) $errors[] = sprintf("NodeID must be the same for every item in bulk data, %d not same as %d", $nodes[$i], $nodes[0]);
-			}
 			if (!empty($monitor->decimals)) $values[$i] = (int) round($values[$i] * pow(10,$monitor->decimals));
 		}
 		if (0 == count($monitors) OR empty($systemid) OR !isset($nodeid)) $errors[] = 'No bulk data provided';
