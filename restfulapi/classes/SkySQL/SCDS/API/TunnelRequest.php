@@ -52,8 +52,7 @@ final class TunnelRequest extends Request {
 		$this->headers = apache_request_headers();
 		foreach ($_POST as $key=>$value) {
 			if ('HTTP_' == substr($key,0,5)) {
-				$nicekey = str_replace(" ","-",ucwords(strtolower(str_replace(array("_", "-")," ",substr($key,5)))));
-				$this->headers[$nicekey] = trim($value);
+				$this->headers[substr($key,5)] = trim($value);
 				unset($_POST[$key]);
 			}
 		}

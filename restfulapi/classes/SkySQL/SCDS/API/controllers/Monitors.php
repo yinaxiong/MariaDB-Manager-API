@@ -278,13 +278,13 @@ final class Monitors extends ImplementAPI {
 			$tablename = $this->monitordb->makeTableName($this->systemid, $this->nodeid);
 			$preceding = $this->monitordb->prepare("SELECT 1.0 * Value/:scale AS value, Stamp AS timestamp, Repeats AS repeats
 				FROM $tablename WHERE MonitorID = :monitorid AND Stamp < :start ORDER BY Stamp DESC");
-		$preceding->execute(array(
-			':scale' => $this->scale,
-			':monitorid' => $this->monitorid,
-			':start' => $start
-		));
-		return $preceding->fetch(PDO::FETCH_ASSOC);
-	}
+			$preceding->execute(array(
+				':scale' => $this->scale,
+				':monitorid' => $this->monitorid,
+				':start' => $start
+			));
+			return $preceding->fetch(PDO::FETCH_ASSOC);
+		}
 		else return null;
 	}
 	

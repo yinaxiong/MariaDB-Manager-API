@@ -64,10 +64,7 @@ final class CommandRequest extends Request {
 	protected function getHeaders () {
 		for ($i = 4; isset($argv[$i]); $i++) {
 			$parts = explode(':', $argv[$i], 2);
-			if (2 == count($parts)) {
-				$key = str_replace(" ","-",ucwords(strtolower(str_replace("-"," ",$parts[0]))));
-				$this->headers[$key] = trim($parts[1]);
-			}
+			if (2 == count($parts)) $this->headers[$parts[0]] = trim($parts[1]);
 		}
 	}
 

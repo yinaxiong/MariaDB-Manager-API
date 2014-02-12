@@ -168,6 +168,13 @@ abstract class Request {
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
 		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->uri = $this->getURI();
+		foreach ($this->headers as $name=>$value) {
+			$stdname = str_replace(' ','-',ucwords(strtolower(str_replace(array('-','_'),' ',$name))));
+			if ($name != $stdname) {
+				unset($this->headers[$name]);
+				$this->headers[$stdname] = $value;
+			}
+		}
 		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
