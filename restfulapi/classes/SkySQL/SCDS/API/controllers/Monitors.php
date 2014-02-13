@@ -94,7 +94,7 @@ final class Monitors extends ImplementAPI {
 			}
 		}
 		$monitor = new Monitor($uriparts[1], $uriparts[3]);
-		Request::getInstance()->unsetParam($this->requestmethod, 'monitorid');
+		$this->requestor->unsetParam($this->requestmethod, 'monitorid');
 		$monitor->save();
 	}
 	

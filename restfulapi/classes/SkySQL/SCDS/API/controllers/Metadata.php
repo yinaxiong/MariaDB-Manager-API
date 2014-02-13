@@ -29,7 +29,6 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\COMMON\AdminDatabase;
-use SkySQL\SCDS\API\Request;
 use stdClass;
 use ReflectionMethod;
 
@@ -125,7 +124,7 @@ final class Metadata extends ImplementAPI {
 	}
 	
 	protected function entitiesHTML ($entities) {
-		$accept = Request::getInstance()->getAccept();
+		$accept = $this->requestor->getAccept();
 		$suffix = 'application/crl' == $accept ? '.crl' : ('application/mml' == $accept ? '.mml': '.html');
 		$ehtml = '';
 		foreach ($entities as $entity) {
@@ -188,7 +187,7 @@ FIELDCHECK;
 	}
 	
 	protected function callsPage ($callhtml, $fieldhtml) {
-		$accept = Request::getInstance()->getAccept();
+		$accept = $this->requestor->getAccept();
 		$suffix = 'application/crl' == $accept ? '.crl' : ('application/mml' == $accept ? '.mml': '');
 		return <<<API
 		
@@ -292,7 +291,7 @@ FIELDCHECK;
 	public function metadataSummary () {
 		$codedate = _API_CODE_ISSUE_DATE;
 		$version = _API_VERSION_NUMBER;
-		$accept = Request::getInstance()->getAccept();
+		$accept = $this->requestor->getAccept();
 		$suffix = 'application/crl' == $accept ? '.crl' : ('application/mml' == $accept ? '.mml': '');
 		echo <<<METADATA
 <?xml version="1.0" encoding="UTF-8"?>
