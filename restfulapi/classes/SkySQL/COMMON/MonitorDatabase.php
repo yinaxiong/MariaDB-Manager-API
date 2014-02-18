@@ -100,7 +100,7 @@ CREATE;
 	}
 	
 	public function makeTableName ($systemid, $nodeid) {
-		return ($systemid AND $nodeid) ? 'MonitorDataS'.sprintf('%06d', $systemid).'N'.sprintf('%06d', $nodeid) : 'MonitorData';
+		return ($systemid) ? 'MonitorDataS'.sprintf('%06d', $systemid).'N'.sprintf('%06d', $nodeid) : 'MonitorData';
 	}
 	
 	public function splitMonitorData () {

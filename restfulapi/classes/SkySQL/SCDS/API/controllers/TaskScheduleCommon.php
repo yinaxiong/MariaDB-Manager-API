@@ -30,7 +30,6 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\API;
-use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\models\Node;
@@ -109,7 +108,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	
 	protected function decryptParameters ($parameters) {
 		if ($parameters) {
-			Request::getInstance()->parse_str($parameters, $parray);
+			$this->requestor->parse_str($parameters, $parray);
 			if (count($parray)) {
 				foreach (API::$encryptedfields as $field) if (!empty($parray[$field])) {
 					$parray[$field] = $this->decryptOneField($parray[$field]);
@@ -123,7 +122,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	}
 
 	protected function decryptOneField ($string) {
-	    $key = pack('H*', Request::getInstance()->getAPIKey());
+	    $key = pack('H*', $this->requestor->getAPIKey());
     
 	    $ciphertext_dec = base64_decode($string);
     

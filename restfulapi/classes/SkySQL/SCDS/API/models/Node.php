@@ -104,7 +104,7 @@ class Node extends EntityModel {
 		foreach ($commands as $sub=>$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
 		}
-		return $commands;
+		return array_values($commands);
 	}
 	
 	public function getSteps ($commandname) {
