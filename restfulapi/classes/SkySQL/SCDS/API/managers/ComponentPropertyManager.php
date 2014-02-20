@@ -61,7 +61,15 @@ class ComponentPropertyManager extends PropertyManager {
 	private function makeKey ($systemid, $nodeid, $name=null) {
 		return sprintf("%d|%d|", (int) $systemid, (int) $nodeid).($name ? $name : '%');
 	}
-	
+
+	protected function URIBase ($key) {
+		$parts = explode('|', $key);
+		$uri = 'system/'.$parts[0];
+		if (isset($parts[1])) $uri .= '/node/'.$parts[1];
+		if (isset($parts[2])) $uri .= '/component/'.$parts[2];
+		return $uri;
+	}
+
 	public function setComponentProperty ($systemid, $nodeid, $name, $property, $value) {
 		$key = $this->makeKey($systemid, $nodeid, $name);
 		parent::setProperty($key, $property, $value);

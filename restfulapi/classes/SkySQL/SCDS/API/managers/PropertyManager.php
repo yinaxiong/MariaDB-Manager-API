@@ -60,10 +60,23 @@ abstract class PropertyManager extends EntityManager {
 			$insert = $database->prepare($this->insertSQL);
 			$insert->execute($bind);
 			$this->finalise($key);
-			$request->sendResponse(array('updatecount' => 0,  'insertkey' => $property));
+			if (version_compare($request->getVersion(), '1.0', 'gt')) {
+				$returncode = 201;
+				$requestURI = $this->propertyURI($key, $property);
+			}
+			else $returncode = 200;
+			$request->sendResponse(array('updatecount' => 0,  'insertkey' => $property), $returncode, @$requestURI);
 		}
 		$this->finalise($key);
 		$request->sendResponse(array('updatecount' => $counter, 'insertkey' => ''));
+	}
+	
+	protected function propertyURI ($key, $property) {
+		return "{$this->URIBase($key)}/property/$property)";
+	}
+	
+	protected function URIBase ($key) {
+		return "$this->name/$key";
 	}
 	
 	protected function finalise ($key) {
