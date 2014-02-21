@@ -3,6 +3,14 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 21 February 2014, 12:00
+ * 
+ * Change headers to corporate standard
+ * Add checks on getByID operations to ensure appropriate error messages
+ * Provide 201 return code for new properties (API version > 1.0)
+ * Improve information provided in logging
+ * Removed test key from api.ini
+ * Bug fixes
  * 
  * 
  * 5 February 2014, 14:00
