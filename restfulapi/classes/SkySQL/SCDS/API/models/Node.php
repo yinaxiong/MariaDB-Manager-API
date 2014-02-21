@@ -201,6 +201,7 @@ class Node extends EntityModel {
 		}
 		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
 		$oldnode = $manager->getByID($this->systemid, $this->nodeid);
+		if (!$oldnode) Request::getInstance()->sendErrorResponse(sprintf("Node with systemid '%s' and nodeid '%s' does not exist", $this->systemid, $this->nodeid), 404);
 		if (empty($this->dbusername)) $this->dbusername = $oldnode->dbusername;
 		if (empty($this->dbpassword)) $this->dbpassword = $oldnode->dbpassword;
 		if (empty($this->repusername)) $this->repusername = $oldnode->repusername;

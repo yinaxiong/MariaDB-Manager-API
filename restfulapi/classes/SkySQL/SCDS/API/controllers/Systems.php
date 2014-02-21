@@ -106,7 +106,7 @@ class Systems extends SystemNodeCommon {
 		$this->systemid = (int) $uriparts[1];
 		$this->db->beginImmediateTransaction();
 		if (!System::getByID($this->systemid)) {
-			$this->sendErrorResponse(sprintf("Cannot update system with ID '%s' - does not exist", $this->systemid), 400);
+			$this->sendErrorResponse(sprintf("Cannot update system with ID '%s' - does not exist", $this->systemid), 404);
 		}
 		$system = new System($this->systemid);
 		$system->update();

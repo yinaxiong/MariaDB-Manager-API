@@ -106,6 +106,7 @@ class System extends EntityModel {
 		$this->setCorrectFormatDate('started');
 		$this->setCorrectFormatDate('lastaccess');
 		$oldsystem = System::getByID($this->systemid);
+		if (!$oldsystem) Request::getInstance()->sendErrorResponse(sprintf("System with systemid '%s' does not exist", $this->systemid), 404);
 		if (empty($this->systemtype)) $this->systemtype = $oldsystem->systemtype;
 		if (empty($this->dbusername)) $this->dbusername = $oldsystem->dbusername;
 		if (empty($this->dbpassword)) $this->dbpassword = $oldsystem->dbpassword;

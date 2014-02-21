@@ -71,6 +71,7 @@ class SystemUsers extends ImplementAPI {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$username = $uriparts[1];
 		$user = User::getByID($username);
+		if (!$user) $this->sendErrorResponse(sprintf("User with username '%s' does not exist", $username), 404);
 		$user->delete();
 	}
 

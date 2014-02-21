@@ -81,6 +81,7 @@ class Schedules extends TaskScheduleCommon {
 	public function deleteOneSchedule ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$schedule = Schedule::getByID((int) $uriparts[1]);
+		if (!$schedule) $this->sendErrorResponse(sprintf("Schedule with ID '%s' does not exist", $uriparts[1]), 404);
 		if ($schedule->atjobnumber) exec ("atrm $schedule->atjobnumber");
 		$schedule->delete();
 	}

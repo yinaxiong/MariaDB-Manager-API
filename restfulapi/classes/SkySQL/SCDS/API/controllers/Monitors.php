@@ -78,6 +78,7 @@ final class Monitors extends ImplementAPI {
 	public function getOneMonitorClass ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		$monitor = 	Monitor::getByID($uriparts[1], $uriparts[3]);
+		if (!$monitor) $this->sendErrorResponse (sprintf("Monitor class for system type '%s' and key '%s' not found", $uriparts[1], $uriparts[3]), 404);
 		$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
 	}
 	

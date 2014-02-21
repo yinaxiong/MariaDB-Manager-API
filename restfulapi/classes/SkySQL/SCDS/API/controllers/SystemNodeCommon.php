@@ -52,7 +52,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 		try {
 			$system = System::getByID($this->systemid);
 			$node = Node::getByID($this->systemid, $nodeid);
-			if (!$node) $this->sendErrorResponse("System $this->systemid and node $nodeid are not valid node identifiers", 400);
+			if (!$node OR !$system) $this->sendErrorResponse("System $this->systemid and node $nodeid are not valid system and node identifiers", 400);
 			$connection = "mysql:host=$node->privateip;dbname=information_schema";
 			if ($node->port) $connection .= ";port=$node->port";
 			$username = empty($node->dbusername) ? $system->dbusername : $node->dbusername;
