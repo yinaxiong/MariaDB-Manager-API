@@ -20,7 +20,7 @@
 # Date: July 2013
 #
 #
-# This script is called by the SkySQL Manager API to run jobs remotely on a node of a given cluster.
+# This script is called by the MariaDB Manager API to run jobs remotely on a node of a given cluster.
 #
 # Parameters:
 # $1 The ID of the job that is to be run

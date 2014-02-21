@@ -1,7 +1,9 @@
 <?php
 
 /*
- * Change log for the SkySQL Manager API
+ * Change log for the MariaDB Manager API
+ * 
+ * 
  * 
  * 5 February 2014, 14:00
  * 
