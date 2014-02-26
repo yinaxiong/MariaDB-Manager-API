@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: June 2013
@@ -81,8 +81,16 @@ abstract class Request {
 	private static $instance = null;
 	
 	public $warnings = array();
-	
-	protected static $suffixes = array('html', 'json', 'mml', 'crl');
+
+	// Neither crl (Creole for MariaDB KB) nor mml (Manula Markup Language) are
+	//  real mime types, but they are used here for convenience in metadata production.
+	protected static $suffixes = array(
+		'html' => 'text/html',
+		'json' => 'application/json',
+		'mml' => 'application/mml',
+		'crl' => 'application/crl',
+		'txt' => 'text/plain'
+	);
 	
 	protected static $codes = array(
         100 => 'Continue',
@@ -169,6 +177,13 @@ abstract class Request {
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
 		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->uri = $this->getURI();
+		foreach ($this->headers as $name=>$value) {
+			$stdname = str_replace(' ','-',ucwords(strtolower(str_replace(array('-','_'),' ',$name))));
+			if ($name != $stdname) {
+				unset($this->headers[$name]);
+				$this->headers[$stdname] = $value;
+			}
+		}
 		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
@@ -178,7 +193,7 @@ abstract class Request {
 				}
 			}
 		}
-		if (isset($this->headers['Content-Type'])) {
+		if (!empty($this->headers['Content-Type'])) {
 			switch (strtolower($this->headers['Content-Type'])) {
 				case 'application/x-www-form-urlencoded': 
 					$this->urlencoded = true;
@@ -274,7 +289,7 @@ abstract class Request {
 	}
 	
 	protected function getSuffix() {
-		foreach (self::$suffixes as $suffix) {
+		foreach (array_keys(self::$suffixes) as $suffix) {
 			$slen = strlen($suffix) + 1;
 			if (substr($this->uri,-$slen) == '.'.$suffix) {
 				$this->uri = substr($this->uri,0,-$slen);
@@ -285,9 +300,7 @@ abstract class Request {
 	}
 	
 	protected function handleAccept () {
-		if ('json' == $this->suffix) $this->accept = 'application/json';
-		elseif ('mml' ==  $this->suffix) $this->accept = 'application/mml';
-		elseif ('crl' ==  $this->suffix) $this->accept = 'application/crl';
+		if (isset(self::$suffixes[$this->suffix])) $this->accept = self::$suffixes[$this->suffix];
 		else {
 			$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
 			$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
@@ -476,9 +489,21 @@ abstract class Request {
 		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
-		$charset = $this->getHeader('Accept-Charset');
-		$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
-		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
+		if ('text/plain' == $this->accept) {
+			foreach ($body as $resource) {
+				if (is_object($resource)) foreach ($resource as $name=>$value) {
+					if (!is_array($value) AND !is_object($value)) $fields[] = "$name=$value";
+				}
+				break;
+			}
+			echo isset($fields) ? '"'.implode('" "', $fields).'"' : '""';
+		}
+		else {
+			$charset = $this->getHeader('Accept-Charset');
+			// Only PHP 5.4 allows JSON_UNESCAPED_UNICODE which would allow escaping to be avoided if client accepts UTF-8
+			$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
+			echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
+		}
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {

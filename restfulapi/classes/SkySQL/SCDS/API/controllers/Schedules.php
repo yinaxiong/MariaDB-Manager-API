@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
@@ -81,6 +81,7 @@ class Schedules extends TaskScheduleCommon {
 	public function deleteOneSchedule ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Delete-Count');
 		$schedule = Schedule::getByID((int) $uriparts[1]);
+		if (!$schedule) $this->sendErrorResponse(sprintf("Schedule with ID '%s' does not exist", $uriparts[1]), 404);
 		if ($schedule->atjobnumber) exec ("atrm $schedule->atjobnumber");
 		$schedule->delete();
 	}

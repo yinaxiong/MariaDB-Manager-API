@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
@@ -30,7 +30,6 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use SkySQL\SCDS\API\API;
-use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\models\Node;
@@ -109,7 +108,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	
 	protected function decryptParameters ($parameters) {
 		if ($parameters) {
-			Request::getInstance()->parse_str($parameters, $parray);
+			$this->requestor->parse_str($parameters, $parray);
 			if (count($parray)) {
 				foreach (API::$encryptedfields as $field) if (!empty($parray[$field])) {
 					$parray[$field] = $this->decryptOneField($parray[$field]);
@@ -123,7 +122,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	}
 
 	protected function decryptOneField ($string) {
-	    $key = pack('H*', Request::getInstance()->getAPIKey());
+	    $key = pack('H*', $this->requestor->getAPIKey());
     
 	    $ciphertext_dec = base64_decode($string);
     

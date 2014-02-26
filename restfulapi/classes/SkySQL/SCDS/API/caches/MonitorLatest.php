@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: October 2013
@@ -105,7 +105,7 @@ class MonitorLatest extends CachedSingleton {
 		$insertsql = '';
 		for ($i = 0; $i < count($monitorids); $i++) if (isset($monitorids[$i]) AND isset($values[$i])) {
 			if (isset($this->instances[$monitorids[$i]][$systemid][$nodeid])) {
-				if ($this->instances[$monitorids[$i]][$systemid][$nodeid]['value'] === $values[$i]) {
+				if ($this->instances[$monitorids[$i]][$systemid][$nodeid]['value'] == $values[$i]) {
 					if (0 == $this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']) {
 						$maininserts[] = array(
 							'monitorid' => $monitorids[$i],

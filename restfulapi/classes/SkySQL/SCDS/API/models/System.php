@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: May 2013
@@ -106,6 +106,7 @@ class System extends EntityModel {
 		$this->setCorrectFormatDate('started');
 		$this->setCorrectFormatDate('lastaccess');
 		$oldsystem = System::getByID($this->systemid);
+		if (!$oldsystem) Request::getInstance()->sendErrorResponse(sprintf("System with systemid '%s' does not exist", $this->systemid), 404);
 		if (empty($this->systemtype)) $this->systemtype = $oldsystem->systemtype;
 		if (empty($this->dbusername)) $this->dbusername = $oldsystem->dbusername;
 		if (empty($this->dbpassword)) $this->dbpassword = $oldsystem->dbpassword;

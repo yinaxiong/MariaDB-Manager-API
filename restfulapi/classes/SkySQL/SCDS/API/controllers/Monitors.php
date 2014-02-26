@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
@@ -78,6 +78,7 @@ final class Monitors extends ImplementAPI {
 	public function getOneMonitorClass ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'fields');
 		$monitor = 	Monitor::getByID($uriparts[1], $uriparts[3]);
+		if (!$monitor) $this->sendErrorResponse (sprintf("Monitor class for system type '%s' and key '%s' not found", $uriparts[1], $uriparts[3]), 404);
 		$this->sendResponse(array('monitorclass' => $this->filterSingleResult($monitor)));
 	}
 	
@@ -94,7 +95,7 @@ final class Monitors extends ImplementAPI {
 			}
 		}
 		$monitor = new Monitor($uriparts[1], $uriparts[3]);
-		Request::getInstance()->unsetParam($this->requestmethod, 'monitorid');
+		$this->requestor->unsetParam($this->requestmethod, 'monitorid');
 		$monitor->save();
 	}
 	
@@ -121,11 +122,11 @@ final class Monitors extends ImplementAPI {
 			}
 			$monitor = Monitor::getByMonitorID($monitors[$i]);
 			if (!$monitor) $errors[] = "No such monitor ID {$monitors[$i]}";
-			if (!empty($monitor->decimals)) $values[$i] = (int) round($values[$i] * pow(10,$monitor->decimals));
+			$values[$i] = (int) empty($monitor->decimals) ? round($values[$i]) : round($values[$i] * pow(10,$monitor->decimals));
 		}
-		if (0 == count($monitors) OR empty($systemid) OR !isset($nodeid)) $errors[] = 'No bulk data provided';
-		if (!System::getByID($systemid)) $errors[] = "No such system ID: {$systemid}";
-		if (0 != $nodeid AND !Node::getByID($systemid, $nodeid)) $errors[] = "No such node as system ID {$systemid}, node ID {$nodeid}";
+		if (0 == count($monitors)) $errors[] = 'No bulk data provided';
+		if (!System::getByID($systemid)) $errors[] = "No such system ID: '{$systemid}'";
+		if (0 != $nodeid AND !Node::getByID($systemid, $nodeid)) $errors[] = "No such node as system ID '{$systemid}', node ID '{$nodeid}'";
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		
 		$this->monitordb = MonitorDatabase::getInstance();
@@ -181,12 +182,14 @@ final class Monitors extends ImplementAPI {
 		$results = array('start' => $this->start, 'finish' => $this->finish, 'count' => $this->count, 'interval' => $this->interval);
 		$this->monitordb = MonitorDatabase::getInstance();
 		$data = $this->getRawData($this->start, $this->finish);
-		$preceding = $this->getPreceding($this->start);
-		if (empty($preceding)) {
-			if (empty($data)) $this->sendNullData($this->average);
-			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
+		if (empty($data) OR $data[0]['timestamp'] > $this->start) {
+			$preceding = $this->getPreceding($this->start);
+			if (empty($preceding)) {
+				if (empty($data)) $this->sendNullData($this->average);
+				array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
+			}
+			else array_unshift($data, $preceding);
 		}
-		else array_unshift($data, $preceding);
 		MonitorQueries::getInstance()->newQuery($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval);
 		if ($this->average) {
 			$aresults = $this->getAveraged($data, $results);
@@ -278,13 +281,13 @@ final class Monitors extends ImplementAPI {
 			$tablename = $this->monitordb->makeTableName($this->systemid, $this->nodeid);
 			$preceding = $this->monitordb->prepare("SELECT 1.0 * Value/:scale AS value, Stamp AS timestamp, Repeats AS repeats
 				FROM $tablename WHERE MonitorID = :monitorid AND Stamp < :start ORDER BY Stamp DESC");
-		$preceding->execute(array(
-			':scale' => $this->scale,
-			':monitorid' => $this->monitorid,
-			':start' => $start
-		));
-		return $preceding->fetch(PDO::FETCH_ASSOC);
-	}
+			$preceding->execute(array(
+				':scale' => $this->scale,
+				':monitorid' => $this->monitorid,
+				':start' => $start
+			));
+			return $preceding->fetch(PDO::FETCH_ASSOC);
+		}
 		else return null;
 	}
 	

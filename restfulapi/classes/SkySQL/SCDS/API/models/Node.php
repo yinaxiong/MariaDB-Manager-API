@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: May 2013
@@ -104,7 +104,7 @@ class Node extends EntityModel {
 		foreach ($commands as $sub=>$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
 		}
-		return $commands;
+		return array_values($commands);
 	}
 	
 	public function getSteps ($commandname) {
@@ -201,6 +201,7 @@ class Node extends EntityModel {
 		}
 		if (@$this->state AND !$this->validateState()) Request::getInstance()->sendErrorResponse(sprintf("Node State of '%s' not valid in System Type '%s'", @$this->state, $this->getSystemType()), 400);
 		$oldnode = $manager->getByID($this->systemid, $this->nodeid);
+		if (!$oldnode) Request::getInstance()->sendErrorResponse(sprintf("Node with systemid '%s' and nodeid '%s' does not exist", $this->systemid, $this->nodeid), 404);
 		if (empty($this->dbusername)) $this->dbusername = $oldnode->dbusername;
 		if (empty($this->dbpassword)) $this->dbpassword = $oldnode->dbpassword;
 		if (empty($this->repusername)) $this->repusername = $oldnode->repusername;

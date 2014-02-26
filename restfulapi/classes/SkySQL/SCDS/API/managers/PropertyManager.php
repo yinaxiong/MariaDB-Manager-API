@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: May 2013
@@ -60,10 +60,23 @@ abstract class PropertyManager extends EntityManager {
 			$insert = $database->prepare($this->insertSQL);
 			$insert->execute($bind);
 			$this->finalise($key);
-			$request->sendResponse(array('updatecount' => 0,  'insertkey' => $property));
+			if (version_compare($request->getVersion(), '1.0', 'gt')) {
+				$returncode = 201;
+				$requestURI = $this->propertyURI($key, $property);
+			}
+			else $returncode = 200;
+			$request->sendResponse(array('updatecount' => 0,  'insertkey' => $property), $returncode, @$requestURI);
 		}
 		$this->finalise($key);
 		$request->sendResponse(array('updatecount' => $counter, 'insertkey' => ''));
+	}
+	
+	protected function propertyURI ($key, $property) {
+		return "{$this->URIBase($key)}/property/$property)";
+	}
+	
+	protected function URIBase ($key) {
+		return "$this->name/$key";
 	}
 	
 	protected function finalise ($key) {

@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,13 +17,13 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
  * 
  * The API class is the starting point, called by the very brief index.php which is the sole
- * entry point for the SkySQL Manager API.  Its constructor sets up some standard symbols.  It starts 
+ * entry point for the MariaDB Manager API.  Its constructor sets up some standard symbols.  It starts 
  * buffering of output, primarily to be able to control diagnostics, and sets up a simple 
  * autoloader.
  * 

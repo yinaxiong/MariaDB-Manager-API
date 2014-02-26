@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
@@ -134,7 +134,7 @@ final class ErrorRecorder  {
 			));
 			$config = Request::getInstance()->getConfig();
 			if (@$config['logging']['erroremail']) {
-				$headers = 'From: SkySQL Manager <no-reply@skysql.com>' . "\r\n";
+				$headers = 'From: MariaDB Manager <no-reply@skysql.com>' . "\r\n";
 				mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
 			}
 			$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");

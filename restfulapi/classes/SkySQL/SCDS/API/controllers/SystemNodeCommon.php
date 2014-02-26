@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
@@ -52,7 +52,7 @@ abstract class SystemNodeCommon extends ImplementAPI {
 		try {
 			$system = System::getByID($this->systemid);
 			$node = Node::getByID($this->systemid, $nodeid);
-			if (!$node) $this->sendErrorResponse("System $this->systemid and node $nodeid are not valid node identifiers", 400);
+			if (!$node OR !$system) $this->sendErrorResponse("System $this->systemid and node $nodeid are not valid system and node identifiers", 400);
 			$connection = "mysql:host=$node->privateip;dbname=information_schema";
 			if ($node->port) $connection .= ";port=$node->port";
 			$username = empty($node->dbusername) ? $system->dbusername : $node->dbusername;

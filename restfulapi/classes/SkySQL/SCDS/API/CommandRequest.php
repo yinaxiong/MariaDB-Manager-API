@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: February 2013
@@ -64,10 +64,7 @@ final class CommandRequest extends Request {
 	protected function getHeaders () {
 		for ($i = 4; isset($argv[$i]); $i++) {
 			$parts = explode(':', $argv[$i], 2);
-			if (2 == count($parts)) {
-				$key = str_replace(" ","-",ucwords(strtolower(str_replace("-"," ",$parts[0]))));
-				$this->headers[$key] = trim($parts[1]);
-			}
+			if (2 == count($parts)) $this->headers[$parts[0]] = trim($parts[1]);
 		}
 	}
 

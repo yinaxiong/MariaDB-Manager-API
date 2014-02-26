@@ -1,7 +1,7 @@
 <?php
 
 /*
- ** Part of the SkySQL Manager API.
+ ** Part of the MariaDB Manager API.
  * 
  * This file is distributed as part of MariaDB Enterprise.  It is free
  * software: you can redistribute it and/or modify it under the terms of the
@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Ab
+ * Copyright 2013 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: May 2013
@@ -180,6 +180,7 @@ class Task extends TaskScheduleCommon {
 			$this->bind[':stepindex'] = 0;
 		}
 		$oldtask = Task::getByID($this->taskid);
+		if (!$oldtask) Request::getInstance()->sendErrorResponse(sprintf("Task with taskid '%s' does not exist", $this->taskid), 404);
 		if ('running' != $oldtask->state AND ('cancelled' == $this->state OR 'missing' == $this->state)) {
 			$this->state = $oldtask->state;
 			$this->bind[':state'] = $oldtask->state;
@@ -196,6 +197,7 @@ class Task extends TaskScheduleCommon {
 		$taskid = $latest->fetch(PDO::FETCH_COLUMN);
 		if ($taskid) {
 			$task = self::getByID($taskid);
+			if (!$task) Request::getInstance()->sendErrorResponse(sprintf("Task with taskid '%s' should exist because it is referred to by a node but does not", $taskid), 500);
 			$task->derivedFields();
 			return $task;
 		}
@@ -205,6 +207,7 @@ class Task extends TaskScheduleCommon {
 	// Checks across the whole system for unfinished "risky" running tasks
 	public static function tasksNotFinished ($commandname, $node) {
 		$system = System::getByID($node->systemid);
+		if (!$system) Request::getInstance()->sendErrorResponse(sprintf("System with systemid '%s' should exist but does not", $node->systemid), 500);
 		if (!isset(API::$systemtypes[$system->systemtype])) Request::getInstance()->sendErrorResponse(sprintf("System with ID '%s' does not have valid system type", $node->systemid), 500);
 		$database = AdminDatabase::getInstance();
 		$unfinished = API::unfinishedCommandStates();
