@@ -3,6 +3,11 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 26 February 2014, 09:40
+ * 
+ * Fix faults that arise in some situations with monitoring data
+ * 
+ * 
  * 21 February 2014, 12:00
  * 
  * Change headers to corporate standard
