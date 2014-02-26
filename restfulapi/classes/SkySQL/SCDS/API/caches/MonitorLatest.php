@@ -105,7 +105,7 @@ class MonitorLatest extends CachedSingleton {
 		$insertsql = '';
 		for ($i = 0; $i < count($monitorids); $i++) if (isset($monitorids[$i]) AND isset($values[$i])) {
 			if (isset($this->instances[$monitorids[$i]][$systemid][$nodeid])) {
-				if ($this->instances[$monitorids[$i]][$systemid][$nodeid]['value'] === $values[$i]) {
+				if ($this->instances[$monitorids[$i]][$systemid][$nodeid]['value'] == $values[$i]) {
 					if (0 == $this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']) {
 						$maininserts[] = array(
 							'monitorid' => $monitorids[$i],
