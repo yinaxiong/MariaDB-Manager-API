@@ -122,11 +122,11 @@ final class Monitors extends ImplementAPI {
 			}
 			$monitor = Monitor::getByMonitorID($monitors[$i]);
 			if (!$monitor) $errors[] = "No such monitor ID {$monitors[$i]}";
-			if (!empty($monitor->decimals)) $values[$i] = (int) round($values[$i] * pow(10,$monitor->decimals));
+			$values[$i] = (int) empty($monitor->decimals) ? round($values[$i]) : round($values[$i] * pow(10,$monitor->decimals));
 		}
-		if (0 == count($monitors) OR empty($systemid) OR !isset($nodeid)) $errors[] = 'No bulk data provided';
-		if (!System::getByID($systemid)) $errors[] = "No such system ID: {$systemid}";
-		if (0 != $nodeid AND !Node::getByID($systemid, $nodeid)) $errors[] = "No such node as system ID {$systemid}, node ID {$nodeid}";
+		if (0 == count($monitors)) $errors[] = 'No bulk data provided';
+		if (!System::getByID($systemid)) $errors[] = "No such system ID: '{$systemid}'";
+		if (0 != $nodeid AND !Node::getByID($systemid, $nodeid)) $errors[] = "No such node as system ID '{$systemid}', node ID '{$nodeid}'";
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		
 		$this->monitordb = MonitorDatabase::getInstance();
@@ -182,12 +182,14 @@ final class Monitors extends ImplementAPI {
 		$results = array('start' => $this->start, 'finish' => $this->finish, 'count' => $this->count, 'interval' => $this->interval);
 		$this->monitordb = MonitorDatabase::getInstance();
 		$data = $this->getRawData($this->start, $this->finish);
-		$preceding = $this->getPreceding($this->start);
-		if (empty($preceding)) {
-			if (empty($data)) $this->sendNullData($this->average);
-			array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
+		if (empty($data) OR $data[0]['timestamp'] > $this->start) {
+			$preceding = $this->getPreceding($this->start);
+			if (empty($preceding)) {
+				if (empty($data)) $this->sendNullData($this->average);
+				array_unshift($data, array('timestamp' => $this->start, 'value' => $data[0]['value']));
+			}
+			else array_unshift($data, $preceding);
 		}
-		else array_unshift($data, $preceding);
 		MonitorQueries::getInstance()->newQuery($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval);
 		if ($this->average) {
 			$aresults = $this->getAveraged($data, $results);
