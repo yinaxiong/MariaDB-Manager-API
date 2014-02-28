@@ -86,10 +86,17 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	
 	protected function execute ($task) {
 		$scriptdir = rtrim(@$this->config['shell']['path'],'/\\');
-		$logfile = (isset($this->config['logging']['directory']) AND is_writeable($this->config['logging']['directory'])) ? $this->config['logging']['directory'].'/api.log' : '/dev/null';
-		$params = $this->decryptParameters(@$task->parameters);
-		$hostname = @$this->config['shell']['hostname'];
-		$cmd = $this->makeShellCall("$scriptdir/LaunchCommand.sh", "$scriptdir/RunCommand.sh", $task->taskid, $task->steps, $hostname, $params, $task->privateip, $logfile);
+		$shellparams[] = "$scriptdir/LaunchCommand.sh";
+		$shellparams[] = "$scriptdir/RunCommand.sh";
+		$shellparams[] = $task->taskid;
+		$shellparams[] = $task->steps;
+		$shellparams[] = $task->privateip;
+		if (isset($task->parameters)) {
+			$parmobj = json_decode($task->parameters);
+			foreach ($parmobj as $name=>$value) $shellparams[] = "$name=$value";
+		}
+		foreach ($task->getEncryptedParameters() as $name=>$value) $shellparams[] = "$name=$value";
+		$cmd = call_user_func_array(array($this, 'makeShellCall'), $shellparams);
 		$pid = exec($cmd);
 		$this->log(LOG_INFO, "Started command $task->command with task ID $task->taskid on node $task->nodeid with PID $pid");
 		$task->updatePIDandState($pid);
@@ -104,38 +111,5 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 	
 	protected function makeShellCall () {
 		return implode(' ', array_map('escapeshellarg', func_get_args()));
-	}
-	
-	protected function decryptParameters ($parameters) {
-		if ($parameters) {
-			$this->requestor->parse_str($parameters, $parray);
-			if (count($parray)) {
-				foreach (API::$encryptedfields as $field) if (!empty($parray[$field])) {
-					$parray[$field] = $this->decryptOneField($parray[$field]);
-				}
-				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
-				return implode('&', $newparray);
-			}
-			else return $parameters;
-		}
-		else return '';
-	}
-
-	protected function decryptOneField ($string) {
-	    $key = pack('H*', $this->requestor->getAPIKey());
-    
-	    $ciphertext_dec = base64_decode($string);
-    
-	    # retrieves the IV, iv_size should be created using mcrypt_get_iv_size()
-	    $iv_size = mcrypt_get_iv_size(MCRYPT_RIJNDAEL_128, MCRYPT_MODE_CBC);
-		if (strlen($ciphertext_dec) < ($iv_size + 2)) $this->sendErrorResponse("Field requiring decryption is too short", 400); 
-	    $iv_dec = substr($ciphertext_dec, 0, $iv_size);
-    
-	    # retrieves the cipher text (everything except the $iv_size in the front)
-	    $ciphertext = substr($ciphertext_dec, $iv_size);
-
-	    # may remove 00h valued characters from end of plain text
-	    $decrypt = mcrypt_decrypt(MCRYPT_RIJNDAEL_128, $key, $ciphertext, MCRYPT_MODE_CBC, $iv_dec);
-		return trim($decrypt, "\0..\32");
 	}
 }

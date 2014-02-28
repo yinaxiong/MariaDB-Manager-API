@@ -32,6 +32,7 @@ namespace SkySQL\SCDS\API\models;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\EncryptionManager;
 use PDO;
 
 abstract class EntityModel {
@@ -108,15 +109,15 @@ abstract class EntityModel {
 		$request = Request::getInstance();
 		foreach ($request->getAllParamNames($request->getMethod()) as $paramname) {
 			$split = explode('param-', $paramname);
-			if (!empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $paramname);
+			if (empty($split[0]) AND !empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $paramname);
 			$split = explode('xparam-', $paramname);
-			if (!empty($split[1])) {
+			if (empty($split[0]) AND !empty($split[1])) {
 				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
 				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
 			}
 		}
 		if (isset($parameters)) $this->setInsertValue('parameters', json_encode($parameters));
-		if (isset($encrypted)) $this->xparameters = json_encode($parameters);
+		if (isset($encrypted)) $this->xparameters = json_encode($encrypted);
 	}
 
 	final private static function fixDate (&$entity) {

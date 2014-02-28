@@ -131,6 +131,13 @@ class Task extends TaskScheduleCommon {
 		}
 	}
 	
+	public function getEncryptedParameters () {
+		if (!empty($this->xparameters)) {
+			foreach (json_decode($this->xparameters) as $name=>$value) $xparams[$name] = $value;
+		}
+		return (array) @$xparams;
+	}
+	
 	protected function setSteps () {
 		$request = Request::getInstance();
 		$this->steps = $this->node->getSteps($this->command);
