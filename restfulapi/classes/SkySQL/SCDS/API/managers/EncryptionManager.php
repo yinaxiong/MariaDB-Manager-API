@@ -28,6 +28,8 @@
 
 namespace SkySQL\SCDS\API\managers;
 
+use SkySQL\SCDS\API\Request;
+
 class EncryptionManager extends EntityManager {
 	
 	public static function decryptOneField ($string, $givenkey) {

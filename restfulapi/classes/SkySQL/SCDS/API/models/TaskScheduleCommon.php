@@ -29,6 +29,7 @@
 namespace SkySQL\SCDS\API\models;
 
 use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\API;
 
 abstract class TaskScheduleCommon extends EntityModel {
 	
@@ -45,14 +46,7 @@ abstract class TaskScheduleCommon extends EntityModel {
 	
 	protected static function formatParameters ($entity) {
 		if (!empty($entity->parameters)) {
-			$parmarray = json_decode($entity->parameters, true);
-			if (!$parmarray) {
-				$pairs = explode('|', $entity->parameters);
-				foreach ($pairs as $pair) {
-					$parts = explode('=', $pair, 2);
-					if (isset($parts[1])) $parmarray[$parts[0]] = $parts[1];
-				}
-			}
+			$parmarray = self::getParameterArray($entity);
 			if (Request::getInstance()->compareVersion('1.0', 'gt')) $entity->parameters = (array) @$parmarray;
 			else {
 				foreach ($parmarray as $name=>$value) $parmparts[] = "$name=$value";
@@ -60,5 +54,23 @@ abstract class TaskScheduleCommon extends EntityModel {
 			}
 		}
 		return $entity;
+	}
+	
+	public static function getParameterArray ($entity) {
+		if (!empty($entity->parameters)) {
+			$parmarray = json_decode($entity->parameters, true);
+			if (!$parmarray) {
+				$key = Request::getInstance()->getAPIKey();
+				$pairs = explode('|', $entity->parameters);
+				foreach ($pairs as $pair) {
+					$parts = explode('=', $pair, 2);
+					if (isset($parts[1])) {
+						$value = in_array($parts[0], API::$encryptedfields) ? EncryptionManager::decryptOneField($parts[1], $key) : $parts[1];
+						$parmarray[$parts[0]] = $value;
+					}
+				}
+			}
+		}
+		return (array) @$parmarray;
 	}
 }

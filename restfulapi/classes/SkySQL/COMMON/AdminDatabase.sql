@@ -132,6 +132,7 @@ create table System (
 	RepUserName	varchar(50),							/* DB User Name for replication */
 	RepPassword	varchar(50)								/* DB Password for replication */
 );
+create unique index SystemNameIDX ON System (SystemName);
 
 /*
 ** A system property table for storing general system related information such
