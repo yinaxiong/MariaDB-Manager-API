@@ -154,6 +154,7 @@ abstract class Request {
 	protected $requestversion = '1.0';
 	protected $urlencoded = true;
 	protected $authcode = null;
+	protected $errors = array();
 	
 	protected function __construct() {
 		if ('yes' == @$this->config['logging']['verbose']) {
@@ -201,7 +202,7 @@ abstract class Request {
 					$this->urlencoded = false;
 					break;
 				default:
-					$this->sendErrorResponse(sprintf('Content-Type header of %s is not supported', $this->headers['Content-Type']), 501);
+					$this->errors[] = sprintf('Content-Type header of %s is not supported', $this->headers['Content-Type']);
 			}
 		}
 		else $this->urlencoded = true;
@@ -209,7 +210,7 @@ abstract class Request {
 			$parts = explode(':', $this->headers['Accept-Charset'], 2);
 			if (isset($parts[1])) {
 				$charsets = array_map('trim', explode(',', strtolower($parts[1])));
-				if (!in_array('utf-8', $charsets)) $this->sendErrorResponse (sprintf("Accept-Charset header '%s' does not include utf-8", $parts[1]), 501);
+				if (!in_array('utf-8', $charsets)) $this->errors = sprintf("Accept-Charset header '%s' does not include utf-8", $parts[1]);
 			}
 		}
 	}
@@ -326,6 +327,7 @@ abstract class Request {
 	}
 
 	public function doControl () {
+		if (count($this->errors)) $this->sendErrorResponse($this->errors, 501);
 		$uriparts = array_map('urldecode', explode('/', $this->uri));
 		$parser = RequestParser::getInstance();
 		// Method sendOptions sends answer, does not return to caller
