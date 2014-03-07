@@ -94,6 +94,8 @@ class RequestPrototypes {
 			array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/<resource>', 'title' => 'Get Metadata for an Resource'),
 			array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'title' => 'Get a List of API Resources'),
 			array('class' => 'Metadata', 'method' => 'metadataSummary', 'uri' => 'metadata', 'title' => 'Get a Metadata Summary'),
+			array('class' => 'Request', 'method' => 'getConfigField', 'uri' => 'config/<configsection>/<configitem>', 'title' => 'Get a Configuration Data Item in a section'),
+			array('class' => 'Request', 'method' => 'getConfigField', 'uri' => 'config/<configitem>', 'title' => 'Get a Configuration Data Item (not in section)'),
 			),
 		'PUT' => array(
 			array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/<appid>/property/<property>', 'title' => 'Create or Update an Application Property'),
@@ -158,6 +160,8 @@ class RequestPrototypes {
 		'<monitor>' => '([0-9a-zA-Z_\-\.\~\*\(\)]+)',
 		'<logtype>' => '(log|binlog)',
 		'<resource>' => '[A-Za-z]+',
+		'<configsection>' => '[A-Za-z0-9_\.]+',
+		'<configitem>' => '[A-Za-z0-9_\.]+',
 		'<daterange>' => '.+'
 	);
 	

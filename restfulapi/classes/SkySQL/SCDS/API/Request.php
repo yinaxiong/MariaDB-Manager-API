@@ -342,7 +342,10 @@ abstract class Request {
 					if (count($_GET)) $this->log(LOG_DEBUG, print_r($_GET,true));
 					if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));
 				}
-				if ('Request' == $link['class']) $object = $this;
+				if ('Request' == $link['class']) {
+					$object = $this;
+					$class = get_class();
+				}
 				else {
 					$class = __NAMESPACE__.'\\controllers\\'.$link['class'];
 					if (!class_exists($class)) {
@@ -377,6 +380,13 @@ abstract class Request {
 	
 	protected function APIDate () {
 		$this->sendResponse(array('apidate' => _API_CODE_ISSUE_DATE));
+	}
+	
+	protected function getConfigField ($uriparts) {
+		if (isset($uriparts[2])) {
+			$this->sendResponse(array($uriparts[2] => (empty($this->config[$uriparts[1]][$uriparts[2]]) ? null : $this->config[$uriparts[1]][$uriparts[2]])));
+		}
+		$this->sendResponse(array($uriparts[1] => (empty($this->config[$uriparts[1]]) OR is_array($this->config[$uriparts[1]])) ? null : $this->config[$uriparts[1]]));
 	}
 	
 	protected function checkSecurity () {

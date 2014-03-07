@@ -544,6 +544,7 @@ create table Backup (
 	BackupID	integer PRIMARY KEY AUTOINCREMENT,		/* Unique identifier for the backup within System ID */
 	SystemID	int,									/* System backup was taken on */
 	NodeID		int,									/* Node backup was taken on */
+	TaskID		int,									/* Task that ran the backup */
 	BackupLevel	smallint,								/* full=1 or incremental=2 backup */
 	ParentID	int,									/* Parent from which this is incremental */
 	State		varchar(20),							/* Backup state */
@@ -551,7 +552,7 @@ create table Backup (
 	Updated		datetime,								/* Date of last update of this record during backup */
 	Restored	datetime,								/* Date of last restore from this backup */
 	Size		int,									/* Size of backup */
-	BackupURL	text,									/* URL fro backup storage location */
+	BackupURL	text,									/* URL for backup storage location */
 	BinLog		text,									/* Binlog of backup */
 	Log			text									/* URL to Log of backup */
 );

@@ -53,6 +53,7 @@ class Backup extends EntityModel {
 
 	protected static $fields = array(
 		'nodeid' => array('sqlname' => 'NodeID', 'desc' => 'ID for the node running the backup', 'default' => 0),
+		'taskid' => array('sqlname' => 'TaskID', 'desc' => 'ID for the task running the backup', 'default' => 0),
 		'level' => array('sqlname' => 'BackupLevel', 'desc' => 'Backup level, 1 = standard, 2 = incremental', 'default' => 0),
 		'parentid' => array('sqlname' => 'ParentID', 'desc' => 'Base for an incremental backup', 'default' => 0),
 		'state' => array('sqlname' => 'State', 'validate' => 'backupstate', 'desc' => 'Current state of the backup', 'default' => 'running'),
