@@ -99,42 +99,42 @@ class MonitorLatest extends CachedSingleton {
 		return array($monitorlatest, $lastupdate, $modified);
 	}
 	
-	public function monitorUpdate ($stamp, $systemid, $nodeid, $monitorids, $values) {
+	public function monitorUpdate ($stamp, $systemid, $nodeid, $monitordata) {
 		$monitordb = MonitorDatabase::getInstance();
 		$monitordb->beginExclusiveTransaction();
 		$insertsql = '';
-		for ($i = 0; $i < count($monitorids); $i++) if (isset($monitorids[$i]) AND isset($values[$i])) {
-			if (isset($this->instances[$monitorids[$i]][$systemid][$nodeid])) {
-				if ($this->instances[$monitorids[$i]][$systemid][$nodeid]['value'] == $values[$i]) {
-					if (0 == $this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']) {
+		foreach ($monitordata as $monitorid=>$value) {
+			if (isset($this->instances[$monitorid][$systemid][$nodeid])) {
+				if ($this->instances[$monitorid][$systemid][$nodeid]['value'] == $value) {
+					if (0 == $this->instances[$monitorid][$systemid][$nodeid]['repeats']) {
 						$maininserts[] = array(
-							'monitorid' => $monitorids[$i],
-							'value' => $values[$i],
-							'timestamp' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'],
+							'monitorid' => $monitorid,
+							'value' => $value,
+							'timestamp' => $this->instances[$monitorid][$systemid][$nodeid]['timestamp'],
 							'repeats' => 0);
 					}
-					$updates[] = $monitorids[$i];
-					$this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']++;
-					$this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'] = $stamp;
+					$updates[] = $monitorid;
+					$this->instances[$monitorid][$systemid][$nodeid]['repeats']++;
+					$this->instances[$monitorid][$systemid][$nodeid]['timestamp'] = $stamp;
 				}
 				else {
 					$maininserts[] = array(
-						'monitorid' => $monitorids[$i],
-						'value' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['value'],
-						'timestamp' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'],
-						'repeats' => $this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats']
+						'monitorid' => $monitorid,
+						'value' => $this->instances[$monitorid][$systemid][$nodeid]['value'],
+						'timestamp' => $this->instances[$monitorid][$systemid][$nodeid]['timestamp'],
+						'repeats' => $this->instances[$monitorid][$systemid][$nodeid]['repeats']
 					);
-					$deletes[] = $monitorids[$i];
-					$this->insertSQL($insertsql, $monitorids[$i], $systemid, $nodeid, $values[$i], $stamp);
-					$this->instances[$monitorids[$i]][$systemid][$nodeid]['value'] = $values[$i];
-					$this->instances[$monitorids[$i]][$systemid][$nodeid]['repeats'] = 0;
+					$deletes[] = $monitorid;
+					$this->insertSQL($insertsql, $monitorid, $systemid, $nodeid, $value, $stamp);
+					$this->instances[$monitorid][$systemid][$nodeid]['value'] = $value;
+					$this->instances[$monitorid][$systemid][$nodeid]['repeats'] = 0;
 				}
 			}
 			else {
-				$this->instances[$monitorids[$i]][$systemid][$nodeid] = array('value' => $values[$i], 'repeats' => 0, 'timestamp' => $stamp);
-				$this->insertSQL($insertsql, $monitorids[$i], $systemid, $nodeid, $values[$i], $stamp);
+				$this->instances[$monitorid][$systemid][$nodeid] = array('value' => $value, 'repeats' => 0, 'timestamp' => $stamp);
+				$this->insertSQL($insertsql, $monitorid, $systemid, $nodeid, $value, $stamp);
 			}
-			$this->instances[$monitorids[$i]][$systemid][$nodeid]['timestamp'] = $stamp;
+			$this->instances[$monitorid][$systemid][$nodeid]['timestamp'] = $stamp;
 		}
 		if (!empty($updates)) {
 			$uplist = implode(',', $updates);
