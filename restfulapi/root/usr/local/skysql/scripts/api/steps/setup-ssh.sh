@@ -79,7 +79,7 @@ fi
 
 # Checking if node is already prepared for command execution
 # (on a subshell to catch exits)
-ssh_return=$(ssh_agent_command "$nodeip" "exit 0")
+ssh_return=$(ssh_test_agent "$nodeip")
 if [[ "$ssh_return" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh login already setup in target node."
 	exit 0

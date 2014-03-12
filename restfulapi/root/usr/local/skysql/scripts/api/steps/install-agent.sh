@@ -75,8 +75,7 @@ cleanup() {
 scripts_installed=0;
 
 # Checking if SkySQL Remote Execution Scripts are installed
-ssh_return=$(ssh_agent_command "$nodeip" \
-	"sudo /usr/local/sbin/skysql/NodeCommand.sh test $taskid $api_host")
+ssh_return=$(ssh_test_agent_command "$nodeip" "$taskid" "$api_host")
 if [[ "$ssh_return" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: MariaDB Manager API Agent already installed."
 	scripts_installed=1;
