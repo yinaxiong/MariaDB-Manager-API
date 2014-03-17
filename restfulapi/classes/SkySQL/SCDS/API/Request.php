@@ -480,6 +480,7 @@ abstract class Request {
 
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200, $requestURI='') {
+		if ('text/plain' != $this->accept AND !function_exists('json_encode')) $this->sendErrorResponse("The API is unable to function because PHP JSON functions are not available", 500);
 		$this->sendHeaders($status, $requestURI);
 		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body), $status);
 		exit;
@@ -510,7 +511,10 @@ abstract class Request {
 		else {
 			$charset = $this->getHeader('Accept-Charset');
 			// Only PHP 5.4 allows JSON_UNESCAPED_UNICODE which would allow escaping to be avoided if client accepts UTF-8
-			$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
+			if (function_exists('json_encode')) {
+				$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
+			}
+			else $output = '{"errors":["The API is unable to function because PHP JSON functions are not available"]}';
 			echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 		}
 	}
