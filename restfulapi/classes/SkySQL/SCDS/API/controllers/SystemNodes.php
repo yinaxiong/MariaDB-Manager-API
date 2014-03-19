@@ -93,11 +93,41 @@ class SystemNodes extends SystemNodeCommon {
 		else $this->sendErrorResponse("No matching node for system ID $this->systemid and node ID $this->nodeid", 404);
 	}
 	
-	public function GetNodeField ($uriparts, $metadata='') {
+	public function getNodeField1 ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
-		$this->systemid = (int) $uriparts[1];
-		$this->nodeid = (int) $uriparts[3];
-		$node = Node::getByID($this->systemid, $this->nodeid);
+		$this->getNodeField($uriparts[1], $uriparts[3], $uriparts[5]);
+	}
+	
+	public function getNodeField2 ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
+		$this->getNodeField($uriparts[1], $uriparts[3], $uriparts[5], $uriparts[6]);
+	}
+	
+	public function getNodeField3 ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
+		$this->getNodeField($uriparts[1], $uriparts[3], $uriparts[5], $uriparts[6], $uriparts[7]);
+	}
+	
+	protected function getNodeField () {
+		$args = func_get_args();
+		$this->systemid = (int) array_shift($args);
+		$this->nodeid = (int) array_shift($args);
+		$node = json_decode(json_encode(Node::getByID($this->systemid, $this->nodeid)));
+		if ($node) {
+			while (count($args)) {
+				$name = $args[0];
+				if (is_object(@$node->$name)) $node = $node->$name;
+				elseif (1 == count($args)) {
+					if (is_array(@$node->$name)) $this->sendResponse(implode(',', $node->$name));
+					elseif (isset($node->$name)) $this->sendResponse($node->$name);
+					else break;
+				}
+				else break;
+				array_shift($args);
+			}
+		}
+		$this->sendErrorResponse(sprintf("No field '%s' found for %s", implode('-', $args), Node::getDescription($this->systemid, $this->nodeid)), 404);
+		
 		if ($node) {
 			$fieldname = $uriparts[5];
 			if (isset($node->$fieldname)) $this->sendResponse(array($fieldname => $node->$fieldname));

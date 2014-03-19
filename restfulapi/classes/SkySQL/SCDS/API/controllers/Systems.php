@@ -80,15 +80,39 @@ class Systems extends SystemNodeCommon {
 		else $this->sendErrorResponse("No system with ID of $this->systemid was found", 404);
 	}
 	
-	public function getSystemField ($uriparts, $metadata='') {
+	public function getSystemField1 ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
-		$this->systemid = (int) $uriparts[1];
-		$data = System::getByID($this->systemid);
-		if ($data) {
-			$fieldname = $uriparts[3];
-			if (isset($data->$fieldname)) $this->sendResponse(array($fieldname => $data->$fieldname));
+		$this->getSystemField($uriparts[1], $uriparts[3]);
+	}
+	
+	public function getSystemField2 ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
+		$this->getSystemField($uriparts[1], $uriparts[3], $uriparts[4]);
+	}
+	
+	public function getSystemField3 ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
+		$this->getSystemField($uriparts[1], $uriparts[3], $uriparts[4], $uriparts[5]);
+	}
+	
+	protected function getSystemField () {
+		$args = func_get_args();
+		$this->systemid = (int) array_shift($args);
+		$system = json_decode(json_encode(System::getByID($this->systemid)));
+		if ($system) {
+			while (count($args)) {
+				$name = $args[0];
+				if (is_object(@$system->$name)) $system = $system->$name;
+				elseif (1 == count($args)) {
+					if (is_array(@$system->$name)) $this->sendResponse(implode(',', $system->$name));
+					elseif (isset($system->$name)) $this->sendResponse($system->$name);
+					else break;
+				}
+				else break;
+				array_shift($args);
+			}
 		}
-		$this->sendErrorResponse(sprintf("No field '%s' found for systemid '%d'", $uriparts[3], $this->systemid), 404);
+		$this->sendErrorResponse(sprintf("No field '%s' found for systemid '%d'", implode('-', $args), $this->systemid), 404);
 	}
 	
 	public function createSystem ($uriparts, $metadata='') {

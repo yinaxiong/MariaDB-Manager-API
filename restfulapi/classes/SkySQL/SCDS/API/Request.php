@@ -301,7 +301,7 @@ abstract class Request {
 		if (isset(self::$suffixes[$this->suffix])) $this->accept = self::$suffixes[$this->suffix];
 		else {
 			$accepts = $this->getParam($this->requestmethod, '_accept', @$_SERVER['HTTP_ACCEPT']);
-			$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : 'text/html';
+			$this->accept = stripos($accepts, 'application/json') !== false ? 'application/json' : (stripos($accepts, 'text/plain') !== false ? 'text/plain' : 'text/html');
 		}
 	}
 	
@@ -482,11 +482,15 @@ abstract class Request {
 	public function sendResponse ($body='', $status=200, $requestURI='') {
 		if ('text/plain' != $this->accept AND !function_exists('json_encode')) $this->sendErrorResponse("The API is unable to function because PHP JSON functions are not available", 500);
 		$this->sendHeaders($status, $requestURI);
-		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body), $status);
+		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(('text/plain' == $this->accept OR is_array($body)) ? $body : array('result' => $body), $status);
 		exit;
 	}
 	
 	protected function addResponseInformationAndSend ($body, $status=200) {
+		if ('text/plain' == $this->accept) {
+			echo (is_object($body) OR is_array($body)) ? 'Unable to display result as text/plain' : $body;
+			return;
+		}
 		$diagnostics = preg_replace('/[^(\x20-\x7F)]*/','', ob_get_clean());
 		if ($diagnostics) $body['diagnostics'] = explode("\n", preg_replace("=<br */?>=i", "\n", $diagnostics));
 		foreach ((array) @$body['diagnostics'] as $sub=>$value) if (empty($value)) unset ($body['diagnostics'][$sub]);
@@ -499,24 +503,13 @@ abstract class Request {
 		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
-		if ('text/plain' == $this->accept) {
-			foreach ($body as $resource) {
-				if (is_object($resource)) foreach ($resource as $name=>$value) {
-					if (!is_array($value) AND !is_object($value)) $fields[] = "$name=$value";
-				}
-				break;
-			}
-			echo isset($fields) ? '"'.implode('" "', $fields).'"' : '""';
+		$charset = $this->getHeader('Accept-Charset');
+		// Only PHP 5.4 allows JSON_UNESCAPED_UNICODE which would allow escaping to be avoided if client accepts UTF-8
+		if (function_exists('json_encode')) {
+			$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
 		}
-		else {
-			$charset = $this->getHeader('Accept-Charset');
-			// Only PHP 5.4 allows JSON_UNESCAPED_UNICODE which would allow escaping to be avoided if client accepts UTF-8
-			if (function_exists('json_encode')) {
-				$output = ($charset AND false === strpos($charset,'*') AND false === stripos($charset,'utf-8')) ? json_encode($body) : json_encode($body);
-			}
-			else $output = '{"errors":["The API is unable to function because PHP JSON functions are not available"]}';
-			echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
-		}
+		else $output = '{"errors":["The API is unable to function because PHP JSON functions are not available"]}';
+		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
