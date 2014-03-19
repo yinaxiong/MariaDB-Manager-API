@@ -30,6 +30,7 @@ namespace SkySQL\SCDS\API\models;
 
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\API;
+use SkySQL\SCDS\API\managers\EncryptionManager;
 
 abstract class TaskScheduleCommon extends EntityModel {
 	
