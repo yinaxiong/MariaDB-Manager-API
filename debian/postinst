@@ -1,0 +1,68 @@
+chown -R apache:apache /var/www
+ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
+timezone=`grep ZONE /etc/sysconfig/clock | sed 's/ZONE="\([^"]*\)"/\1/'`
+sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
+
+mkdir -p /usr/local/skysql/cache/api
+chown -R apache:apache /usr/local/skysql/cache
+mkdir -p /var/www/.ssh
+touch /var/www/.ssh/known_hosts
+chown apache:apache /var/www/.ssh/known_hosts
+
+mkdir -p /usr/local/skysql/SQLite/AdminConsole
+chown -R apache:apache /usr/local/skysql/SQLite
+
+mkdir -p /usr/local/skysql/config
+
+if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
+	ssh-keygen -q -f /var/www/.ssh/id_rsa -N "" 
+	chown apache:apache /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
+fi
+
+# Not overwriting existing API configurations
+if [ ! -f /etc/skysqlmgr/api.ini ] ; then
+	# Generating API key for the local scripts
+	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
+	
+	componentID=2
+	keyString="${componentID} = \"${newKey}\""
+
+	# Registering key on components.ini file
+	componentFile=/usr/local/skysql/config/components.ini
+	grep "^${componentID} = \"" ${componentFile} &>/dev/null
+	if [ "$?" != "0" ] ; then
+		echo $keyString >> $componentFile
+	fi
+	
+	# Registering key on api.ini file
+	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
+	if [ "$?" != "0" ] ; then
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
+	fi
+
+	# Generating API key for GREX
+	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
+	
+	componentID=4
+	keyString="${componentID} = \"${newKey}\""
+
+	# Registering key on api.ini file
+	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
+	if [ "$?" != "0" ] ; then
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
+	fi	
+
+	# Creating api.ini file
+	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
+fi
+
+# disabling selinux! TO BE FIXED! 
+echo 0 >/selinux/enforce
+sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
+
+# add firewall rule to allow port 80 
+iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+service iptables save
+
+service atd start
+chkconfig atd on
