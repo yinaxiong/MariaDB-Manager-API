@@ -3,6 +3,16 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 26 March 2014, 11:30
+ * 
+ * Ignore duplicate data entries from monitor data, accept only the last
+ * Add TaskID to Backup records
+ * Add backups section to api.ini and make configuration items available via API
+ * Allow access to individual top level fields of System or Node, and support plain text
+ * When JSON functions are not available send prepared JSON error message if client wants JSON
+ * Modified API properties to support version display
+ * 
+ * 
  * 26 February 2014, 09:40
  * 
  * Fix faults that arise in some situations with monitoring data
