@@ -179,7 +179,9 @@ class API {
 		'probe' => array('description' => 'Explore what services are already installed on a new node'),
 		'install-packages' => array('description' => 'Install the packages needed for managing the new node'),
 		'firewall-setup' => array('description' => 'Set up the firewall'),
-		'configure' => array('description' => 'Set initial configuration values')
+		'configure' => array('description' => 'Set initial configuration values'),
+		'store-backup' => array('description' => 'Pulls the newly created backup files to the manager node'),
+		'send-backups' => array('description' => 'Pushes the required backup files to the data node')
 	);
 	
 	public static $encryptedfields = array('rootpassword', 'sshkey');

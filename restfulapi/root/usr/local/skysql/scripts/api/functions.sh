@@ -32,29 +32,30 @@
 # $2: API call URI
 # $3: API call-specific parameters
 api_call() {
+	method="$1"
+        request_uri="$2"
+        shift 2
+
+        # URL for the request
+        full_url="http://$api_host/restfulapi/$request_uri"
+
         # Getting system date in the required format for authentication
         api_auth_date=`date --rfc-2822`
 
-        # Getting checksum and creating authentication header
-        md5_chksum=$(echo -n $2$auth_key$api_auth_date | md5sum | awk '{print $1}')
+	# Getting checksum and creating authentication header
+        md5_chksum=$(echo -n $request_uri$auth_key$api_auth_date | md5sum | awk '{print $1}')
         api_auth_header="api-auth-$auth_key_number-$md5_chksum"
 
-        # URL for the request
-        full_url="http://$api_host/restfulapi/$2"
+	curlargs=( --data-urlencode suppress_response_codes=true )
+        [[ $method == "GET" ]] && curlargs+=('-G')
+        for arg; do
+            curlargs+=("--data-urlencode")
+            curlargs+=("$arg")
+        done
 
-        # Sending the request
-        if [[ $# -ge 3 ]]; then
-                if [[ $1 == "GET" ]]; then
-                        curl --request GET -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" -H "Accept:application/json" $full_url?$3
-                        curl_status=$?
-                else
-                        curl --request $1 -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" -H "Accept:application/json" --data "$3" $full_url
-                        curl_status=$?
-                fi
-        else
-                curl -s --request $1 -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" -H "Accept:application/json" $full_url
-                curl_status=$?
-        fi
+        curl -s -S -X "$method" -H "Date:$api_auth_date" -H "Authorization:$api_auth_header" \
+                "$full_url" -H "Accept:application/json" "${curlargs[@]}"
+        curl_status=$?	
 
         if [[ "$curl_status" != 0 ]]; then
 		case "$curl_status" in
@@ -115,7 +116,7 @@ ssh_command() {
 		ssh_output=$(sshpass -p "$rootpwd" ssh root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
 		ssh_return=$?
 	fi
-      if [[ "$ssh_return" != "0" ]]; then
+	if [[ "$ssh_return" != "0" ]]; then
                 ssh_error_output=$(cat /tmp/ssh_call.$$.log)
                 logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $nodeip with root user. $ssh_error_output"
 		set_error "Error in ssh connection to $nodeip with root user. $ssh_error_output"
@@ -151,7 +152,51 @@ ssh_put_file() {
 		echo $ssh_return
                 exit $ssh_return
         elif [[ "$ssh_output" != "" ]]; then
-                logger -p user.error -t MariaDB-Manager-Task $ssh_output
+                logger -p user.error -t MariaDB-Manager-Task "$ssh_output"
+        fi
+}
+
+# rsync_get_file()
+# This function invokes a rsync command to get a file from a specific node using root login.
+#
+# Parameters:
+# $1: node IP
+# $2: remote file path (source)
+# $3: local file path (destination)
+rsync_get_file() {
+        rsync_output=$(rsync skysqlagent@"$1":"$2" "$3" 2>/tmp/rsync_call.$$.log)
+        rsync_return=$?
+        if [[ "$rsync_return" != "0" ]]; then
+                rsync_error_output=$(cat /tmp/rsync_call.$$.log)
+                logger -p user.error -t MariaDB-Manager-Task "Error in rsync file transfer from $nodeip with root user. $rsync_error_output"
+                set_error "Error in rsync file transfer from $nodeip with root user. $rsync_error_output"
+                rm -f /tmp/rsync_call.$$.log
+                echo $rsync_return
+                exit $rsync_return
+        elif [[ "$rsync_output" != "" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task "$rsync_output"
+        fi
+}
+
+# rsync_send_file()
+# This function invokes a rsync command to get a file from a specific node using root login.
+#
+# Parameters:
+# $1: node IP
+# $2: local file path (source)
+# $3: remote file path (destination)
+rsync_send_file() {
+        rsync_output=$(rsync "$2" skysqlagent@"$1":"$3" 2>/tmp/rsync_call.$$.log)
+        rsync_return=$?
+        if [[ "$rsync_return" != "0" ]]; then
+                rsync_error_output=$(cat /tmp/rsync_call.$$.log)
+                logger -p user.error -t MariaDB-Manager-Task "Error in rsync file transfer from $nodeip with root user. $rsync_error_output"
+                set_error "Error in rsync file transfer from $nodeip with root user. $rsync_error_output"
+                rm -f /tmp/rsync_call.$$.log
+                echo $rsync_return
+                exit $rsync_return
+        elif [[ "$rsync_output" != "" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task "$rsync_output"
         fi
 }
 
@@ -226,6 +271,8 @@ export -f api_call
 export -f set_error
 export -f ssh_command
 export -f ssh_put_file
+export -f rsync_get_file
+export -f rsync_send_file
 export -f ssh_test_agent
 export -f ssh_test_agent_command
 export -f ssh_agent_command

@@ -38,6 +38,8 @@ sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
 
 mkdir -p /usr/local/skysql/cache/api
 chown -R apache:apache /usr/local/skysql/cache
+mkdir -p /usr/local/skysql/backups
+chown -R apache:apache /usr/local/skysql/backups
 mkdir -p /var/www/.ssh
 touch /var/www/.ssh/known_hosts
 chown apache:apache /var/www/.ssh/known_hosts
