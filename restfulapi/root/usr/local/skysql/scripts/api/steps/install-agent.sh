@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is distributed as part of the MariaDB Enterprise.  It is free
+# This file is distributed as part of MariaDB Manager.  It is free
 # software: you can redistribute it and/or modify it under the terms of the
 # GNU General Public License as published by the Free Software Foundation,
 # version 2.
@@ -14,7 +14,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Copyright 2012-2014 SkySQL Ab
+# Copyright 2012-2014 SkySQL Corporation Ab
 #
 # Author: Marcos Amaral
 # Date: July 2013
@@ -75,8 +75,7 @@ cleanup() {
 scripts_installed=0;
 
 # Checking if SkySQL Remote Execution Scripts are installed
-ssh_return=$(ssh_agent_command "$nodeip" \
-	"sudo /usr/local/sbin/skysql/NodeCommand.sh test $taskid $api_host")
+ssh_return=$(ssh_test_agent_command "$nodeip" "$taskid" "$api_host")
 if [[ "$ssh_return" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: MariaDB Manager API Agent already installed."
 	scripts_installed=1;

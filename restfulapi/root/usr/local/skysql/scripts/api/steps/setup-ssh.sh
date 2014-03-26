@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is distributed as part of the MariaDB Enterprise.  It is free
+# This file is distributed as part of the MariaDB Manager.  It is free
 # software: you can redistribute it and/or modify it under the terms of the
 # GNU General Public License as published by the Free Software Foundation,
 # version 2.
@@ -14,7 +14,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Copyright 2012-2014 SkySQL Ab
+# Copyright 2012-2014 SkySQL Corporation Ab
 #
 # Author: Marcos Amaral
 # Date: July 2013
@@ -79,7 +79,7 @@ fi
 
 # Checking if node is already prepared for command execution
 # (on a subshell to catch exits)
-ssh_return=$(ssh_agent_command "$nodeip" "exit 0")
+ssh_return=$(ssh_test_agent "$nodeip")
 if [[ "$ssh_return" == "0" ]]; then
         logger -p user.info -t MariaDB-Manager-Task "Info: ssh login already setup in target node."
 	exit 0

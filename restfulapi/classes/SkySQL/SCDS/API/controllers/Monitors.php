@@ -121,10 +121,10 @@ final class Monitors extends ImplementAPI {
 				continue;
 			}
 			$monitor = Monitor::getByMonitorID($monitors[$i]);
-			if (!$monitor) $errors[] = "No such monitor ID {$monitors[$i]}";
-			$values[$i] = (int) empty($monitor->decimals) ? round($values[$i]) : round($values[$i] * pow(10,$monitor->decimals));
+			if (!$monitor) $errors[] = "No such monitor ID '{$monitors[$i]}'";
+			$monitordata[$monitors[$i]] = (int) empty($monitor->decimals) ? round($values[$i]) : round($values[$i] * pow(10,$monitor->decimals));
 		}
-		if (0 == count($monitors)) $errors[] = 'No bulk data provided';
+		if (empty($monitordata)) $errors[] = 'No bulk data provided';
 		if (!System::getByID($systemid)) $errors[] = "No such system ID: '{$systemid}'";
 		if (0 != $nodeid AND !Node::getByID($systemid, $nodeid)) $errors[] = "No such node as system ID '{$systemid}', node ID '{$nodeid}'";
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
@@ -135,7 +135,7 @@ final class Monitors extends ImplementAPI {
 		$this->monitordb->beginExclusiveTransaction();
 		
 		$stamp = $this->getParam('POST', 'timestamp', time());
-		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systemid, $nodeid, $monitors, $values);
+		$inserts = MonitorLatest::getInstance()->monitorUpdate($stamp, $systemid, $nodeid, $monitordata);
 		foreach ($inserts as $insert) {
 			if (isset($insertrows)) {
 				$insertrows .= sprintf("UNION SELECT %d, %d, %d, %d\n", (int) $insert['monitorid'], ('null' == $insert['value'] ? 'NULL' : (int) $insert['value']), $insert['timestamp'], $insert['repeats']);
@@ -152,7 +152,7 @@ final class Monitors extends ImplementAPI {
 		}
 		
 		$this->monitordb->commitTransaction();
-		MonitorQueries::getInstance()->newData($monitors, $systemid, $nodeid, $stamp);
+		MonitorQueries::getInstance()->newData(array_keys($monitordata), $systemid, $nodeid, $stamp);
 		$this->sendResponse('Data accepted');
 	}
 	

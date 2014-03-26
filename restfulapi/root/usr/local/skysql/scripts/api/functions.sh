@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# This file is distributed as part of the MariaDB Enterprise.  It is free
+# This file is distributed as part of MariaDB Manager.  It is free
 # software: you can redistribute it and/or modify it under the terms of the
 # GNU General Public License as published by the Free Software Foundation,
 # version 2.
@@ -14,7 +14,7 @@
 # this program; if not, write to the Free Software Foundation, Inc., 51
 # Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 #
-# Copyright 2012-2014 SkySQL Ab
+# Copyright 2012-2014 SkySQL Corporation Ab
 #
 # Author: Marcos Amaral
 # Date: October 2013
@@ -123,7 +123,7 @@ ssh_command() {
 		echo $ssh_return
                 exit 1
         elif [[ "$ssh_output" != "" ]]; then
-                logger -p user.info -t MariaDB-Manager-Task $ssh_output
+                logger -p user.info -t MariaDB-Manager-Task "$ssh_output"
         fi
 	echo $ssh_output
 }
@@ -154,6 +154,31 @@ ssh_put_file() {
                 logger -p user.error -t MariaDB-Manager-Task $ssh_output
         fi
 }
+
+# ssh_test_agent()
+# This function invokes a test ssh command on a specific node using skysqlagent user.
+#
+# Parameters:
+# $1: node IP
+ssh_test_agent() {
+        ssh_output=$(ssh -q skysqlagent@"$1" "exit 0" 2>/tmp/ssh_call.$$.log)
+        ssh_return=$?
+        echo "$ssh_return"
+}
+
+# ssh_test_agent_command()
+# This function invokes the test command on NodeCommand.sh using skysqlagent user to detect script installation.
+#
+# Parameters:
+# $1: node IP
+# $2: task ID
+# $3: api host
+ssh_test_agent_command() {
+        ssh_output=$(ssh -q skysqlagent@"$1" "sudo /usr/local/sbin/skysql/NodeCommand.sh test $2 $3" 2>/tmp/ssh_call.$$.log)
+        ssh_return=$?
+        echo "$ssh_return"
+}
+
 
 # ssh_agent_command()
 # This function invokes an ssh command on a specific node using skysqlagent login.
@@ -201,5 +226,7 @@ export -f api_call
 export -f set_error
 export -f ssh_command
 export -f ssh_put_file
+export -f ssh_test_agent
+export -f ssh_test_agent_command
 export -f ssh_agent_command
 export -f json_error

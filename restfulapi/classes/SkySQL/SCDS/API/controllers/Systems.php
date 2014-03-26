@@ -81,6 +81,17 @@ class Systems extends SystemNodeCommon {
 		else $this->sendErrorResponse("No system with ID of $this->systemid was found", 404);
 	}
 	
+	public function getSystemField ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
+		$this->systemid = (int) $uriparts[1];
+		$system = System::getByID($this->systemid);
+		if ($system) {
+			$name = $uriparts[3];
+			if (isset($system->$name)) $this->sendResponse($system->$name);
+		}
+		$this->sendErrorResponse(sprintf("No field '%s' found for systemid '%d'", $uriparts[3], $this->systemid), 404);
+	}
+	
 	public function createSystem ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for system resource');
 		$this->db->beginImmediateTransaction();

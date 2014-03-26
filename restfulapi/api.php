@@ -44,6 +44,7 @@ use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.1');
+define ('_API_RELEASE_NUMBER','1.0.2');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_SOURCE_REVISION', '$Revision-Id$');
 define ('_API_DEFAULT_SQL_PORT', 3306);
@@ -200,13 +201,6 @@ class API {
 		define ('_API_CODE_ISSUE_DATE', date('D, j F Y H:i', $apitimestamp));
 		
 		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
-
-		// Can't work without JSON
-		if (!function_exists('json_encode')) {
-			header(HTTP_PROTOCOL." 500 Internal Server Error");
-			die(HTTP_PROTOCOL." 500 Internal Server Error - The API is unable to function because PHP JSON functions are not available");
-			exit;
-		}
 
 		// Set up a simple class autoloader
 		spl_autoload_register(array(__CLASS__, 'simpleAutoload'));

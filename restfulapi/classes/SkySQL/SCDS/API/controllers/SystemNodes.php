@@ -93,6 +93,16 @@ class SystemNodes extends SystemNodeCommon {
 		else $this->sendErrorResponse("No matching node for system ID $this->systemid and node ID $this->nodeid", 404);
 	}
 	
+	public function getNodeField ($uriparts, $metadata='') {
+		if ($metadata) return $this->returnMetadata ($metadata, '', false, 'specified field');
+		$this->systemid = (int) $uriparts[1];
+		$this->nodeid = (int) $uriparts[3];
+		$name = $uriparts[5];
+		$node = Node::getByID($this->systemid, $this->nodeid);
+		if ($node AND isset($node->$name)) $this->sendResponse($node->$name);
+		$this->sendErrorResponse(sprintf("No field '%s' found for %s", $name, Node::getDescription($this->systemid, $this->nodeid)), 404);
+	}
+	
 	public function getSystemNodeProcesses ($uriparts, $metadata='') {
 		if ($metadata) return $this->returnMetadata ($metadata, 'process', true, 'fields');
 		$this->systemid = (int) $uriparts[1];

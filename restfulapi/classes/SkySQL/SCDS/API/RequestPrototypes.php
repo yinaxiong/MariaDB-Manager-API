@@ -58,6 +58,7 @@ class RequestPrototypes {
 			array('class' => 'ComponentProperties', 'method' => 'getComponentProperty', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>/property/<property>', 'title' => 'Get a Component Property'),
 			array('class' => 'ComponentProperties', 'method' => 'getComponentProperties', 'uri' => 'system/<systemid>/node/<nodeid>/component/<component>', 'title' => 'Get All Properties for a Component'),
 			array('class' => 'ComponentProperties', 'method' => 'getComponents', 'uri' => 'system/<systemid>/node/<nodeid>/component', 'title' => 'Get All Component Properties'),
+			array('class' => 'SystemNodes', 'method' => 'getNodeField', 'uri' => 'system/<systemid>/node/<nodeid>/field/<fieldname>', 'title' => 'Get a Field from a Node'),
 			array('class' => 'SystemNodes', 'method' => 'getProcessPlan', 'uri' => 'system/<systemid>/node/<nodeid>/process/<processid>', 'title' => 'Get a Database Process Plan'),
 			array('class' => 'SystemNodes', 'method' => 'getSystemNodeProcesses', 'uri' => 'system/<systemid>/node/<nodeid>/process', 'title' => 'Get Database Processes'),
 			array('class' => 'SystemNodes', 'method' => 'getSystemNode', 'uri' => 'system/<systemid>/node/<nodeid>', 'title' => 'Get a Node'),
@@ -70,6 +71,7 @@ class RequestPrototypes {
 			array('class' => 'UserProperties', 'method' => 'getUserProperty', 'uri' => 'user/<username>/property/<property>', 'title' => 'Get a User Property'),
 			array('class' => 'SystemUsers', 'method' => 'getUserInfo', 'uri' => 'user/<username>', 'title' => 'Get a User'),
 			array('class' => 'SystemUsers', 'method' => 'getUsers', 'uri' => 'user', 'title' => 'Get All Users'),
+			array('class' => 'Systems', 'method' => 'getSystemField', 'uri' => 'system/<systemid>/field/<fieldname>', 'title' => 'Get a Field from a System'),
 			array('class' => 'Systems', 'method' => 'getSystemProcesses', 'uri' => 'system/<systemid>/process', 'title' => 'Get Database Processes on a System'),
 			array('class' => 'Systems', 'method' => 'getSystemData', 'uri' => 'system/<systemid>', 'title' => 'Get a System'),
 			array('class' => 'Systems', 'method' => 'getAllData', 'uri' => 'system', 'title' => 'Get All Systems'),
@@ -94,6 +96,8 @@ class RequestPrototypes {
 			array('class' => 'Metadata', 'method' => 'getEntity', 'uri' => 'metadata/entity/<resource>', 'title' => 'Get Metadata for an Resource'),
 			array('class' => 'Metadata', 'method' => 'getEntities', 'uri' => 'metadata/entities', 'title' => 'Get a List of API Resources'),
 			array('class' => 'Metadata', 'method' => 'metadataSummary', 'uri' => 'metadata', 'title' => 'Get a Metadata Summary'),
+			array('class' => 'Request', 'method' => 'getConfigField', 'uri' => 'config/<configsection>/<configitem>', 'title' => 'Get a Configuration Data Item in a section'),
+			array('class' => 'Request', 'method' => 'getConfigField', 'uri' => 'config/<configitem>', 'title' => 'Get a Configuration Data Item (not in section)'),
 			),
 		'PUT' => array(
 			array('class' => 'Applications', 'method' => 'setApplicationProperty', 'uri' => 'application/<appid>/property/<property>', 'title' => 'Create or Update an Application Property'),
@@ -151,6 +155,7 @@ class RequestPrototypes {
 		'<component>' => '[A-Za-z0-9_:\-]+',
 		'<processid>' => '[0-9]+',
 		'<systemtype>' =>'[A-Za-z0-9]+',
+		'<fieldname>' =>'[a-z0-9]+',
 		'<username>' => '[A-Za-z0-9_]+',
 		'<command>' => '[A-Za-z0-9]+',
 		'<scheduleid>' => '[0-9]+',
@@ -158,6 +163,8 @@ class RequestPrototypes {
 		'<monitor>' => '([0-9a-zA-Z_\-\.\~\*\(\)]+)',
 		'<logtype>' => '(log|binlog)',
 		'<resource>' => '[A-Za-z]+',
+		'<configsection>' => '[A-Za-z0-9_\.]+',
+		'<configitem>' => '[A-Za-z0-9_\.]+',
 		'<daterange>' => '.+'
 	);
 	
