@@ -28,6 +28,7 @@
 
 namespace SkySQL\SCDS\API\models;
 
+use stdClass;
 use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\managers\EncryptionManager;
@@ -46,32 +47,45 @@ abstract class TaskScheduleCommon extends EntityModel {
 	}
 	
 	protected static function formatParameters ($entity) {
-		if (!empty($entity->parameters)) {
-			$parmarray = self::getParameterArray($entity);
-			if (Request::getInstance()->compareVersion('1.0', 'gt')) $entity->parameters = (array) @$parmarray;
-			else {
-				foreach ($parmarray as $name=>$value) $parmparts[] = "$name=$value";
-				$entity->parameters = implode('|', (array) @$parmparts);
+		$parmobject = self::getParameterObject($entity);
+		if (Request::getInstance()->compareVersion('1.0', 'gt')) $entity->parameters = $parmobject;
+		else {
+			foreach ($parmobject as $name=>$value) {
+				if ('backup' == $entity->command) {
+					if ('type' == $name) $parmparts[] = (1 == $value ? 'Full' : 'Incremental');
+					if ('parent' == $name) $parmparts[] = $value;
+				}
+				elseif ('restore' == $entity->command) {
+					if ('id' == $name) $parmparts[] = $value;
+				}
+				else $parmparts[] = "$name=$value";
 			}
+			$entity->parameters = implode('|', (array) @$parmparts);
 		}
 		return $entity;
 	}
 	
-	public static function getParameterArray ($entity) {
-		if (!empty($entity->parameters)) {
-			$parmarray = json_decode($entity->parameters, true);
-			if (!$parmarray) {
-				$key = Request::getInstance()->getAPIKey();
-				$pairs = explode('|', $entity->parameters);
-				foreach ($pairs as $pair) {
-					$parts = explode('=', $pair, 2);
-					if (isset($parts[1])) {
-						$value = in_array($parts[0], API::$encryptedfields) ? EncryptionManager::decryptOneField($parts[1], $key) : $parts[1];
-						$parmarray[$parts[0]] = $value;
+	public static function getParameterObject ($entity) {
+		$parmobject = json_decode($entity->parameters, true);
+		if (!$parmobject) {
+			$parmobject = new stdClass();
+			foreach (explode('|', $entity->parameters) as $pair) {
+				$parts = explode('=', $pair, 2);
+				if (isset($parts[1])) {
+					$value = in_array($parts[0], API::$encryptedfields) ? EncryptionManager::decryptOneField($parts[1], Request::getInstance()->getAPIKey()) : $parts[1];
+					$property = $parts[0];
+					$parmobject->$property = $value;
+				}
+				elseif ($parts[0]) {
+					if (0 == strcasecmp('Full', $parts[0])) $parmobject->type = 1;
+					elseif (strcasecmp('Incremental', $parts[0])) $parmobject->type = 2;
+					elseif (is_numeric($parts[0])) {
+						if ('backup' == $entity->command) $parmobject->parent = (int) $parts[0];
+						elseif ('restore' == $entity->command) $parmobject->id = (int) $parts[0];							
 					}
 				}
 			}
 		}
-		return (array) @$parmarray;
+		return $parmobject;
 	}
 }
