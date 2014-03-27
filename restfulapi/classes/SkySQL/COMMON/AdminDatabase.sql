@@ -179,7 +179,12 @@ create table Node (
 	DBUserName	varchar(50),								/* DB User Name for general queries, processlist etc */
 	DBPassword	varchar(50),								/* DB Password for general queries, processlist etc */
 	RepUserName	varchar(50),								/* DB User Name for replication */
-	RepPassword	varchar(50)									/* DB Password for replication */
+	RepPassword	varchar(50),								/* DB Password for replication */
+	ScriptRelease varchar(20) default ('1.0'),				/* Release number of the installed scripts */
+	DBType		varchar(50) default ('MariaDB'),			/* Database product running on the node */
+	DBVersion	varchar(20) default ('5.5.35'),				/* Version of database product on node */
+	LinuxName varchar(50) default ('CentOS'),		/* Linux Distribution name for node */
+	LinuxVersion varchar(20) default ('6.5')			/* Linux Distribution version */
 );
 
 create unique index SystemNodeIDX on Node (SystemID, NodeID);

@@ -70,7 +70,12 @@ class Node extends EntityModel {
 		'dbusername' => array('sqlname' => 'DBUserName', 'desc' => 'Node system override for database user name', 'default' => ''),
 		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'Node system override for database password', 'default' => '', 'mask' => _MOS_NOTRIM),
 		'repusername' => array('sqlname' => 'RepUserName', 'desc' => 'Node system override for replication user name', 'default' => ''),
-		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '', 'mask' => _MOS_NOTRIM)
+		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '', 'mask' => _MOS_NOTRIM),
+		'scriptrelease' => array('sqlname' => 'ScriptRelease', 'desc' => 'Release number for scripts installed on node', 'default' => '1.0'),
+		'dbtype' => array('sqlname' => 'DBType', 'desc' => 'Database server product installed', 'default' => 'MariaDB'),
+		'dbversion' => array('sqlname' => 'DBVersion', 'desc' => 'Database server version installed', 'default' => '5.5.35'),
+		'linuxname' => array('sqlname' => 'LinuxName', 'desc' => 'Linux Distribution installed', 'default' => 'CentOS'),
+		'linuxversion' => array('sqlname' => 'LinuxVersion', 'desc' => 'Linux Distribution version installed', 'default' => '6.5'),
 	);
 	
 	protected static $derived = array(

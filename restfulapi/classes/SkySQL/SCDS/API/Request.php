@@ -44,6 +44,8 @@ namespace SkySQL\SCDS\API;
 use \PDOException;
 use SkySQL\COMMON\ErrorRecorder;
 use SkySQL\COMMON\Diagnostics;
+use SkySQL\COMMON\AdminDatabase;
+use SkySQL\COMMON\MonitorDatabase;
 use SkySQL\SCDS\API\controllers\Metadata;
 
 if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
@@ -155,6 +157,7 @@ abstract class Request {
 	protected $urlencoded = true;
 	protected $authcode = null;
 	protected $errors = array();
+	protected $runupgrade = false;
 	
 	protected function __construct() {
 		if ('yes' == @$this->config['logging']['verbose']) {
@@ -328,6 +331,11 @@ abstract class Request {
 
 	public function doControl () {
 		if (count($this->errors)) $this->sendErrorResponse($this->errors, 501);
+		if ($this->runupgrade) {
+			AdminDatabase::getInstance()->upgrade();
+			MonitorDatabase::getInstance()->upgrade();
+			$this->sendResponse('OK');
+		}
 		$uriparts = array_map('urldecode', explode('/', $this->uri));
 		$parser = RequestParser::getInstance();
 		// Method sendOptions sends answer, does not return to caller
