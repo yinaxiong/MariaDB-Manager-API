@@ -116,8 +116,8 @@ abstract class EntityModel {
 				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
 			}
 		}
-		if (isset($parameters)) $this->setInsertValue('parameters', json_encode($parameters));
-		if (isset($encrypted)) $this->xparameters = json_encode($encrypted);
+		$this->setInsertValue('parameters', (isset($parameters) ? json_encode($parameters) : "{}"));
+		$this->xparameters = (isset($encrypted) ? json_encode($encrypted) : "{}");
 	}
 
 	final private static function fixDate (&$entity) {

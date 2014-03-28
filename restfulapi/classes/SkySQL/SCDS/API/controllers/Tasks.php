@@ -126,6 +126,7 @@ class Tasks extends TaskScheduleCommon {
 		$schedule->insertOnCommand($command->command);
 		$this->setRunAt($schedule);
 		//if ($schedule->isDue()) $this->runScheduleNow($schedule);
+		$schedule->formatParameters();
 		$this->sendResponse(array('schedule' => $schedule->withDateFix()));
 	}
 	
@@ -134,6 +135,7 @@ class Tasks extends TaskScheduleCommon {
 		// insertOnCommand also fixes dates as RFC
 		$task->insertOnCommand($command->command);
 		$this->execute($task);
+		$task->formatParameters();
 		$this->sendResponse(array('task' => $task->withDateFix()));
 	}
 }

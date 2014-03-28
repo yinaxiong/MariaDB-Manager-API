@@ -91,7 +91,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$shellparams[] = $task->taskid;
 		$shellparams[] = $task->steps;
 		$shellparams[] = $task->privateip;
-		$parmobject = Task::getParameterObject($task);
+		$parmobject = $task->getParameterObject();
 		foreach ($parmobject as $name=>$value) $shellparams[] = "$name=$value";
 		foreach ($task->getEncryptedParameters() as $name=>$value) $shellparams[] = "$name=$value";
 		$cmd = call_user_func_array(array($this, 'makeShellCall'), $shellparams);
