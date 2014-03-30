@@ -106,15 +106,23 @@ class Node extends EntityModel {
 
 	public function getCommands () {
 		$commands = NodeCommand::getRunnable($this->getSystemType(), $this->state);
-		foreach ($commands as $sub=>$command) {
+		foreach ($commands as $sub=>&$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
+			else $this->checkForUpgrade($command);
 		}
 		return array_values($commands);
 	}
 	
 	public function getSteps ($commandname) {
 		$commandobject = NodeCommand::getByID($commandname, $this->getSystemType(), $this->state);
+		$this->checkForUpgrade($commandobject);
 		return $commandobject ? $commandobject->steps : '';
+	}
+	
+	protected function checkForUpgrade ($commandobject) {
+		if ($commandobject instanceof NodeCommand AND $commandobject->steps AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
+			$commandobject->steps = 'upgrade,'.$commandobject->steps;
+		} 
 	}
 	
 	public function insert ($alwaysrespond = true) {

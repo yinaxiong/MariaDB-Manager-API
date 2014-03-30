@@ -3,6 +3,12 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 30 March 2014, 09:45
+ * 
+ * Implement automatic insertion of upgrade step at start of any command when
+ * the node is at an earlier release than the API.
+ * 
+ * 
  * 26 March 2014, 11:30
  * 
  * Ignore duplicate data entries from monitor data, accept only the last

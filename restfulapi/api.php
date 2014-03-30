@@ -165,6 +165,7 @@ class API {
 	);
 
 	public static $commandsteps = array(
+		'upgrade' => array('description' => 'Upgrade scripts on a node to new release'),
 		'start' => array('description' => 'Start node up, start replication'),
 		'stop' => array('description' => 'Stop replication, shut node down'),
 		'isolate' => array('description' => 'Take node out of replication'),
