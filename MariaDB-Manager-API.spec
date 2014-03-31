@@ -111,6 +111,7 @@ cp -R restfulapi/root/* $RPM_BUILD_ROOT/
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest/* $RPM_BUILD_ROOT%{install_path}restfulapi/
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
+sed -i '/^#[ ]*LoadModule[ ]*proxy_module/ {s/#//;}' /etc/httpd/conf/httpd.conf
 mv $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template 
 
 %clean
