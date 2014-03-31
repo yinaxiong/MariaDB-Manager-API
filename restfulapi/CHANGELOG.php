@@ -2,6 +2,11 @@
 
 /*
  * Change log for the MariaDB Manager API
+ *
+ * 31 March 2014, 14:50
+ *
+ * Redirect /MariaDBManager to Tomcat
+ *
  * 
  * 26 March 2014, 11:30
  * 
