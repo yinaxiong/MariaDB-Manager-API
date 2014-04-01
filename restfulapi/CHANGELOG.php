@@ -3,6 +3,12 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 1 April 2014, 06:30
+ * 
+ * Add upgrade for Backup table
+ * Split table upgrades into a method per table
+ * 
+ * 
  * 30 March 2014, 09:45
  * 
  * Implement automatic insertion of upgrade step at start of any command when

@@ -67,6 +67,21 @@ class AdminDatabase extends APIDatabase {
 	
 	public function upgrade () {
 		$this->query('create unique index if not exists SystemNameIDX ON System (SystemName)');
+		$this->upgradeBackupTable();
+		$this->upgradeNodeTable();
+	}
+
+	protected function upgradeBackupTable () {
+		$pragma = $this->query("PRAGMA table_info('Backup')");
+		foreach ($pragma->fetchAll() as $field) {
+			$fieldnames[$field->name] = $field;
+		}
+		if (!isset($fieldnames['TaskID'])) {
+			$this->query("alter table Backup add TaskID int default 0");
+		}
+	}
+	
+	protected function upgradeNodeTable () {
 		$pragma = $this->query("PRAGMA table_info('Node')");
 		foreach ($pragma->fetchAll() as $field) {
 			$fieldnames[$field->name] = $field;
