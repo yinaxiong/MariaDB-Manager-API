@@ -33,6 +33,7 @@ use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\models\System;
+use SkySQL\SCDS\API\managers\ComponentPropertyManager;
 use SkySQL\SCDS\API\caches\CachedProvisionedNodes;
 
 class SystemNodes extends SystemNodeCommon {
@@ -190,8 +191,10 @@ class SystemNodes extends SystemNodeCommon {
 			if (!empty(API::$systemtypes[$this->systemtype]['nodestates'][$node->state]['protected'])) {
 				$this->sendErrorResponse(sprintf("Delete node System ID '%s', Node ID '%s' request, but cannot delete node in state '%s'",$this->systemid, $this->nodeid, $node->state), 400);
 			}
-			$node->delete();
 			ComponentPropertyManager::getInstance()->deleteAllComponents($this->systemid, $this->nodeid);
+			// Call a delete script to unset known host
+			// The following will not return
+			$node->delete();
 		}
 		else $this->sendErrorResponse('Delete node request gave non-existent system ID '.$this->systemid, 400);
 	}

@@ -86,6 +86,6 @@ class NodeManager extends EntityManager {
 	}
 	
 	public function usedIP ($ip, $port) {
-		return (array) @$this->nodeips[$ip][$port];
+		return (array) @$this->nodeips[$ip][($port ? $port : '3306')];
 	}
 }
