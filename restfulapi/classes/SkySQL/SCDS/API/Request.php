@@ -187,7 +187,10 @@ abstract class Request {
 				$this->headers[$stdname] = $value;
 			}
 		}
-		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
+		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', _API_VERSION_NUMBER), 1, '.', '');
+		if (!in_array($this->requestversion, explode(',', API::trimCommaSeparatedList(_API_LEGAL_VERSIONS)))) {
+			$this->errors[] = sprintf("API Version of '%s' is not supported, legal values are '%s'", $this->requestversion, _API_LEGAL_VERSIONS);
+		}
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
 				if (isset($this->config['apikeys'][$matches[1]])) {
@@ -213,7 +216,7 @@ abstract class Request {
 			$parts = explode(':', $this->headers['Accept-Charset'], 2);
 			if (isset($parts[1])) {
 				$charsets = array_map('trim', explode(',', strtolower($parts[1])));
-				if (!in_array('utf-8', $charsets)) $this->errors = sprintf("Accept-Charset header '%s' does not include utf-8", $parts[1]);
+				if (!in_array('utf-8', $charsets)) $this->errors[] = sprintf("Accept-Charset header '%s' does not include utf-8", $parts[1]);
 			}
 		}
 	}

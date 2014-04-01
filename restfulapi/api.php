@@ -44,6 +44,7 @@ use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.1');
+define ('_API_LEGAL_VERSIONS', '1.0,1.1');
 define ('_API_RELEASE_NUMBER','1.0.2');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_SOURCE_REVISION', '$Revision-Id$');
