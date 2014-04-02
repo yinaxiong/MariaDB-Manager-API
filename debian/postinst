@@ -38,9 +38,9 @@ if [ ! -f /etc/skysqlmgr/api.ini ] ; then
 	fi
 	
 	# Registering key on api.ini file
-	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template/api.ini &>/dev/null
+	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
 	if [ "$?" != "0" ] ; then
-		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template/api.ini
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
 	fi
 
 	# Generating API key for GREX
@@ -50,13 +50,13 @@ if [ ! -f /etc/skysqlmgr/api.ini ] ; then
 	keyString="${componentID} = \"${newKey}\""
 
 	# Registering key on api.ini file
-	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template/api.ini &>/dev/null
+	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
 	if [ "$?" != "0" ] ; then
-		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template/api.ini
+		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
 	fi	
 
 	# Creating api.ini file
-	cp /etc/skysqlmgr/api.ini.template/api.ini /etc/skysqlmgr/api.ini
+	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
 fi
 
 # disabling selinux! TO BE FIXED! 
