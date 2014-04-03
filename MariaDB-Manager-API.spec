@@ -105,11 +105,17 @@ mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
 mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d/
 
 cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
-cp -R restfulapi/root/* $RPM_BUILD_ROOT/
+#cp -R restfulapi/root/* $RPM_BUILD_ROOT/
+mkdir -p $RPM_BUILD_ROOT/usr
+cp -R restfulapi/root/usr/ $RPM_BUILD_ROOT/usr
+mkdir -p $RPM_BUILD_ROOT/etc/skysqlmgr
+cp -R restfulapi/root/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template
+
+
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest/* $RPM_BUILD_ROOT%{install_path}restfulapi/
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
-mv $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template 
+#mv $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template 
 
 %clean
 
