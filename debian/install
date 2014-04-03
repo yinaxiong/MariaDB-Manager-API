@@ -1,7 +1,7 @@
 consoleAPI/ var/www/
 restfulapi/ var/www/
-restfulapitest/* var/www/html/restfulapi/
-skysql_rewrite.conf etc/httpd/conf.d/
+restfulapitest/* var/www/restfulapi/
+skysql_rewrite.conf etc/apache2/conf.d/
 restfulapi/root/usr/ ./
 restfulapi/root/etc/skysqlmgr/api.ini.template etc/skysqlmgr/
 
