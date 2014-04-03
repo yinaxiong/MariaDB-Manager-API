@@ -2,7 +2,7 @@
 
 chown -R www-data:www-data /var/www/html
 mkdir -p /var/www/html/consoleAPI
-ln -s /var/www/html/restfulapi/ /var/www/html/consoleAPI/api
+#ln -s /var/www/html/restfulapi/ /var/www/html/consoleAPI/api
 timezone=$(cat /etc/timezone)
 sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php5/apache2/php.ini
 
