@@ -1,5 +1,5 @@
-consoleAPI/ var/www/html/
-restfulapi/ var/www/html/
+consoleAPI/ var/www/
+restfulapi/ var/www/
 restfulapitest/* var/www/html/restfulapi/
 skysql_rewrite.conf etc/httpd/conf.d/
 restfulapi/root/usr/ ./
