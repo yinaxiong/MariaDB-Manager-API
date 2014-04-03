@@ -68,6 +68,8 @@ iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 iptables-save > /etc/iptables/rules.v4
 
 a2enmod rewrite
+rm -f /etc/apache2/sites-enabled/000-default
+ln -s /etc/apache2/sites-available/mariadbmanagerapi /etc/apache2/sites-enabled/000-default
 service apache2 restart
 
 service atd start
