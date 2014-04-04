@@ -49,8 +49,8 @@ class ComponentPropertyManager extends PropertyManager {
 		parent::__construct();
 		$this->properties['0|0|api']['name'] = _API_SYSTEM_NAME;
 		$this->properties['0|0|api']['api-version'] = _API_VERSION_NUMBER;
-		$this->properties['0|0|api']['version'] = _API_CODE_ISSUE_DATE;
-		$this->properties['0|0|api']['source-revision'] = _API_SOURCE_REVISION;
+		$this->properties['0|0|api']['release'] = _API_RELEASE_NUMBER;
+		$this->properties['0|0|api']['code-date'] = _API_CODE_ISSUE_DATE;
 		$this->updates['0|0|api']['name'] = $this->updates['0|0|api']['api-version'] = $this->updates['0|0|api']['version'] = $this->updates['0|0|api']['source-revision'] = _API_CODE_ISSUE_DATE;
 	}
 

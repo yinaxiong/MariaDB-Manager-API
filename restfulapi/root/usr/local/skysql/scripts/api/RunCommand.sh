@@ -38,7 +38,7 @@
 if [[ $# -lt 5 ]]; then
 	logger -p user.error -t MariaDB-Manager-Task \
 		"RunCommand: Unexpected number of arguments $#. Called with $*"
-	api_call "PUT" "task/$taskid" "completed=@$(date +%s)&state=error&errormessage=Incorrect parameter count"
+	api_call "PUT" "task/$taskid" "completed=@$(date +%s)" "state=error" "errormessage=Incorrect parameter count"
 	exit 1
 fi
 
@@ -110,4 +110,4 @@ fi
 
 time=$(date +%s)
 # Updating the state of command execution to finished (either successfully or with errors)
-api_call "PUT" "task/$taskid" "completed=@$time&state=$cmdstate"
+api_call "PUT" "task/$taskid" "completed=@$time" "state=$cmdstate"

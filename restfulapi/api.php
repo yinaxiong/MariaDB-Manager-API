@@ -44,6 +44,7 @@ use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.1');
+define ('_API_RELEASE_NUMBER','1.0.2');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_SOURCE_REVISION', '$Revision-Id$');
 define ('_API_DEFAULT_SQL_PORT', 3306);
@@ -178,7 +179,9 @@ class API {
 		'probe' => array('description' => 'Explore what services are already installed on a new node'),
 		'install-packages' => array('description' => 'Install the packages needed for managing the new node'),
 		'firewall-setup' => array('description' => 'Set up the firewall'),
-		'configure' => array('description' => 'Set initial configuration values')
+		'configure' => array('description' => 'Set initial configuration values'),
+		'store-backup' => array('description' => 'Pulls the newly created backup files to the manager node'),
+		'send-backups' => array('description' => 'Pushes the required backup files to the data node')
 	);
 	
 	public static $encryptedfields = array('rootpassword', 'sshkey');
@@ -200,13 +203,6 @@ class API {
 		define ('_API_CODE_ISSUE_DATE', date('D, j F Y H:i', $apitimestamp));
 		
 		define('HTTP_PROTOCOL', isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP 1.1');
-
-		// Can't work without JSON
-		if (!function_exists('json_encode')) {
-			header(HTTP_PROTOCOL." 500 Internal Server Error");
-			die(HTTP_PROTOCOL." 500 Internal Server Error - The API is unable to function because PHP JSON functions are not available");
-			exit;
-		}
 
 		// Set up a simple class autoloader
 		spl_autoload_register(array(__CLASS__, 'simpleAutoload'));

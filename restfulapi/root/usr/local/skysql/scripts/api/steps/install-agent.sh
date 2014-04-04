@@ -130,7 +130,7 @@ fi
 # both are which are guaranteed to be numeric, therefore there is no need to worry
 # about spaces and quotes in the return data. So we can use a very simplistic approach
 # to the parsing.
-task_fields=$(echo $task_json | sed -e 's/{"task":{//' -e 's/}}//')
+task_fields=$(echo $task_json | sed -e 's/{"task":{//' -e 's/}.*}//')
 
 system_id=$(echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
         { gsub("\"", "", $0); if ($1 == "systemid") print $2; }')
