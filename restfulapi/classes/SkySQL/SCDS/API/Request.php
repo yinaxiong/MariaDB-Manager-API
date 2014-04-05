@@ -622,4 +622,8 @@ PRETTY_PAGE;
 		$prefix .= "[$this->micromarker] ";
 		syslog($severity, $prefix.$message);
 	}
+	
+	public function logTime ($text='') {
+		$this->log(LOG_INFO, "Time taken $text {$this->timer->mark('seconds')}");
+	}
 }

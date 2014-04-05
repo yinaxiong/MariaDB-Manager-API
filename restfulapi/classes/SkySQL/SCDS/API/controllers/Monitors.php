@@ -175,7 +175,7 @@ final class Monitors extends ImplementAPI {
 		else {
 			$this->start = $this->finish - ($this->interval * $this->count);
 		}
-		if ($this->ifmodifiedsince AND MonitorQueries::getInstance()->hasBeenDone($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval)) {
+		if ($this->ifmodifiedsince AND MonitorQueries::getInstance()->hasBeenDone($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval, $this->average)) {
 			header (HTTP_PROTOCOL.' 304 Not Modified');
 			exit;
 		}
@@ -190,7 +190,7 @@ final class Monitors extends ImplementAPI {
 			}
 			else array_unshift($data, $preceding);
 		}
-		MonitorQueries::getInstance()->newQuery($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval);
+		MonitorQueries::getInstance()->newQuery($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval, $this->average);
 		if ($this->average) {
 			$aresults = $this->getAveraged($data, $results);
 			$mmresults = $this->getMinMax($data, $results);

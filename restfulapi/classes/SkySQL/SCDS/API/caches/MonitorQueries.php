@@ -44,13 +44,13 @@ class MonitorQueries extends CachedSingleton {
 	protected function __construct () {
 	}
 	
-	public function newQuery ($monitorid, $systemid, $nodeid, $finish, $count, $interval) {
-		$this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval] = 1;
+	public function newQuery ($monitorid, $systemid, $nodeid, $finish, $count, $interval, $average) {
+		$this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval][$average] = 1;
 		$this->cacheNow();
 	}
 	
-	public function hasBeenDone ($monitorid, $systemid, $nodeid, $finish, $count, $interval) {
-		return isset($this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval]);
+	public function hasBeenDone ($monitorid, $systemid, $nodeid, $finish, $count, $interval, $average) {
+		return isset($this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval][$average]);
 	}
 	
 	public function newData ($monitorids, $systemid, $nodeid, $timestamp) {
