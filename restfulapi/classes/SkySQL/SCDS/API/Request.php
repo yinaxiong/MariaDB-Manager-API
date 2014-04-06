@@ -185,6 +185,7 @@ abstract class Request {
 			}
 		}
 		$this->requestversion = number_format((float)$this->getParam($this->headers, 'X-Skysql-Api-Version', '1.0'), 1, '.', '');
+		$matches = array();  // Unnecessary, just to keep netbeans hints at bay
 		if (preg_match('/api\-auth\-([0-9]+)\-([0-9a-z]{32,32})/', @$this->headers['Authorization'], $matches)) {
 			if (isset($matches[1]) AND isset($matches[2])) {
 				if (isset($this->config['apikeys'][$matches[1]])) {
@@ -217,6 +218,7 @@ abstract class Request {
 	
 	protected function decodeJsonOrQueryString ($string) {
 		$dejson = json_decode($string, true);
+		$dequery = array();  // Unnecessary - just to keep Netbeans hints at bay
 		if ($this->urlencoded) parse_str($string, $dequery);
 		else $this->parse_str($string, $dequery);
 		return (is_null($dejson) OR (is_array($dequery) AND count($dejson) < count($dequery))) ? $dequery : $dejson;
@@ -256,6 +258,7 @@ abstract class Request {
 		$querystring = $this->getParam($this->requestmethod, 'querystring');
 		if ($querystring) {
 			$data = &$this->getArrayFromName($this->requestmethod);
+			$newdata = array();  // Unnecessary - avoids Netbeans hint
 			$this->parse_str($querystring, $newdata);
 			foreach ($newdata as $name=>$value) $data[$name] = $value;
 		}
@@ -416,7 +419,7 @@ abstract class Request {
 	public function getAllParamNames ($arrname) {
 		$arr = &$this->getArrayFromName($arrname);
 		return array_diff(array_keys($arr),
-			array('fields','limit','offset','suppress_response_codes','querystring','_method', '_accept', 'uri1', 'uri2', 'uri3', 'uri4'));
+			array('fields','fieldselect','limit','offset','suppress_response_codes','querystring','_method', '_accept', 'uri1', 'uri2', 'uri3', 'uri4'));
 	}
 
 	public function getParam ($arrname, $name, $def=null, $mask=0) {
@@ -481,16 +484,16 @@ abstract class Request {
 	// Sends response to API request - data will be JSON encoded if content type is JSON
 	public function sendResponse ($body='', $status=200, $requestURI='') {
 		if ('text/plain' != $this->accept AND !function_exists('json_encode')) $this->sendErrorResponse("The API is unable to function because PHP JSON functions are not available", 500);
+		if ('text/plain' == $this->accept) $body = $this->plainTextResponse($body);
 		$this->sendHeaders($status, $requestURI);
-		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(('text/plain' == $this->accept OR is_array($body)) ? $body : array('result' => $body), $status);
+		if ('HEAD' != $this->requestmethod) {
+			if ('text/plain' == $this->accept) echo $body;
+			else $this->addResponseInformationAndSend(is_array($body) ? $body : array('result' => $body), $status);
+		}
 		exit;
 	}
 	
 	protected function addResponseInformationAndSend ($body, $status=200) {
-		if ('text/plain' == $this->accept) {
-			echo (is_object($body) OR is_array($body)) ? 'Unable to display result as text/plain' : $body;
-			return;
-		}
 		$diagnostics = preg_replace('/[^(\x20-\x7F)]*/','', ob_get_clean());
 		if ($diagnostics) $body['diagnostics'] = explode("\n", preg_replace("=<br */?>=i", "\n", $diagnostics));
 		foreach ((array) @$body['diagnostics'] as $sub=>$value) if (empty($value)) unset ($body['diagnostics'][$sub]);
@@ -512,9 +515,31 @@ abstract class Request {
 		echo 'application/json' == $this->accept ? $output : $this->prettyPage(nl2br(str_replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;", $this->prettyPrint($output))));
 	}
 	
+	protected function plainTextResponse ($body) {
+		$fieldselect = explode('~', $this->getParam($this->requestmethod, 'fieldselect'));
+		while (count($fieldselect) AND (is_object($body) OR is_array($body))) {
+			if ('' !== ($selector = array_shift($fieldselect))) {
+				$bodarray = (array) $body;
+				if (isset($bodarray[$selector])) $body = $bodarray[$selector];
+				else $this->sendErrorResponse("The fieldselect parameter does not match the structure of the response", 400);
+			}
+		}
+		return (is_object($body) OR is_array($body)) ? $this->nestedImplode((array) $body) : $body;
+	}
+	
+	protected function nestedImplode ($array) {
+		foreach ($array as $name=>$value) {
+			if (!is_null($value) AND !is_scalar($value)) $array[$name] = $this->nestedImplode((array) $value);
+		}
+		return implode(',', $array);
+	}
+	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
 		$this->sendHeaders($status);
-		if ('HEAD' != $this->requestmethod) $this->addResponseInformationAndSend(array('errors' => (array) $errors), $status);
+		if ('HEAD' != $this->requestmethod) {
+			if ('text/plain' == $this->accept) echo implode(',', (array) $errors);
+			else $this->addResponseInformationAndSend(array('errors' => (array) $errors), $status);
+		}
 
 		// Record errors in the log and in the ErrorLog table
 		foreach ((array) $errors as $error) $this->log(LOG_ERR, $error);

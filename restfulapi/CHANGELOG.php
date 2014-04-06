@@ -3,6 +3,11 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 6 April 2014, 19:40
+ * 
+ * Provide advanced fieldselect parameter for text/plain requests
+ * 
+ * 
  * 26 March 2014, 11:30
  * 
  * Ignore duplicate data entries from monitor data, accept only the last
