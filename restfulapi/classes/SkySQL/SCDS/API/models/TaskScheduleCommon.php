@@ -78,11 +78,21 @@ abstract class TaskScheduleCommon extends EntityModel {
 					$parmobject->$property = $value;
 				}
 				elseif ($parts[0]) {
-					if (0 == strcasecmp('Full', $parts[0])) $parmobject->type = 1;
-					elseif (strcasecmp('Incremental', $parts[0])) $parmobject->type = 2;
-					elseif (is_numeric($parts[0])) {
-						if ('backup' == $this->command) $parmobject->parent = (int) $parts[0];
-						elseif ('restore' == $this->command) $parmobject->id = (int) $parts[0];							
+					if (is_numeric($parts[0])) {
+						if ('restore' == $this->command) $parmobject->id = (int) $parts[0];
+						elseif ('backup' == $this->command) $parmobject->parent = (int) $parts[0];
+					}
+					elseif ('backup' == $this->command) {
+						if (preg_match('/((Incremental) ([0-9]+)|Full)/i', trim($parts[0]), $matches) ) {
+							if (isset($matches[3])) {
+								$parmobject->type = 2;
+								$parmobject->parent = (int) $matches[3];
+							}
+							else $parmobject->type = 1;
+						}
+						else {
+							if (0 == strcasecmp('Incremental', $parts[0])) $parmobject->type = 2;
+						}
 					}
 				}
 			}
