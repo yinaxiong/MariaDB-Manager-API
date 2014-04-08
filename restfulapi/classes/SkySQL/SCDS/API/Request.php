@@ -524,14 +524,29 @@ abstract class Request {
 				else $this->sendErrorResponse("The fieldselect parameter does not match the structure of the response", 400);
 			}
 		}
-		return (is_object($body) OR is_array($body)) ? $this->nestedImplode((array) $body) : $body;
+		return (is_object($body) OR is_array($body)) ? $this->nestedImplode($body) : $body;
 	}
 	
-	protected function nestedImplode ($array) {
+	protected function nestedImplode ($arrayorobject) {
+		$array = is_object($arrayorobject) ? get_object_vars($arrayorobject) : $arrayorobject;
 		foreach ($array as $name=>$value) {
-			if (!is_null($value) AND !is_scalar($value)) $array[$name] = $this->nestedImplode((array) $value);
+			if (!is_null($value) AND !is_scalar($value)) $array[$name] = $this->nestedImplode($value);
 		}
-		return implode(',', $array);
+		return $this->isAssociative($array) ? $this->collapseAssociativeArray($array) : implode(',', $array);
+	}
+	
+	protected function isAssociative ($array) {
+		$difference = array_diff(range(0, count($array) - 1), array_keys($array));
+		return empty($array) ? false : !empty($difference);
+	}
+	
+	protected function collapseAssociativeArray ($array) {
+		array_walk($array, array($this, 'keyValueWithColonBetween'));
+		return '('.implode(',', array_values($array)).')';
+	}
+	
+	protected function keyValueWithColonBetween (&$value, $key) {
+		$value = "$key:$value";
 	}
 	
 	public function sendErrorResponse ($errors, $status, $exception=null) {
