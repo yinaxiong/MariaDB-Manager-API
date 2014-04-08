@@ -410,6 +410,35 @@
 			</p>
 		</form>
 	  </div>
+	<div class="section">
+	  <h3>Build a Test</h3>
+	  <form action="anytest.php" method="post" id="buildatest" target="apiresults" onsubmit="return(setFields(this.id));window.open('', 'apiresults', 'width=450,height=300,status=yes,resizable=yes,scrollbars=yes');">
+		<p class="formfields">
+			<label for="buildmethod">HTTP Method</label>
+			<input type="text" name="buildmethod" id="buildmethod" /><br />
+			<label for="builduri">Request URI</label>
+			<input type="text" name="builduri" id="builduri" /><br />
+		</p>
+		<div class="formfields">
+			<fieldset>
+				<legend>Parameters</legend>
+				<div id="addparm-param-div">
+					<label for="addparm-param-name">Name</label>
+					<input type="text" id="addparm-param-name" />
+					<img src="testresources/images/addParameter.png" alt="Add a parameter" height="16" width="16" onclick="addParameter(this,'param');" />
+					<br />
+				</div>
+			</fieldset>
+		</div>
+		<p class="formfields">
+			<input type="submit" class="submit" value="List Types" />
+			<input type="hidden" name="_accept" value="text/html" />
+			<!-- The following two inputs will be set automatically -->
+			<input type="hidden" name="HTTP_DATE" /><br />
+			<input type="hidden" name="HTTP_AUTHORIZATION" />
+		</p>
+	  </form>
+	  </div>
 	</div>
 	<div id="sidebar">
 	  <div id="preamble">

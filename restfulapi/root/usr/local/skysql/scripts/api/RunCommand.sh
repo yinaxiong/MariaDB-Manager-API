@@ -25,17 +25,11 @@
 # Parameters:
 # $1 The ID of the job that is to be run
 # $2 A comma separated list of steps (each being a script)
-# $3 The hostname for the API - unused
-# $4 Parameters to be passed on to step scripts
-# $5 The IP of the node on which to run the command
-# $6 The path of the log file - unused
+# $3 The IP of the node on which to run the command
+# $* Parameters to be passed on to step scripts
 #
-# NB Paramter 3, api_host is not used any more as the idea has been superceeded
-# in favour of dynamically defining it. This works better when mutliple network
-# interfaces are in use.
-# Also argument 6 is no longer used as all logging is done to syslog
 
-if [[ $# -lt 5 ]]; then
+if [[ $# -lt 3 ]]; then
 	logger -p user.error -t MariaDB-Manager-Task \
 		"RunCommand: Unexpected number of arguments $#. Called with $*"
 	api_call "PUT" "task/$taskid" "completed=@$(date +%s)" "state=error" "errormessage=Incorrect parameter count"
@@ -44,8 +38,9 @@ fi
 
 export taskid="$1"
 steps="$2"
-node_ip="$5"
-params="$4"
+node_ip="$3"
+shift 3
+params="$@"
 
 src_ip=$(ip route get $node_ip | awk '{ for (i = 0; i < NF; i++) if ( $(i) == "src" ) print $(i+1); }')
 export api_host=$src_ip

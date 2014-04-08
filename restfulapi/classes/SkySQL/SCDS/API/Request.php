@@ -153,6 +153,7 @@ abstract class Request {
 	protected $apikeyid = null;
 	protected $requestversion = '1.0';
 	protected $urlencoded = true;
+	protected $baseurl = '';
 	protected $authcode = null;
 	protected $errors = array();
 	
@@ -268,8 +269,8 @@ abstract class Request {
 		return isset($this->headers[$name]) ? $this->headers[$name] : null;
 	}
 	
-	public function getVersion () {
-		return $this->requestversion;
+	public function compareVersion ($version, $operation) {
+		return version_compare($this->requestversion, $version, $operation);
 	}
 	protected function fatalError ($error, $status=500) {
 		error_log($error);
@@ -285,7 +286,9 @@ abstract class Request {
 		$afterindex = trim(end($sepindex), '/');
 		$sepapi = explode('/', $afterindex);
 		$baseparts = RequestParser::getInstance()->getBaseParts();
-		while (count($sepapi) AND !in_array($sepapi[0], $baseparts)) array_shift($sepapi);
+		$dir[0] = $_SERVER['SERVER_NAME'];
+		while (count($sepapi) AND !in_array($sepapi[0], $baseparts)) $dir[] = array_shift($sepapi);
+		$this->baseurl = implode('/', $dir);
 		return count($sepapi) ? implode('/',$sepapi) : $afterindex;
 	}
 	
@@ -646,7 +649,7 @@ PRETTY_PAGE;
 			$this->addResponseHeader('Cache-Control: no-store');
 			if (201 == $status AND $requestURI) {
 				$scheme = isset($_SERVER['HTTP_SCHEME']) ? $_SERVER['HTTP_SCHEME'] : ((isset($_SERVER['HTTPS']) AND strtolower($_SERVER['HTTPS'] != 'off')) ? 'https' : 'http');
-				$this->addResponseHeader("Location: $scheme://{$_SERVER['SERVER_NAME']}/$requestURI");
+				$this->addResponseHeader("Location: $scheme://$this->baseurl/$requestURI");
 			}
 		}
 		foreach ($this->responseheaders as $header) header($header);

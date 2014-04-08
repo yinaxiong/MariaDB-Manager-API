@@ -37,7 +37,7 @@ use SkySQL\SCDS\API\models\System;
 use SkySQL\SCDS\API\models\Node;
 use SkySQL\SCDS\API\models\User;
 
-class Task extends EntityModel {
+class Task extends TaskScheduleCommon {
 	protected static $setkeyvalues = false;
 	
 	protected static $updateSQL = 'UPDATE Task SET %s WHERE TaskID = :taskid';
@@ -56,6 +56,7 @@ class Task extends EntityModel {
 	public $taskid = 0;
 	
 	protected $node = null;
+	protected $xparameters = array();
 
 	protected static $fields = array(
 		'systemid' => array('sqlname' => 'SystemID', 'desc' => 'ID of the System on which task was run', 'default' => 0, 'insertonly' => true),
@@ -130,6 +131,13 @@ class Task extends EntityModel {
 		}
 	}
 	
+	public function getEncryptedParameters () {
+		if (!empty($this->xparameters)) {
+			foreach (json_decode($this->xparameters) as $name=>$value) $xparams[$name] = $value;
+		}
+		return (array) @$xparams;
+	}
+	
 	protected function setSteps () {
 		$request = Request::getInstance();
 		$this->steps = $this->node->getSteps($this->command);
@@ -164,7 +172,8 @@ class Task extends EntityModel {
 		}
 		$this->setCorrectFormatDate('completed');
 		$this->setCorrectFormatDateWithDefault('started');
-		$this->removeSensitiveParameters();
+		if ($request->compareVersion('1.0', 'gt')) $this->processParameters();
+		else $this->removeSensitiveParameters();
 	}
 	
 	protected function validateUpdate () {

@@ -65,6 +65,10 @@ class AdminDatabase extends APIDatabase {
 		return $pdo;
 	}
 	
+	public function upgrade () {
+		call_user_func_array(array($this->pdo, 'query'), 'create unique index if not exists SystemNameIDX ON System (SystemName)');
+	}
+	
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
 	}

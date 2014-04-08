@@ -208,8 +208,28 @@
 			<input type="text" name="username" id="username" /><br />
 			<label for="icalentry">iCalEntry</label>
 			<input type="text" id="icalentry" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'icalentry');" /><br />
-			<label for="params">Parameters</label>
-			<input type="text" id="params" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'parameters');" /><br />
+		</p>
+		<div class="formfields">
+			<fieldset>
+				<legend>Parameters</legend>
+				<div id="addparm-param-div">
+					<label for="addparm-param-name">Name</label>
+					<input type="text" id="addparm-param-name" />
+					<img src="testresources/images/addParameter.png" alt="Add a parameter" height="16" width="16" onclick="addParameter(this,'param');" />
+					<br />
+				</div>
+			</fieldset>
+			<fieldset>
+				<legend>Encrypted parameters</legend>
+				<div id="addparm-xparam-div">
+					<label for="add-xparam-name">Name</label>
+					<input type="text" id="addparm-xparam-name" />
+					<img src="testresources/images/addParameter.png" alt="Add a parameter" height="16" width="16" onclick="addParameter(this,'xparam');" />
+					<br />
+				</div>
+			</fieldset>
+		</div>
+		<p class="formfields">
 			<input type="submit" class="submit" value="Run Command" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->

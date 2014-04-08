@@ -32,6 +32,7 @@ namespace SkySQL\SCDS\API\models;
 use SkySQL\COMMON\AdminDatabase;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\Request;
+use SkySQL\SCDS\API\managers\EncryptionManager;
 use PDO;
 
 abstract class EntityModel {
@@ -61,7 +62,7 @@ abstract class EntityModel {
 		return $entities;
 	}
 	
-	final public static function getByID () {
+	public static function getByID () {
 		if (isset(static::$managerclass)) {
 			$manager = call_user_func(array(static::$managerclass, 'getInstance'));
 			if (method_exists($manager, 'getByID')) return call_user_func_array(array($manager,'getByID'), func_get_args());
@@ -88,18 +89,35 @@ abstract class EntityModel {
 			if (method_exists($entity, 'derivedFields')) $entity->derivedFields();
 			return self::fixDate($entity);
 		}
-		return null;
+		else return null;
 	}
 
+	// Method and all calls to it can be removed when API version 1.0 is obsolete
 	final protected function removeSensitiveParameters () {
+		$request = Request::getInstance();
 		if (!empty($this->bind[':parameters'])) {
-			Request::getInstance()->parse_str($this->bind[':parameters'], $parray);
+			$request->parse_str($this->bind[':parameters'], $parray);
 			if (count($parray)) {
 				foreach (API::$encryptedfields as $field) if (isset($parray[$field])) unset($parray[$field]);
 				foreach ($parray as $field=>$value) $newparray[] = "$field=$value";
 				$this->bind[':parameters'] = implode('&', (array) @$newparray);
 			}
 		}
+	}
+	
+	final protected function processParameters () {
+		$request = Request::getInstance();
+		foreach ($request->getAllParamNames($request->getMethod()) as $paramname) {
+			$split = explode('param-', $paramname);
+			if (empty($split[0]) AND !empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $paramname);
+			$split = explode('xparam-', $paramname);
+			if (empty($split[0]) AND !empty($split[1])) {
+				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
+				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
+			}
+		}
+		$this->setInsertValue('parameters', (isset($parameters) ? json_encode($parameters) : "{}"));
+		$this->xparameters = (isset($encrypted) ? json_encode($encrypted) : "{}");
 	}
 
 	final private static function fixDate (&$entity) {
@@ -113,7 +131,7 @@ abstract class EntityModel {
 		return self::fixDate($this);
 	}
 	
-	final public static function select () {
+	public static function select () {
 		$args = func_get_args();
 		$controller = array_shift($args);
 		list($where, $bind) = self::wheresAndBinds($controller, $args);
@@ -164,7 +182,7 @@ abstract class EntityModel {
 		$this->clearCache(true);
 		$request = Request::getInstance();
 		if ($alwaysrespond) {
-			if (version_compare($request->getVersion(), '1.0', 'gt') AND method_exists($this, 'requestURI')) {
+			if ($request->compareVersion('1.0', 'gt') AND method_exists($this, 'requestURI')) {
 				$returncode = 201;
 				$requestURI = $this->requestURI();
 			}
@@ -251,6 +269,11 @@ abstract class EntityModel {
 		$request = Request::getInstance();
 		$okfields = array_merge(array_keys(static::$fields), array_keys(static::$keys), (array) $extras);
 		$illegals = array_diff($request->getAllParamNames($request->getMethod()),$okfields);
+		$myclassbits = explode('\\', get_called_class());
+		$myclass = end($myclassbits);
+		if ('Task' == $myclass OR 'Schedule' == $myclass OR 'Command' == $myclass) {
+			foreach ($illegals as $name=>$value) if (0 === strpos($value,'param-') OR 0 === strpos($value,'xparam-')) unset($illegals[$name]);
+		}
 		if (count($illegals)) {
 			$illegalist = implode (', ', $illegals);
 			$request->sendErrorResponse("Parameter(s) $illegalist not recognised",400);

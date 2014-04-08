@@ -28,6 +28,7 @@
 
 namespace SkySQL\SCDS\API\controllers;
 
+use SkySQL\SCDS\API\Request;
 use SkySQL\SCDS\API\models\Task;
 use SkySQL\SCDS\API\models\Schedule;
 use SkySQL\SCDS\API\models\Command;
@@ -92,6 +93,9 @@ class Tasks extends TaskScheduleCommon {
 		if ($this->paramEmpty($this->requestmethod,'systemid')) $errors[] = sprintf("Command '%s' requested, but required systemid not provided", $command->command);
 		if ($this->paramEmpty($this->requestmethod,'nodeid')) $errors[] = sprintf("Command '%s' requested, but required nodeid not provided", $command->command);
 		if ($this->paramEmpty($this->requestmethod,'username')) $errors[] = sprintf("Command '%s' requested, but required username not provided", $command->command);
+		if (Request::getInstance()->compareVersion('1.0', 'gt') AND !$this->paramEmpty($this->requestmethod, 'parameters')) {
+			$errors[] = sprintf("Command '%s' requested, but obsolete parameter 'parameters' submitted", $command->command);
+		}
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$command->setPropertiesFromParams();
 		$state = $this->getParam('POST', 'state');
@@ -122,6 +126,7 @@ class Tasks extends TaskScheduleCommon {
 		$schedule->insertOnCommand($command->command);
 		$this->setRunAt($schedule);
 		//if ($schedule->isDue()) $this->runScheduleNow($schedule);
+		$schedule->formatParameters();
 		$this->sendResponse(array('schedule' => $schedule->withDateFix()));
 	}
 	
@@ -130,6 +135,7 @@ class Tasks extends TaskScheduleCommon {
 		// insertOnCommand also fixes dates as RFC
 		$task->insertOnCommand($command->command);
 		$this->execute($task);
+		$task->formatParameters();
 		$this->sendResponse(array('task' => $task->withDateFix()));
 	}
 }

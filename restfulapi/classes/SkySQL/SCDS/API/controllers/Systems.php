@@ -29,6 +29,7 @@
 namespace SkySQL\SCDS\API\controllers;
 
 use stdClass;
+use PDOException;
 use SkySQL\SCDS\API\API;
 use SkySQL\SCDS\API\managers\SystemPropertyManager;
 use SkySQL\SCDS\API\models\System;
@@ -95,7 +96,15 @@ class Systems extends SystemNodeCommon {
 		if ($metadata) return $this->returnMetadata ($metadata, 'Insert-Update', false, 'Fields for system resource');
 		$this->db->beginImmediateTransaction();
 		$system = new System();
-		$system->insert();
+		try {
+			$system->insert();
+		}
+		catch (PDOException $pe) {
+			if (23000 == $pe->getCode()) {
+				$this->sendErrorResponse(sprintf("Create system failed '%s'; probably systemname is already used", $pe->getMessage()), 409);
+			}
+			else $this->sendErrorResponse(sprintf("Create system failed with database error '%s'", $pe->getMessage()), 500);
+		}
 	}
 	
 	public function createSystemOnceOnly ($uriparts, $metadata='') {
