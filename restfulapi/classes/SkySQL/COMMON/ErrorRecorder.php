@@ -31,8 +31,8 @@
  */
 
 namespace SkySQL\COMMON;
-use SkySQL\SCDS\API\API;
-use SkySQL\SCDS\API\Request;
+use SkySQL\Manager\API\API;
+use SkySQL\Manager\API\Request;
 
 use SkySQL\COMMON\AdminDatabase;
 use \PDOException;

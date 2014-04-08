@@ -37,7 +37,7 @@
  * 
  */
 
-namespace SkySQL\SCDS\API;
+namespace SkySQL\Manager\API;
 
 use PDOException;
 use Exception;
