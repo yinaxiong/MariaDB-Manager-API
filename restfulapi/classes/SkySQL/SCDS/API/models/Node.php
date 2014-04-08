@@ -70,7 +70,12 @@ class Node extends EntityModel {
 		'dbusername' => array('sqlname' => 'DBUserName', 'desc' => 'Node system override for database user name', 'default' => ''),
 		'dbpassword' => array('sqlname' => 'DBPassword', 'desc' => 'Node system override for database password', 'default' => '', 'mask' => _MOS_NOTRIM),
 		'repusername' => array('sqlname' => 'RepUserName', 'desc' => 'Node system override for replication user name', 'default' => ''),
-		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '', 'mask' => _MOS_NOTRIM)
+		'reppassword' => array('sqlname' => 'RepPassword', 'desc' => 'Node system override for replication user name', 'default' => '', 'mask' => _MOS_NOTRIM),
+		'scriptrelease' => array('sqlname' => 'ScriptRelease', 'desc' => 'Release number for scripts installed on node', 'default' => '1.0'),
+		'dbtype' => array('sqlname' => 'DBType', 'desc' => 'Database server product installed', 'default' => 'MariaDB'),
+		'dbversion' => array('sqlname' => 'DBVersion', 'desc' => 'Database server version installed', 'default' => '5.5.35'),
+		'linuxname' => array('sqlname' => 'LinuxName', 'desc' => 'Linux Distribution installed', 'default' => 'CentOS'),
+		'linuxversion' => array('sqlname' => 'LinuxVersion', 'desc' => 'Linux Distribution version installed', 'default' => '6.5'),
 	);
 	
 	protected static $derived = array(
@@ -101,15 +106,23 @@ class Node extends EntityModel {
 
 	public function getCommands () {
 		$commands = NodeCommand::getRunnable($this->getSystemType(), $this->state);
-		foreach ($commands as $sub=>$command) {
+		foreach ($commands as $sub=>&$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
+			else $this->checkForUpgrade($command);
 		}
 		return array_values($commands);
 	}
 	
 	public function getSteps ($commandname) {
 		$commandobject = NodeCommand::getByID($commandname, $this->getSystemType(), $this->state);
+		$this->checkForUpgrade($commandobject);
 		return $commandobject ? $commandobject->steps : '';
+	}
+	
+	protected function checkForUpgrade ($commandobject) {
+		if ($commandobject instanceof NodeCommand AND $commandobject->steps AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
+			$commandobject->steps = 'upgrade,'.$commandobject->steps;
+		} 
 	}
 	
 	public function insert ($alwaysrespond = true) {

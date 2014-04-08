@@ -147,4 +147,6 @@ CREATE;
 			$this->commitTransaction();
 		}
 	}
+	
+	public function upgrade () {}
 }

@@ -45,6 +45,7 @@ final class CommandRequest extends Request {
 	protected function __construct () {
 		global $argv;
 		$this->requestmethod = @$argv[1];
+		if ('UPGRADE' == $this->requestmethod) $this->runupgrade = true;
 		$this->requestviapost = true;
 		$this->getHeaders();
 		$this->checkHeaders();

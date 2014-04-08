@@ -44,6 +44,7 @@ use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.1');
+define ('_API_LEGAL_VERSIONS', '1.0,1.1');
 define ('_API_RELEASE_NUMBER','1.0.2');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_SOURCE_REVISION', '$Revision-Id$');
@@ -165,6 +166,7 @@ class API {
 	);
 
 	public static $commandsteps = array(
+		'upgrade' => array('description' => 'Upgrade scripts on a node to new release'),
 		'start' => array('description' => 'Start node up, start replication'),
 		'stop' => array('description' => 'Stop replication, shut node down'),
 		'isolate' => array('description' => 'Take node out of replication'),
@@ -195,6 +197,8 @@ class API {
 		ob_start();
 		ob_implicit_flush(false);
 		
+		date_default_timezone_set('UTC');
+
 		// Setting of defined symbols
 		define('ABSOLUTE_PATH', str_replace('\\', '/', dirname(__FILE__)));
 		require_once (ABSOLUTE_PATH.'/configs/definitions.php');
@@ -211,8 +215,6 @@ class API {
 	
 	public function startup ($runController=false) {
 		
-		date_default_timezone_set('UTC');
-
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 
 		// Block some PHP hack attempts
