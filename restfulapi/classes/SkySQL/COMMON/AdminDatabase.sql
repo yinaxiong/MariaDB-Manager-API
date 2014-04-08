@@ -99,7 +99,7 @@ insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Step
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('isolate', 'galera', 'joined', 'Take Joined Node out of Replication', 3, 'isolate');
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('backup', 'galera', 'joined', 'Backup Joined Node', 3, 'isolate,backup,stop,start');
 /* insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('backup', 'galera', 'joined', 'Backup Joined Node', 3, 'isolate,backup,recover'); */
-insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('restore', 'galera', 'joined', 'Restore Joined Node', 3, 'isolate,restore,stop,start');
+insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('restore', 'galera', 'joined', 'Restore Joined Node', 3, 'isolate,restore');
 /* insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('restore', 'galera', 'joined', 'Restore Joined Node', 3, 'isolate,restore,recover'); */
 
 insert into NodeCommands (Command, SystemType, State, Description, UIOrder, Steps) values ('stop', 'galera', 'synced', 'Stop Node when Synced', 3, 'stop');

@@ -69,6 +69,7 @@ class AdminDatabase extends APIDatabase {
 		$this->query('create unique index if not exists SystemNameIDX ON System (SystemName)');
 		$this->upgradeBackupTable();
 		$this->upgradeNodeTable();
+		$this->upgradeNodeCommandTable();
 	}
 
 	protected function upgradeBackupTable () {
@@ -102,7 +103,12 @@ class AdminDatabase extends APIDatabase {
 			$this->query("alter table Node add LinuxVersion varchar(20) default ('6.5')");
 		}
 	}
-	
+
+	protected function upgradeNodeCommandTable () {
+		$this->query("update NodeCommands set Steps = 'isolate,restore'
+			where Command = 'restore' AND SystemType = 'galera' AND State = 'joined'");
+	}
+
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
 	}
