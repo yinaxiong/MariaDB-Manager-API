@@ -36,26 +36,17 @@ final class Metadata extends ImplementAPI {
 	private static $ignores = array('EntityModel','NodeProvisioningStates','NodeStatesWithTransitions');
 	
 	public function listAPI ($uriTable, $fieldregex) {
-		foreach ($uriTable as $httprequest=>$requests) foreach ($requests as $entry) {
-			$result[] = array (
-				'http' => $httprequest,
-				'uri' => htmlentities($entry['uri']),
-				'class' => $entry['class'],
-				'method' => $entry['method'],
-				'title' => $entry['title']
-			);
-		}
-		if ('application/json' == $this->accept) $this->sendResponse($result);
+		if ('application/json' == $this->accept) $this->sendResponse($uriTable);
 		elseif ('application/mml' == $this->accept) {
-			echo $this->listAPIMarkup($result, $fieldregex, 'MML');
+			echo $this->listAPIMarkup($uriTable, $fieldregex, 'MML');
 			exit;
 		}
 		elseif ('application/crl' == $this->accept) {
-			echo $this->listAPIMarkup($result, $fieldregex, 'CRL');
+			echo $this->listAPIMarkup($uriTable, $fieldregex, 'CRL');
 			exit;
 		}
 		else {
-			echo $this->listAPIHTML($result, $fieldregex);
+			echo $this->listAPIHTML($uriTable, $fieldregex);
 			exit;
 		}
 	}

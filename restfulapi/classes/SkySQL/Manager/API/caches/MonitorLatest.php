@@ -17,7 +17,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Corporation Ab
+ * Copyright 2013-14 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
  * Date: October 2013

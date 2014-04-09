@@ -176,8 +176,7 @@
 			<a class="tooltip" href="#">parameters,
 			<span class="custom info"><img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
 			<strong>parameters</strong><br />
-			The parameters for the command - command specific - individual
-			parameters are separate from each other by |
+			Do not use a parameter called parameters, it is now obsolete and will cause an error
 			</span>
 			</a><br />
 		</p>
@@ -209,6 +208,22 @@
 			<label for="icalentry">iCalEntry</label>
 			<input type="text" id="icalentry" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'icalentry');" /><br />
 		</p>
+		<p>
+			 The API allows arbitrary parameters to be passed through to commands.  The API itself
+			 does not know what parameters are used.  Sensitive parameters can be encrypted.  To
+			 add parameters to a command using this interface, you need to take the following
+			 steps:
+		</p>
+		<ul>
+			<li>Decide whether it is a plain parameter or an encrypted parameter</li>
+			<li>Use the first box below for plain parameters</li>
+			<li>Use the second box below for encrypted parameters</li>
+			<li>Enter the parameter name in the box with the green plus icon</li>
+			<li>Click on the green + icon</li>
+			<li>A new entry field will appear - enter the data you want to pass</li>
+			<li>To remove a parameter, click the red cross icon next to it</li>
+			<li>Repeat as necessary</li>
+		</ul>	
 		<div class="formfields">
 			<fieldset>
 				<legend>Parameters</legend>

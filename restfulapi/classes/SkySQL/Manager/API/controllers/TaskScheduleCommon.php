@@ -29,7 +29,6 @@
 
 namespace SkySQL\Manager\API\controllers;
 
-use SkySQL\Manager\API\API;
 use SkySQL\Manager\API\models\Schedule;
 use SkySQL\Manager\API\models\Task;
 use SkySQL\Manager\API\models\Node;
@@ -47,6 +46,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 		$elapsed = (int) round((30 + strtotime($schedule->nextstart) - time())/60);
 		$atcommand = sprintf('echo "%s" | at %s 2>&1', $command, "now +$elapsed minute");
 		$lastline = shell_exec("export SHELL=/bin/sh; " . $atcommand);
+		$matches = array();  // Just to keep Netbeans hints away
 		preg_match('/.*job ([0-9]+) at.*/', @$lastline, $matches);
 		if (@$matches[1]) $schedule->updateJobNumber($matches[1]);
 	}

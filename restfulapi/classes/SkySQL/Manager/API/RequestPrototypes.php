@@ -192,7 +192,17 @@ class RequestPrototypes {
 	}
 	
 	public function getUriTable () {
-		return self::$uriTable;
+		$uritable = array();
+		foreach (self::$uriTable as $httpmethod=>$detailsformethod) {
+			foreach ($detailsformethod as $details) {
+				$details['http'] = $httpmethod;
+				$urihtml = htmlentities($details['uri']);
+				$uritable[$urihtml.$httpmethod] = $details;
+				$uritable[$urihtml.$httpmethod]['uri'] = $urihtml;
+			}
+		}
+		ksort($uritable);
+		return $uritable;
 	}
 	
 	public function getUriStructuredTable () {
