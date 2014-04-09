@@ -60,7 +60,7 @@ abstract class PropertyManager extends EntityManager {
 			$insert = $database->prepare($this->insertSQL);
 			$insert->execute($bind);
 			$this->finalise($key);
-			if (version_compare($request->getVersion(), '1.0', 'gt')) {
+			if ($request->compareVersion('1.0', 'gt')) {
 				$returncode = 201;
 				$requestURI = $this->propertyURI($key, $property);
 			}
