@@ -35,6 +35,7 @@ chown -R apache:apache /var/www
 ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
 timezone=`grep ZONE /etc/sysconfig/clock | sed 's/ZONE="\([^"]*\)"/\1/'`
 sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
+sed -i '/^#[ ]*LoadModule[ ]*proxy_module/ {s/#//;}' /etc/httpd/conf/httpd.conf
 
 mkdir -p /usr/local/skysql/cache/api
 chown -R apache:apache /usr/local/skysql/cache
@@ -117,7 +118,6 @@ cp -R restfulapi/root/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.in
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest/* $RPM_BUILD_ROOT%{install_path}restfulapi/
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
-sed -i '/^#[ ]*LoadModule[ ]*proxy_module/ {s/#//;}' /etc/httpd/conf/httpd.conf
 mv $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template 
 
 %clean
