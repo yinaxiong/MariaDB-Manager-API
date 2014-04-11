@@ -120,7 +120,7 @@ class Node extends EntityModel {
 	}
 	
 	protected function checkForUpgrade ($commandobject) {
-		if ($commandobject instanceof NodeCommand AND $commandobject->steps AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
+		if ($commandobject instanceof NodeCommand AND 'connect' != $commandobject->command AND $commandobject->steps AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
 			$commandobject->steps = 'upgrade,'.$commandobject->steps;
 		} 
 	}

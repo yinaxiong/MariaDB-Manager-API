@@ -17,23 +17,30 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Corporation Ab
+ * Copyright 2013-14 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
- * Date: February 2013
+ * Date started: February 2013
  * 
- * The API class is the starting point, called by the very brief index.php which is the sole
- * entry point for the MariaDB Manager API.  Its constructor sets up some standard symbols.  It starts 
+ * The API class is the starting point, and is the sole entry point for the MariaDB 
+ * Manager API.  After the class declaration, there is a single executable statement
+ * to create the sole instance of the class and to call the "startup" method.
+ * The class' constructor sets up some standard symbols.  It starts 
  * buffering of output, primarily to be able to control diagnostics, and sets up a simple 
  * autoloader.
  * 
- * The entry point from index.php is the startup method.  It enforces some security checks,
+ * The main entry point is the startup method.  It enforces some security checks,
  * and aims to create a good seed for the PHP random number generator.  Standard definitions
  * are pulled in.  A check on server load can be made, and clients asked to back off if load
  * is too high.  An instance of the main controller is obtained and error handling set up.  
  * Normally the controller is invoked, with the doControl method.
  * 
- * The trace static method is a utility for debugging and error logging purposes.
+ * The static getIP method is a reasonably sophisticated mechanism for finding out
+ * the IP address from which a request has been received, and the trace static method 
+ * is a utility for debugging and error logging purposes.
+ * 
+ * Other static methods are simple mechanisms for manipulating the configuration data
+ * that is held within the class.
  * 
  */
 
