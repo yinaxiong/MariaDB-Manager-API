@@ -30,13 +30,15 @@ namespace SkySQL\COMMON;
 
 use PDO;
 use PDOException;
-use SkySQL\SCDS\API\Request;
+use SkySQL\Manager\API\Request;
 use SQLite3;
 
 if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
 
 class MonitorDatabase extends APIDatabase {
     protected static $instance = null;
+	
+	protected $indexer = "CREATE INDEX IF NOT EXISTS %sIDX ON %s (MonitorID, Stamp);";
 	
 	protected function checkAndConnect ($dbconfig) {
 		$dboparts = explode(':', $dbconfig['monconnect']);
@@ -77,12 +79,14 @@ create table if not exists $name (
 	Stamp		int,		/* Date/Time this value was observed, unix time */
 	Repeats		int			/* Number of repeated observations same value */
 );
-CREATE INDEX {$name}IDX ON $name (MonitorID, Stamp);
 
 CREATE;
 		
+		$indexsql = sprintf($this->indexer, $name, $name);
+		
 		try {
 			$this->query($sql);
+			$this->query($indexsql);
 			return $name;
 		}
 		catch (PDOException $pe) {
@@ -96,6 +100,10 @@ CREATE;
 		$check = $this->prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = :name");
 		$check->execute(array(':name' => $name));
 		$result = $check->fetchColumn();
+		if ($result) {
+			$indexsql = sprintf($this->indexer, $name, $name);
+			$this->query($indexsql);
+		}
 		return $result ? true : false;
 	}
 	
@@ -139,4 +147,6 @@ CREATE;
 			$this->commitTransaction();
 		}
 	}
+	
+	public function upgrade () {}
 }

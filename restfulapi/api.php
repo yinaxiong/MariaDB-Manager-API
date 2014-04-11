@@ -17,33 +17,41 @@
  * this program; if not, write to the Free Software Foundation, Inc., 51
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  * 
- * Copyright 2013 (c) SkySQL Corporation Ab
+ * Copyright 2013-14 (c) SkySQL Corporation Ab
  * 
  * Author: Martin Brampton
- * Date: February 2013
+ * Date started: February 2013
  * 
- * The API class is the starting point, called by the very brief index.php which is the sole
- * entry point for the MariaDB Manager API.  Its constructor sets up some standard symbols.  It starts 
+ * The API class is the starting point, and is the sole entry point for the MariaDB 
+ * Manager API.  After the class declaration, there is a single executable statement
+ * to create the sole instance of the class and to call the "startup" method.
+ * The class' constructor sets up some standard symbols.  It starts 
  * buffering of output, primarily to be able to control diagnostics, and sets up a simple 
  * autoloader.
  * 
- * The entry point from index.php is the startup method.  It enforces some security checks,
+ * The main entry point is the startup method.  It enforces some security checks,
  * and aims to create a good seed for the PHP random number generator.  Standard definitions
  * are pulled in.  A check on server load can be made, and clients asked to back off if load
  * is too high.  An instance of the main controller is obtained and error handling set up.  
  * Normally the controller is invoked, with the doControl method.
  * 
- * The trace static method is a utility for debugging and error logging purposes.
+ * The static getIP method is a reasonably sophisticated mechanism for finding out
+ * the IP address from which a request has been received, and the trace static method 
+ * is a utility for debugging and error logging purposes.
+ * 
+ * Other static methods are simple mechanisms for manipulating the configuration data
+ * that is held within the class.
  * 
  */
 
-namespace SkySQL\SCDS\API;
+namespace SkySQL\Manager\API;
 
 use PDOException;
 use Exception;
 use SkySQL\COMMON\ErrorRecorder;
 
 define ('_API_VERSION_NUMBER','1.1');
+define ('_API_LEGAL_VERSIONS', '1.0,1.1');
 define ('_API_RELEASE_NUMBER','1.0.2');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
 define ('_API_SOURCE_REVISION', '$Revision-Id$');
@@ -165,6 +173,7 @@ class API {
 	);
 
 	public static $commandsteps = array(
+		'upgrade' => array('description' => 'Upgrade scripts on a node to new release'),
 		'start' => array('description' => 'Start node up, start replication'),
 		'stop' => array('description' => 'Stop replication, shut node down'),
 		'isolate' => array('description' => 'Take node out of replication'),
@@ -195,6 +204,8 @@ class API {
 		ob_start();
 		ob_implicit_flush(false);
 		
+		date_default_timezone_set('UTC');
+
 		// Setting of defined symbols
 		define('ABSOLUTE_PATH', str_replace('\\', '/', dirname(__FILE__)));
 		require_once (ABSOLUTE_PATH.'/configs/definitions.php');
@@ -211,8 +222,6 @@ class API {
 	
 	public function startup ($runController=false) {
 		
-		date_default_timezone_set('UTC');
-
 		$protects = array('_REQUEST', '_GET', '_POST', '_COOKIE', '_FILES', '_SERVER', '_ENV', 'GLOBALS', '_SESSION');
 
 		// Block some PHP hack attempts

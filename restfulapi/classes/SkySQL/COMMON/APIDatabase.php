@@ -29,7 +29,7 @@
 namespace SkySQL\COMMON;
 
 use PDO;
-use SkySQL\SCDS\API\Request;
+use SkySQL\Manager\API\Request;
 
 if (basename(@$_SERVER['REQUEST_URI']) == basename(__FILE__)) die ('This software is for use within a larger system');
 

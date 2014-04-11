@@ -8,6 +8,23 @@
  * Redirect /MariaDBManager to Tomcat
  *
  * 
+ * 6 April 2014, 19:40
+ * 
+ * Provide advanced fieldselect parameter for text/plain requests
+ * 
+ * 
+ * 1 April 2014, 06:30
+ * 
+ * Add upgrade for Backup table
+ * Split table upgrades into a method per table
+ * 
+ * 
+ * 30 March 2014, 09:45
+ * 
+ * Implement automatic insertion of upgrade step at start of any command when
+ * the node is at an earlier release than the API.
+ * 
+ * 
  * 26 March 2014, 11:30
  * 
  * Ignore duplicate data entries from monitor data, accept only the last

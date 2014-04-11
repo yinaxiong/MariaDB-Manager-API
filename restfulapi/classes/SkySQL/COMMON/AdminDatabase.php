@@ -65,6 +65,50 @@ class AdminDatabase extends APIDatabase {
 		return $pdo;
 	}
 	
+	public function upgrade () {
+		$this->query('create unique index if not exists SystemNameIDX ON System (SystemName)');
+		$this->upgradeBackupTable();
+		$this->upgradeNodeTable();
+		$this->upgradeNodeCommandTable();
+	}
+
+	protected function upgradeBackupTable () {
+		$pragma = $this->query("PRAGMA table_info('Backup')");
+		foreach ($pragma->fetchAll() as $field) {
+			$fieldnames[$field->name] = $field;
+		}
+		if (!isset($fieldnames['TaskID'])) {
+			$this->query("alter table Backup add TaskID int default 0");
+		}
+	}
+	
+	protected function upgradeNodeTable () {
+		$pragma = $this->query("PRAGMA table_info('Node')");
+		foreach ($pragma->fetchAll() as $field) {
+			$fieldnames[$field->name] = $field;
+		}
+		if (!isset($fieldnames['ScriptRelease'])) {
+			$this->query("alter table Node add ScriptRelease varchar(20) default ('1.0')");
+		}
+		if (!isset($fieldnames['DBType'])) {
+			$this->query("alter table Node add DBType varchar(50) default ('MariaDB')");
+		}
+		if (!isset($fieldnames['DBVersion'])) {
+			$this->query("alter table Node add DBVersion varchar(20) default ('5.5.35')");
+		}
+		if (!isset($fieldnames['LinuxName'])) {
+			$this->query("alter table Node add LinuxName varchar(50) default ('CentOS')");
+		}
+		if (!isset($fieldnames['LinuxVersion'])) {
+			$this->query("alter table Node add LinuxVersion varchar(20) default ('6.5')");
+		}
+	}
+
+	protected function upgradeNodeCommandTable () {
+		$this->query("update NodeCommands set Steps = 'isolate,restore'
+			where Command = 'restore' AND SystemType = 'galera' AND State = 'joined'");
+	}
+
 	public static function getInstance () {
 		return self::$instance instanceof self ? self::$instance : self::$instance = new self();
 	}

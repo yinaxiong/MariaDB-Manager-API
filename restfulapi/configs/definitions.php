@@ -25,7 +25,7 @@
  * Definitions required for PHP code in MariaDB Enterprise.
  */
 
-namespace SkySQL\SCDS;
+namespace SkySQL\Manager;
 
 define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
 
