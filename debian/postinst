@@ -70,7 +70,9 @@ iptables-save > /etc/iptables/rules.v4
 a2enmod rewrite
 a2enmod proxy_http
 apacheMod=$(sed 's/[]\/()$*.^|[]/\\&/g' /usr/local/skysql/config/skysql_rewrite.conf | sed -e ':a;N;$!ba;s/\n/\\\n/g')
-sed "/\/VirtualHost/i $apacheMod" /etc/apache2/sites-enabled/000-default
+if ! grep -q ProxyPass /etc/apache2/sites-enabled/000-default ; then
+    sed -i "/\/VirtualHost/i $apacheMod" /etc/apache2/sites-enabled/000-default
+fi
 service apache2 restart
 
 service atd start
