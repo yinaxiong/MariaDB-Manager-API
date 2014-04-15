@@ -65,6 +65,22 @@ else
         fi
 fi
 
+# Determining Linux distro available on the machine
+ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
+        if [[ \$(echo \"\$release_info\" | grep 'Red Hat') != \"\" || \$(echo \"\$release_info\" | grep 'CentOS') != \"\" ]]; then \
+                echo \"redhat\"; \
+        elif [[ \$(echo \"\$release_info\" | grep 'Ubuntu') != \"\" || \$(echo \"\$release_info\" | grep 'Debian') != \"\" ]]; then \
+                echo \"debian\"; \
+        fi;")
+
+if [[ "$ssh_return" == "" ]]; then
+        logger -p user.error -t MariaDB-Manager-Task "Error: unable to determine target machine OS version."
+        set_error "Error: unable to determine target machine OS version."
+        exit 1
+fi
+
+distro_type="$ssh_return"
+
 trap cleanup SIGTERM
 cleanup() {
         ssh_command "$nodeip" "rpm -q MariaDB-Manager-GREX; \
@@ -81,31 +97,48 @@ if [[ "$ssh_return" == "0" ]]; then
 	scripts_installed=1;
 fi
 
-
 # Generating and copying internal repository information to node
-sed -e "s/###API-HOST###/$api_host/" steps/repo/MariaDB-Manager.repo > /tmp/MariaDB-Manager-$$.repo
-ssh_return=$(ssh_put_file "$nodeip" "/tmp/MariaDB-Manager-$$.repo" "/etc/yum.repos.d/MariaDB-Manager.repo")
-ssh_err_code=$?
-if [[ "$ssh_err_code" != "0" ]]; then
-        logger -p user.error -t MariaDB-Manager-Task "Failed to write MariaDB-Manager repository file"
-        set_error "Failed to install MariaDB-Manager Repository"
-        exit 1
-fi
-rm -f /tmp/MariaDB-Manager-$$.repo
+if [[ "$distro_type" == "redhat" ]]; then
+        sed -e "s/###API-HOST###/$api_host/" steps/repo/MariaDB-Manager.repo > /tmp/MariaDB-Manager-$$.repo
+        ssh_return=$(ssh_put_file "$nodeip" "/tmp/MariaDB-Manager-$$.repo" "/etc/yum.repos.d/MariaDB-Manager.repo")
+        ssh_err_code=$?
+        if [[ "$ssh_err_code" != "0" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task "Failed to write MariaDB-Manager repository file"
+                set_error "Failed to install MariaDB-Manager Repository"
+                exit 1
+        fi
+        rm -f /tmp/MariaDB-Manager-$$.repo
 
-ssh_command "$nodeip" "yum -y clean all"
-if [[ "$scripts_installed" != "0" ]]; then
-	ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
-else
-	ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
-	
-	# Getting API key for GREX from components.ini
-	newKey=$(sed -n '/\[apikeys\]/,$p' /etc/skysqlmgr/api.ini | tail -n +2 | \
-                sed '/^$/,$d;/^\[/,$d' | awk -F " = " '/^4/ { gsub("\"", "", $2); print $2 }')
+        ssh_command "$nodeip" "yum -y clean all"
+        if [[ "$scripts_installed" != "0" ]]; then
+                ssh_command "$nodeip" "yum -y update MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
+        else
+                ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
 
-	# Generating credentials.ini file on remote server
-	ssh_command "$nodeip" "echo \"4:$newKey\" > /usr/local/sbin/skysql/credentials.ini"
+                # Getting API key for GREX from components.ini
+                newKey=$(sed -n '/\[apikeys\]/,$p' /etc/skysqlmgr/api.ini | tail -n +2 | \
+                        sed '/^$/,$d;/^\[/,$d' | awk -F " = " '/^4/ { gsub("\"", "", $2); print $2 }')
+
+                # Generating credentials.ini file on remote server
+                ssh_command "$nodeip" "echo \"4:$newKey\" > /usr/local/sbin/skysql/credentials.ini"
+        fi
+elif [[ "$distro_type" == "debian" ]]; then
+        ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo wheezy  main\" >> /etc/apt/sources.list"
+        ssh_command "$nodeip" "apt-get update"
+        if [[ "$scripts_installed" != "0" ]]; then
+                ssh_command "$nodeip" "apt-get -y --force-yes update mariadb-manager-grex"
+        else
+                ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
+
+                # Getting API key for GREX from components.ini
+                newKey=$(sed -n '/\[apikeys\]/,$p' /etc/skysqlmgr/api.ini | tail -n +2 | \
+                        sed '/^$/,$d;/^\[/,$d' | awk -F " = " '/^4/ { gsub("\"", "", $2); print $2 }')
+
+                # Generating credentials.ini file on remote server
+                ssh_command "$nodeip" "echo \"4:$newKey\" > /usr/local/sbin/skysql/credentials.ini"
+        fi
 fi
+
 
 # Check to see if the node date/time is in sync
 localdate=$(date -u +%s)
