@@ -27,7 +27,7 @@
 
 namespace SkySQL\Manager;
 
-define ('_API_INI_FILE_LOCATION', '/etc/skysqlmgr/api.ini');
+define ('_API_INI_FILE_LOCATION', '/etc/mariadbmanager/manager.ini');
 
 define ('_SKYSQL_API_OBJECT_CACHE_TIME_DEFAULT', 3600);
 define ('_SKYSQL_API_OBJECT_CACHE_SIZE_DEFAULT', 500000);

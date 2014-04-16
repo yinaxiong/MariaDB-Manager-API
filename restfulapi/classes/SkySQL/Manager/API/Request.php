@@ -161,7 +161,7 @@ abstract class Request {
 	protected $runupgrade = false;
 	
 	protected function __construct() {
-		if ('yes' == @$this->config['logging']['verbose']) {
+		if (@$this->config['logging']['verbose']) {
 			ini_set('display_errors', 1);
 			error_reporting(-1);
 		}
@@ -354,7 +354,7 @@ abstract class Request {
 			try {
 				if ('metadata' != $uriparts[0] AND 'userdata' != $uriparts[0] AND 'apidate' != $uriparts[0]) $this->checkSecurity();
 				$this->log(LOG_INFO, "$this->requestmethod /$this->uri".($this->suffix ? '.'.$this->suffix : ''));
-				if ('yes' == @$this->config['logging']['verbose']) {
+				if (@$this->config['logging']['verbose']) {
 					if (count($_POST)) $this->log(LOG_DEBUG, print_r($_POST,true));
 					if (count($_GET)) $this->log(LOG_DEBUG, print_r($_GET,true));
 					if (!empty($this->putdata)) $this->log(LOG_DEBUG, print_r($this->putdata,true));

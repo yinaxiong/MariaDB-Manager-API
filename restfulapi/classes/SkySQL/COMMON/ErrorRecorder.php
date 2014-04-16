@@ -133,9 +133,9 @@ final class ErrorRecorder  {
 				':errorkey' => $errorkey
 			));
 			$config = Request::getInstance()->getConfig();
-			if (@$config['logging']['erroremail']) {
+			if (@$config['debug']['erroremail']) {
 				$headers = 'From: MariaDB Manager <no-reply@skysql.com>' . "\r\n";
-				mail($config['logging']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
+				mail($config['debug']['erroremail'], 'Error: '.$smessage, ($lmessage ? $lmessage : $smessage), $headers);
 			}
 			$database->query("DELETE FROM ErrorLog WHERE timestamp < datetime('now','-7 day')");
 		}

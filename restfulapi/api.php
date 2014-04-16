@@ -54,7 +54,6 @@ define ('_API_VERSION_NUMBER','1.1');
 define ('_API_LEGAL_VERSIONS', '1.0,1.1');
 define ('_API_RELEASE_NUMBER','1.0.2');
 define ('_API_SYSTEM_NAME', 'MariaDB-Manager-API');
-define ('_API_SOURCE_REVISION', '$Revision-Id$');
 define ('_API_DEFAULT_SQL_PORT', 3306);
 // _API_CODE_ISSUE_DATE will be defined in the code below 
 define ('_API_BASE_FILE', __FILE__);

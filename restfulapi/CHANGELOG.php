@@ -8,6 +8,12 @@
  * Redirect /MariaDBManager to Tomcat
  *
  * 
+ * 16 April 2014, 14:45
+ * 
+ * New format manager.ini replaces api.ini and provides for all components.
+ * Standardisation of API component property names.
+ * 
+ * 
  * 6 April 2014, 19:40
  * 
  * Provide advanced fieldselect parameter for text/plain requests
