@@ -47,14 +47,6 @@ final class CommandRequest extends Request {
 		$this->requestmethod = @$argv[1];
 		if ('UPGRADE' == $this->requestmethod) $this->runupgrade = true;
 		$this->requestviapost = true;
-		$this->getHeaders();
-		$this->checkHeaders();
-		$this->urlencoded = false;
-		if (isset($argv[3])) {
-			$parameters = $this->decodeJsonOrQueryString($argv[3]);
-			if (is_array($parameters)) $_POST = $parameters;
-	        $_POST['suppress_response_codes'] = 'true';
-		}
 		parent::__construct();
 	}
 
@@ -66,6 +58,15 @@ final class CommandRequest extends Request {
 		for ($i = 4; isset($argv[$i]); $i++) {
 			$parts = explode(':', $argv[$i], 2);
 			if (2 == count($parts)) $this->headers[$parts[0]] = trim($parts[1]);
+		}
+	}
+	
+	protected function processRequestParameters () {
+		$this->urlencoded = false;
+		if (isset($argv[3])) {
+			$parameters = $this->decodeJsonOrQueryString($argv[3]);
+			if (is_array($parameters)) $_POST = $parameters;
+	        $_POST['suppress_response_codes'] = 'true';
 		}
 	}
 

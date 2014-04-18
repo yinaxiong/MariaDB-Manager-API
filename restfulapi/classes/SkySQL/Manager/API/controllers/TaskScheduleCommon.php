@@ -41,7 +41,7 @@ abstract class TaskScheduleCommon extends ImplementAPI {
 
 	protected function setRunAt ($schedule) {
 		$pathtoapi = _API_BASE_FILE;
-		if (empty($this->config['shell']['php']) OR !is_executable($this->config['shell']['php'])) $this->sendErrorResponse (sprintf("Configuration file api.ini says PHP is '%s' but this is not executable", $this->config['shell']['php']), 500);
+		if (empty($this->config['shell']['php']) OR !is_executable($this->config['shell']['php'])) $this->sendErrorResponse (sprintf("Configuration file manager.ini says PHP is '%s' but this is not executable", $this->config['shell']['php']), 500);
 		$command = sprintf('%s %s \"POST\" \"schedule/%d\"', $this->config['shell']['php'], $pathtoapi, $schedule->scheduleid);
 		$elapsed = (int) round((30 + strtotime($schedule->nextstart) - time())/60);
 		$atcommand = sprintf('echo "%s" | at %s 2>&1', $command, "now +$elapsed minute");

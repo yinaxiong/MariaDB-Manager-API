@@ -161,18 +161,6 @@ abstract class Request {
 	protected $runupgrade = false;
 	
 	protected function __construct() {
-		if (@$this->config['logging']['verbose']) {
-			ini_set('display_errors', 1);
-			error_reporting(-1);
-		}
-		$this->getSuffix();
-		$this->handleAccept();
-		$suppressor = $this->getParam($this->requestmethod, 'suppress_response_codes');
-		if (true === $suppressor OR 'true' == $suppressor) $this->suppress = true;
-		$this->getQueryString();
-	}
-	
-	protected function checkHeaders () {
 		$this->timer = new aliroProfiler();
 		$this->micromarker = $this->timer->getMicroSeconds();
 		$this->clientip = API::getIP();
@@ -181,6 +169,22 @@ abstract class Request {
 		define ('_SKYSQL_API_OBJECT_CACHE_TIME_LIMIT', $this->config['cache']['timelimit']);
 		define ('_SKYSQL_API_OBJECT_CACHE_SIZE_LIMIT', $this->config['cache']['sizelimit']);
 		$this->uri = $this->getURI();
+		$this->getHeaders();
+		$this->checkHeaders();
+		$this->processRequestParameters();
+		if (@$this->config['logging']['verbose']) {
+			ini_set('display_errors', 1);
+			error_reporting(-1);
+		}
+		$this->handleAccept();
+		$suppressor = $this->getParam($this->requestmethod, 'suppress_response_codes');
+		if (true === $suppressor OR 'true' == $suppressor) $this->suppress = true;
+		$this->getQueryString();
+	}
+	
+	abstract protected function processRequestParameters();
+	
+	protected function checkHeaders () {
 		foreach ($this->headers as $name=>$value) {
 			$stdname = str_replace(' ','-',ucwords(strtolower(str_replace(array('-','_'),' ',$name))));
 			if ($name != $stdname) {
@@ -288,9 +292,11 @@ abstract class Request {
 	
 	protected function getURI () {
 		$sepquery = explode('?', @$_SERVER['REQUEST_URI']);
-		$sepindex = explode('index.php', $sepquery[0]);
+		$sepindex = explode('api.php', $sepquery[0]);
 		$afterindex = trim(end($sepindex), '/');
 		$sepapi = explode('/', $afterindex);
+		$lastpartnumber = count($sepapi) - 1;
+		$sepapi[$lastpartnumber] = $this->getSuffix($sepapi[$lastpartnumber]);
 		$baseparts = RequestParser::getInstance()->getBaseParts();
 		$dir[0] = $_SERVER['SERVER_NAME'];
 		while (count($sepapi) AND !in_array($sepapi[0], $baseparts)) $dir[] = array_shift($sepapi);
@@ -298,15 +304,15 @@ abstract class Request {
 		return count($sepapi) ? implode('/',$sepapi) : $afterindex;
 	}
 	
-	protected function getSuffix() {
+	protected function getSuffix($lastpart) {
 		foreach (array_keys(self::$suffixes) as $suffix) {
 			$slen = strlen($suffix) + 1;
-			if (substr($this->uri,-$slen) == '.'.$suffix) {
-				$this->uri = substr($this->uri,0,-$slen);
+			if (substr($lastpart,-$slen) == '.'.$suffix) {
 				$this->suffix = $suffix;
-				break;
+				return substr($lastpart,0,-$slen);
 			}
 		}
+		return $lastpart;
 	}
 	
 	protected function handleAccept () {
@@ -515,9 +521,9 @@ abstract class Request {
 			$body['warnings'] = (array) $this->warnings;
 			foreach ((array) $this->warnings as $warning) $this->log(LOG_WARNING, $warning);
 		}
-		if ('yes' == @$this->config['debug']['showheaders']) $body['responseheaders'] = $this->responseheaders;
-		if ('yes' == @$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
-		if ($this->suppress OR 'yes' == @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
+		if (@$this->config['debug']['showheaders']) $body['responseheaders'] = $this->responseheaders;
+		if (@$this->config['debug']['reflectheaders']) $body['requestheaders'] = $this->headers;
+		if ($this->suppress OR @$this->config['debug']['showhttpcode'] OR 'text/html' == $this->accept) {
 			$body['httpcode'] = 'text/html' == $this->accept ? $status.' '.@self::$codes[$status] : $status;
 		}
 		$charset = $this->getHeader('Accept-Charset');

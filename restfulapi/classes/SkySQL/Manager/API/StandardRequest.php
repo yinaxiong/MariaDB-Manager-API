@@ -40,11 +40,17 @@ final class StandardRequest extends Request {
 	}
 	
 	protected function __construct () {
-		$this->getHeaders();
 		$this->requestmethod = $_SERVER['REQUEST_METHOD'];
-		$this->checkHeaders();
+		parent::__construct();
+	}
+	
+	protected function getHeaders () {
+		$this->headers = apache_request_headers();
+	}
+	
+	protected function processRequestParameters () {
 		$rawparameters = file_get_contents("php://input");
-		if ('PUT' == $_SERVER['REQUEST_METHOD'] OR 'DELETE' == $_SERVER['REQUEST_METHOD']) {
+		if ('PUT' == $this->requestmethod OR 'DELETE' == $this->requestmethod) {
 			if ('1.0' == $this->requestversion) {
 				$parameters = $this->decodeJsonOrQueryString($rawparameters);
 				if (is_array($parameters)) $this->putdata = $parameters;
@@ -52,15 +58,10 @@ final class StandardRequest extends Request {
 			else {
 				if ($this->urlencoded) parse_str($rawparameters, $this->putdata);
 				else $this->putdata = json_decode($rawparameters, true);
-				}
 			}
-		elseif ('POST' == $_SERVER['REQUEST_METHOD'] AND !$this->urlencoded) {
+		}
+		elseif ('POST' == $this->requestmethod AND !$this->urlencoded) {
 			$_POST = json_decode($rawparameters, true);
 		}
-		parent::__construct();
-	}
-	
-	protected function getHeaders () {
-		$this->headers = apache_request_headers();
 	}
 }
