@@ -124,7 +124,7 @@ if [[ "$distro_type" == "redhat" ]]; then
         fi
 elif [[ "$distro_type" == "debian" ]]; then
         ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo wheezy  main\" >> /etc/apt/sources.list"
-        ssh_command "$nodeip" "apt-get update"
+        ssh_command "$nodeip" "rm /var/lib/apt/lists/*; apt-get update"
         if [[ "$scripts_installed" != "0" ]]; then
                 ssh_command "$nodeip" "apt-get -y --force-yes update mariadb-manager-grex"
         else
