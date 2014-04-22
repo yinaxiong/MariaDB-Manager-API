@@ -190,6 +190,7 @@ final class Monitors extends ImplementAPI {
 			}
 			else array_unshift($data, $preceding);
 		}
+		MonitorQueries::getInstance()->forceRefresh();
 		MonitorQueries::getInstance()->newQuery($this->monitorid, $this->systemid, $this->nodeid, $this->finish, $this->count, $this->interval, $this->average);
 		if ($this->average) {
 			$aresults = $this->getAveraged($data, $results);

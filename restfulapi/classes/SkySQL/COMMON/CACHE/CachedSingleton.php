@@ -77,13 +77,15 @@ abstract class CachedSingleton {
 
 	public function clearCache ($immediate=false) {
 		$objectcache = SingletonObjectCache::getInstance();
-		$classname = get_class($this);
-		$objectcache->delete($classname);
-		if ($immediate) {
-			$instancevar = $classname.'::$instance';
-			eval("$instancevar = '$classname';");
-		}
+		$objectcache->delete(get_class($this));
+		if ($immediate) $this->forceRefresh();
 		$this->timestamp = time();
+	}
+
+	public function forceRefresh () {
+		$instancevar = get_class($this).'::$instance';
+		eval("$instancevar = null;");
+		clearstatcache();
 	}
 	
 	public function cacheNow () {
