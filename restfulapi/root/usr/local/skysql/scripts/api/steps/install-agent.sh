@@ -125,11 +125,8 @@ if [[ "$distro_type" == "redhat" ]]; then
 elif [[ "$distro_type" == "debian" ]]; then
         ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo wheezy  main\" >> /etc/apt/sources.list"
         ssh_command "$nodeip" "apt-get update"
-        if [[ "$scripts_installed" != "0" ]]; then
-                ssh_command "$nodeip" "apt-get -y --force-yes update mariadb-manager-grex"
-        else
-                ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
-
+	ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
+        if [[ "$scripts_installed" == "0" ]]; then
                 # Getting API key for GREX from components.ini
                 newKey=$(sed -n '/\[apikeys\]/,$p' /etc/skysqlmgr/api.ini | tail -n +2 | \
                         sed '/^$/,$d;/^\[/,$d' | awk -F " = " '/^4/ { gsub("\"", "", $2); print $2 }')
@@ -180,8 +177,14 @@ if [[ "$ssh_return" != "0" ]]; then
 fi
 
 # Updating node state
-state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected")
-if [[ $? != 0 ]]; then
+if [[ "$distro_type" == "debian" ]]; then
+        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxname=Debian")
+        return_status=$?
+else
+        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected")
+        return_status=$?
+fi
+if [[ "$return_status" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to update the node state."
 	set_error "Failed to update the node state."
 	exit 1
