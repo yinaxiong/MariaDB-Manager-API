@@ -49,48 +49,9 @@ chown apache:apache /var/www/.ssh/known_hosts
 mkdir -p /usr/local/skysql/SQLite/AdminConsole
 chown -R apache:apache /usr/local/skysql/SQLite
 
-mkdir -p /usr/local/skysql/config
-
 if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
 	ssh-keygen -q -f /var/www/.ssh/id_rsa -N "" 
 	chown apache:apache /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
-fi
-
-# Not overwriting existing API configurations
-if [ ! -f /etc/skysqlmgr/api.ini ] ; then
-	# Generating API key for the local scripts
-	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
-	
-	componentID=2
-	keyString="${componentID} = \"${newKey}\""
-
-	# Registering key on components.ini file
-	componentFile=/usr/local/skysql/config/components.ini
-	grep "^${componentID} = \"" ${componentFile} &>/dev/null
-	if [ "$?" != "0" ] ; then
-		echo $keyString >> $componentFile
-	fi
-	
-	# Registering key on api.ini file
-	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
-	if [ "$?" != "0" ] ; then
-		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
-	fi
-
-	# Generating API key for GREX
-	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
-	
-	componentID=4
-	keyString="${componentID} = \"${newKey}\""
-
-	# Registering key on api.ini file
-	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
-	if [ "$?" != "0" ] ; then
-		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
-	fi	
-
-	# Creating api.ini file
-	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
 fi
 
 # disabling selinux! TO BE FIXED! 
@@ -112,13 +73,11 @@ cp -R consoleAPI $RPM_BUILD_ROOT%{install_path}
 #cp -R restfulapi/root/* $RPM_BUILD_ROOT/
 mkdir -p $RPM_BUILD_ROOT/usr
 cp -R restfulapi/root/usr/* $RPM_BUILD_ROOT/usr
-mkdir -p $RPM_BUILD_ROOT/etc/skysqlmgr
-cp -R restfulapi/root/etc/skysqlmgr/api.ini $RPM_BUILD_ROOT/etc/skysqlmgr/api.ini.template
-
 
 cp -R restfulapi $RPM_BUILD_ROOT%{install_path}
 cp -R restfulapitest/* $RPM_BUILD_ROOT%{install_path}restfulapi/
 cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
+
 
 %clean
 
@@ -128,7 +87,6 @@ cp skysql_rewrite.conf $RPM_BUILD_ROOT/etc/httpd/conf.d/skysql_rewrite.conf
 %{install_path}
 %{install_path}consoleAPI/*
 %{install_path}restfulapi/*
-/etc/skysqlmgr/api.ini.template
 /usr/local/skysql/scripts/api/*
 /etc/httpd/conf.d/skysql_rewrite.conf
 

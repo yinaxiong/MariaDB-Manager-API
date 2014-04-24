@@ -15,48 +15,9 @@ chown www-data:www-data /var/www/.ssh/known_hosts
 mkdir -p /usr/local/skysql/SQLite/AdminConsole
 chown -R www-data:www-data /usr/local/skysql/SQLite
 
-mkdir -p /usr/local/skysql/config
-
 if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
 	ssh-keygen -q -f /var/www/.ssh/id_rsa -N "" 
 	chown www-data:www-data /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
-fi
-
-# Not overwriting existing API configurations
-if [ ! -f /etc/skysqlmgr/api.ini ] ; then
-	# Generating API key for the local scripts
-	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
-	
-	componentID=2
-	keyString="${componentID} = \"${newKey}\""
-
-	# Registering key on components.ini file
-	componentFile=/usr/local/skysql/config/components.ini
-	grep "^${componentID} = \"" ${componentFile} &>/dev/null
-	if [ "$?" != "0" ] ; then
-		echo $keyString >> $componentFile
-	fi
-	
-	# Registering key on api.ini file
-	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
-	if [ "$?" != "0" ] ; then
-		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
-	fi
-
-	# Generating API key for GREX
-	newKey=$(echo $RANDOM$(date)$RANDOM | md5sum | cut -f1 -d" ")
-	
-	componentID=4
-	keyString="${componentID} = \"${newKey}\""
-
-	# Registering key on api.ini file
-	grep "^${componentID} = \"" /etc/skysqlmgr/api.ini.template &>/dev/null
-	if [ "$?" != "0" ] ; then
-		sed -i "/^\[apikeys\]$/a $keyString" /etc/skysqlmgr/api.ini.template
-	fi	
-
-	# Creating api.ini file
-	cp /etc/skysqlmgr/api.ini.template /etc/skysqlmgr/api.ini
 fi
 
 # disabling selinux! TO BE FIXED! 
@@ -69,7 +30,7 @@ iptables-save > /etc/iptables/rules.v4
 
 a2enmod rewrite
 a2enmod proxy_ajp
-apacheMod=$(sed 's/[]\/()$*.^|[]/\\&/g' /usr/local/skysql/config/skysql_rewrite.conf | sed -e ':a;N;$!ba;s/\n/\\\n/g')
+apacheMod=$(sed 's/[]\/()$*.^|[]/\\&/g' /etc/apache2/conf.d/skysql_rewrite.conf | sed -e ':a;N;$!ba;s/\n/\\\n/g')
 if ! grep -q ProxyPass /etc/apache2/sites-enabled/000-default ; then
     sed -i "/\/VirtualHost/i $apacheMod" /etc/apache2/sites-enabled/000-default
 fi
