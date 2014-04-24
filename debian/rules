@@ -1,5 +1,4 @@
 #!/usr/bin/make -f
 %:
-	cp restfulapi/root/etc/skysqlmgr/api.ini restfulapi/root/etc/skysqlmgr/api.ini.template
 	dh $@
 override_dh_usrlocal:
