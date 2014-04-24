@@ -2,12 +2,13 @@
 
 /*
  * Change log for the MariaDB Manager API
- *
- * 31 March 2014, 14:50
- *
- * Redirect /MariaDBManager to Tomcat
- *
  * 
+ * 24 April 2014, 07:35
+ * 
+ * Incorporate new encryption logic to remove requirement for mcrypt
+ * Extend caching functionality to support if modified since monitor data
+ * 
+ *
  * 16 April 2014, 14:45
  * 
  * New format manager.ini replaces api.ini and provides for all components.
@@ -25,7 +26,12 @@
  * Split table upgrades into a method per table
  * 
  * 
- * 30 March 2014, 09:45
+ * 31 March 2014, 14:50
+ *
+ * Redirect /MariaDBManager to Tomcat
+ *
+ * 
+* 30 March 2014, 09:45
  * 
  * Implement automatic insertion of upgrade step at start of any command when
  * the node is at an earlier release than the API.

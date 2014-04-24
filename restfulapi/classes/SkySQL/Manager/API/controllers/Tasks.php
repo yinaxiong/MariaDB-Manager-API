@@ -87,7 +87,7 @@ class Tasks extends TaskScheduleCommon {
 	}
 	
 	public function runCommand ($uriparts, $metadata='') {
-		if ($metadata) return $this->returnMetadata ($metadata, 'task or schedule', false, 'systemid, nodeid, username, parameters, state, steps, icalentry', 'systemid, nodeid, username');
+		if ($metadata) return $this->returnMetadata ($metadata, 'task or schedule', false, 'systemid, nodeid, username, state, steps, icalentry', 'systemid, nodeid, username');
 		Command::checkLegal('icalentry');
 		$command = new Command($uriparts[1]);
 		if ($this->paramEmpty($this->requestmethod,'systemid')) $errors[] = sprintf("Command '%s' requested, but required systemid not provided", $command->command);

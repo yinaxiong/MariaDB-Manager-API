@@ -113,7 +113,8 @@ abstract class EntityModel {
 			$split = explode('xparam-', $paramname);
 			if (empty($split[0]) AND !empty($split[1])) {
 				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
-				$encrypted[$split[1]] = EncryptionManager::decryptOneField($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
+				$method = $request->compareVersion('1.0', 'gt') ? 'decrypt' : 'decryptOneField';
+				$encrypted[$split[1]] = EncryptionManager::$method($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
 			}
 		}
 		$this->setInsertValue('parameters', (isset($parameters) ? json_encode($parameters) : "{}"));

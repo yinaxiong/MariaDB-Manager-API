@@ -32,6 +32,47 @@ use SkySQL\Manager\API\Request;
 
 class EncryptionManager extends EntityManager {
 	
+	// Set up some test data
+	// $key = '2ee38c49e262xyzc7dedfd88412478c1';
+	// $string = 'password the quick brown fox jumps over the lazy dog and into the river which is flowing fast but the dog is a good swimmer';
+
+	// Run a test
+	// echo encrypt($string, $key)."\n";
+	// echo decrypt(encrypt($string, $key), $key)."\n";
+
+	// Function for bitwise exclusive or (used by both encrypt and decrypt)
+	private static function bitwisexor ($a, $b) {
+	    for ($i = $result = null; $i < strlen($a); $i++) {
+	        $ca = ord($a[(int)$i]);
+	        $saltchar = substr($b, ($i % strlen($b))-1, 1);
+		$result .= chr($ca ^ ord($saltchar));
+	    }
+	    return $result;
+	}
+	
+	// Encrypt the given string using the key
+	public static function encrypt($string, $key) {
+	    $salt = md5(mt_rand(0,10000000));
+	    $string = self::bitwisexor($string, $salt);
+	    $string .= $salt;
+	    for($i = $result = null; $i < strlen($string); $i++) {
+	        $keychar = substr($key, ($i % strlen($key))-1, 1);
+	        $result .= chr(ord(substr($string, $i, 1)) + ord($keychar));
+	    }
+	    return base64_encode($result);
+	}
+	
+	// Decrypt the given string using the key
+	public static function decrypt($string, $key) {
+	    $string = base64_decode($string);
+	    for($i = $result = null; $i < strlen($string); $i++) {
+	        $keychar = substr($key, ($i % strlen($key))-1, 1);
+	        $result .= chr(ord(substr($string, $i, 1)) - ord($keychar));
+	    }
+	    $salt = substr($result, -32);
+	    return self::bitwisexor(substr($result,0,-32), $salt);
+	}
+	
 	public static function decryptOneField ($string, $givenkey) {
 	    $key = pack('H*', $givenkey);
     

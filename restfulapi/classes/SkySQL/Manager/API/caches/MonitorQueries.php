@@ -31,29 +31,37 @@
 namespace SkySQL\Manager\API\caches;
 
 use SkySQL\COMMON\CACHE\CachedSingleton;
+use SkySQL\COMMON\CACHE\SimpleCache;
 
-class MonitorQueries extends CachedSingleton {
+class MonitorQueries {
 	protected static $instance = null;
 	
+	protected $cache = null;
 	protected $queries = array();
 
 	public static function getInstance () {
-		return self::$instance instanceof self ? self::$instance : self::$instance = parent::getCachedSingleton(__CLASS__);
+		return self::$instance instanceof self ? self::$instance : self::$instance = new self(); // parent::getCachedSingleton(__CLASS__);
 	}
 	
 	protected function __construct () {
+		$this->cache = new SimpleCache('MonitorQueries');
 	}
 	
 	public function newQuery ($monitorid, $systemid, $nodeid, $finish, $count, $interval, $average) {
-		$this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval][$average] = 1;
-		$this->cacheNow();
+		$newdata = serialize((string) $finish);
+		$this->cache->save($newdata, "$monitorid-$systemid-$nodeid-$count-$interval");
+		// $this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval][$average] = 1;
+		// $this->cacheNow();
 	}
 	
 	public function hasBeenDone ($monitorid, $systemid, $nodeid, $finish, $count, $interval, $average) {
-		return isset($this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval][$average]);
+		$cached = $this->cache->get("$monitorid-$systemid-$nodeid-$count-$interval");
+		return ((int) unserialize($cached) == (int) $finish);
+		// return isset($this->queries[$finish][$monitorid][$systemid][$nodeid][$count][$interval][$average]);
 	}
 	
 	public function newData ($monitorids, $systemid, $nodeid, $timestamp) {
+		return;
 		foreach (array_keys($this->queries) as $finish) {
 			if ($finish < (time() - 3600*24)) unset($this->queries[$finish]);
 			elseif ($timestamp < $finish) foreach ($monitorids as $monitorid) {
