@@ -49,9 +49,8 @@ scripts_dir=$(dirname $0)
 cd $scripts_dir
 
 # Getting and defining API credentials
-export auth_key_number="2"
-export auth_key=$(awk -F " = " '/^2/ { gsub("\"", "", $2); print $2 }' \
-        /usr/local/skysql/config/components.ini)
+export auth_key_number="1"
+export auth_key=$(sed -n '/\[apikeys\]/,$p' /etc/mariadbmanager/manager.ini | tail -n +2 | sed '/[;\[]/,$d' | awk -F " = " '/^1/ { gsub("\"", "", $2); print $2 }')
 
 . ./functions.sh
 
