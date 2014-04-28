@@ -7,7 +7,7 @@ Build-Depends: debhelper (>= 8)
 
 Package: mariadb-manager-api
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, php5, coreutils, curl, php5-mysql, php5-mcrypt, php5-sqlite, sshpass, ssh, gawk, iproute, at, iptables, iptables-persistent
+Depends: ${shlibs:Depends}, ${misc:Depends}, php5, coreutils, curl, php5-mysql, php5-mcrypt, php5-sqlite, sshpass, ssh, gawk, iproute, at, iptables, iptables-persistent, mariadb-manager-internalrepo
 Description: MariaDB Manager REST monitor and management API
  MariaDB Manager is a tool to manage and monitor a set of MariaDB
  servers using the Galera multi-master replication form Codership.
