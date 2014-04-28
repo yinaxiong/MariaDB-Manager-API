@@ -59,6 +59,7 @@ fi
 #sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
 # configure selinux
 chcon -Rv --type=httpd_sys_content_t /usr/local/skysql
+setsebool httpd_can_network_connect true
 
 # add firewall rule to allow port 80 
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
