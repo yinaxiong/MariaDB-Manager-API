@@ -418,13 +418,12 @@ abstract class Request {
 			$this->log(LOG_ERR, 'Auth error - Header time: '.($headertime ? $headertime : '*zero*').' actual time: '.time());
 			$this->sendErrorResponse('Date header out of range '.(empty($this->headers['Date']) ? '*empty*' : $this->headers['Date']).', current '.date('r'), 401);
 		}
-		$matches = array();
 		if (!is_null($this->apikeyid)) {
 			$this->apikey = $this->config['apikeys'][$this->apikeyid];
 			$checkstring = \md5($this->uri.$this->apikey.$this->headers['Date']);
 			if ($this->authcode == $checkstring) return;
 		}
-		$this->log(LOG_ERR, 'Auth error - Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][@$matches[1]].' Date: '.$this->headers['Date']);
+		$this->log(LOG_ERR, 'Auth error - Header authorization: '.@$this->headers['Authorization'].' calculated auth: '.@$checkstring.' Based on URI: '.$this->uri.' key: '.@$this->config['apikeys'][$this->apikeyid].' Date: '.$this->headers['Date']);
 		$this->sendErrorResponse('Invalid Authorization header', 401);
 	}
 	
