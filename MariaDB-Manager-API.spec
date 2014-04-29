@@ -55,8 +55,8 @@ if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
 fi
 
 # disabling selinux! TO BE FIXED! 
-#echo 0 >/selinux/enforce
-#sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
+echo 0 >/selinux/enforce
+sed -i "s/SELINUX\s*=\s*enforcing/SELINUX=disabled/" /etc/selinux/config
 # configure selinux
 chcon -Rv --type=httpd_sys_content_t /usr/local/skysql
 setsebool httpd_can_network_connect true
