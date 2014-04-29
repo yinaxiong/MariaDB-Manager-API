@@ -55,6 +55,7 @@ final class CommandRequest extends Request {
 	}
 
 	protected function getHeaders () {
+		global $argv;
 		for ($i = 4; isset($argv[$i]); $i++) {
 			$parts = explode(':', $argv[$i], 2);
 			if (2 == count($parts)) $this->headers[$parts[0]] = trim($parts[1]);
@@ -62,6 +63,7 @@ final class CommandRequest extends Request {
 	}
 	
 	protected function processRequestParameters () {
+		global $argv;
 		$this->urlencoded = false;
 		if (isset($argv[3])) {
 			$parameters = $this->decodeJsonOrQueryString($argv[3]);
@@ -77,10 +79,15 @@ final class CommandRequest extends Request {
 
 	protected function getURI () {
 		global $argv;
-		return trim(@$argv[2], "/ \t\n\r\0\x0B");
+		$rawuri = trim(@$argv[2], "/ \t\n\r\0\x0B");
+		$sepapi = explode('/', $rawuri);
+		$lastpartnumber = count($sepapi) - 1;
+		$sepapi[$lastpartnumber] = $this->getSuffix($sepapi[$lastpartnumber]);
+		return count($sepapi) ? implode('/',$sepapi) : $rawuri;
 	}
 	
 	protected function handleAccept () {
-		$this->accept = 'application/json';
+		if (isset(self::$suffixes[$this->suffix])) $this->accept = self::$suffixes[$this->suffix];
+		else $this->accept = 'application/json';
 	}
 }
