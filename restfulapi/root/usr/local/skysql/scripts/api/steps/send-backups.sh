@@ -49,8 +49,7 @@ system_id=$(echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
 command=$(echo $task_fields | awk 'BEGIN { RS=","; FS=":" } \
         { gsub("\"", "", $0); if ($1 == "command") print $2; }')
 
-# TODO: change for new parameters
-backup_id=$params
+backup_id=${params#id=}
 
 # Getting backups directory
 config_json=$(api_call "GET" "config/backups/path")
