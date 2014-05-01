@@ -55,7 +55,7 @@ class NodeCommandManager extends EntityManager {
 		$runnable = array();
 		foreach ($this->maincache as $subset) {
 			if (isset($subset[$systemtype][$state])) $runnable[] = $subset[$systemtype][$state];
-			if (isset($subset['provision'][$state])) $runnable[] = $subset['provision'][$state];
+			if ('provision' != $systemtype AND isset($subset['provision'][$state])) $runnable[] = $subset['provision'][$state];
 		}
 		foreach ($runnable as &$command) {
 			unset($command->systemtype, $command->uiorder, $command->state);
