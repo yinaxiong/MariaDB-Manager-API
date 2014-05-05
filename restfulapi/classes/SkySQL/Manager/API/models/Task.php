@@ -188,7 +188,7 @@ class Task extends TaskScheduleCommon {
 		}
 		$oldtask = Task::getByID($this->taskid);
 		if (!$oldtask) Request::getInstance()->sendErrorResponse(sprintf("Task with taskid '%s' does not exist", $this->taskid), 404);
-		if ('running' != $oldtask->state AND ('cancelled' == $this->state OR 'missing' == $this->state)) {
+		if ('running' != $oldtask->state AND ('cancelled' == @$this->state OR 'missing' == @$this->state)) {
 			$this->state = $oldtask->state;
 			$this->bind[':state'] = $oldtask->state;
 		}

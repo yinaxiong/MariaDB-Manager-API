@@ -128,7 +128,7 @@ class API {
 				'machine-down' => array('stateid' => 198, 'description' => 'Machine Unreachable'),
 				'down' => array('stateid' => 199, 'description' => 'Down'),
 			),
-			'onecommandpersystem' => 'start,restart,rejoin',
+			'onecommandpersystem' => 'connect,start,restart,rejoin',
 			'wheretofinddb' => 'system',
 			'wheretofindrep' => 'system',
 		)

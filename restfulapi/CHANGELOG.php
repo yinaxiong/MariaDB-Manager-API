@@ -3,6 +3,13 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 5 May 2014, 12:50
+ * 
+ * Add connect to Galera commands that must be exclusive across a system
+ * Wrap run command operations in a database transaction
+ * Fix bug in Task update logic
+ * 
+ * 
  * 24 April 2014, 07:35
  * 
  * Incorporate new encryption logic to remove requirement for mcrypt

@@ -99,6 +99,7 @@ class Tasks extends TaskScheduleCommon {
 		if (isset($errors)) $this->sendErrorResponse($errors, 400);
 		$command->setPropertiesFromParams();
 		$state = $this->getParam('POST', 'state');
+		$this->beginImmediateTransaction();
 		$node = Node::getByID($command->systemid, $command->nodeid);
 		if (!($node instanceof Node)) $this->sendErrorResponse(sprintf("Command '%s' requested on node (S%d, N%d) but there is no such node", $command->command, $command->systemid, $command->nodeid), 409);
 		if ($state AND $state != $node->state) {
