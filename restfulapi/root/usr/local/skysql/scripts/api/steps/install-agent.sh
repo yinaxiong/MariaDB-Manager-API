@@ -16,7 +16,7 @@
 #
 # Copyright 2012-2014 SkySQL Corporation Ab
 #
-# Author: Marcos Amaral
+# Author: Marcos Amaral, Massimo Siani
 # Date: July 2013
 #
 #
@@ -80,6 +80,8 @@ if [[ "$ssh_return" == "" ]]; then
 fi
 
 distro_type="$ssh_return"
+distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
+        [[ "$release_info" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo ${BASH_REMATCH[1]})
 
 trap cleanup SIGTERM
 cleanup() {
@@ -172,10 +174,10 @@ fi
 
 # Updating node state
 if [[ "$distro_type" == "debian" ]]; then
-        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxname=Debian")
+        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxname=Debian" "linuxversion=$distro_version")
         return_status=$?
 else
-        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected")
+        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxversion=$distro_version")
         return_status=$?
 fi
 if [[ "$return_status" != "0" ]]; then
