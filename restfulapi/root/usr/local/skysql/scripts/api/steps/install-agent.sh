@@ -81,7 +81,7 @@ fi
 
 distro_type="$ssh_return"
 distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
-        [[ "$release_info" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo ${BASH_REMATCH[1]})
+        [[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 
 trap cleanup SIGTERM
 cleanup() {
