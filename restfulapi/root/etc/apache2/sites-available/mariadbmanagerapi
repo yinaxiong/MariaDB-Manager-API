@@ -34,4 +34,6 @@
         LogLevel warn
 
         CustomLog ${APACHE_LOG_DIR}/access.log combined
+
+	ProxyPass /MariaDBManager ajp://localhost:8009/MariaDBManager
 </VirtualHost>

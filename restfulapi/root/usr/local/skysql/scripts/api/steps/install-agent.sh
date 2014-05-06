@@ -116,9 +116,11 @@ if [[ "$distro_type" == "redhat" ]]; then
                 ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
         fi
 elif [[ "$distro_type" == "debian" ]]; then
-        ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo wheezy  main\" >> /etc/apt/sources.list"
-        ssh_command "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
-	ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
+	if ! grep -q ${api_host}/repo /etc/apt/sources.list ; then
+        	ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo wheezy  main\" >> /etc/apt/sources.list"
+	        ssh_command "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
+		ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
+	fi
 fi
 
 if [[ "$scripts_installed" == "0" ]]; then
