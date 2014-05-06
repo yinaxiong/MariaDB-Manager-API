@@ -188,7 +188,6 @@ class Node extends EntityModel {
 	}
 	
 	protected function validateState () {
-		$nsm = NodeStateManager::getInstance();
 		if (self::isProvisioningState(@$this->state)) return true;
 		return self::getStateByName($this->getSystemType(), @$this->state) ? true : false;
 	}

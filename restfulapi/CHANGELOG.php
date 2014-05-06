@@ -3,6 +3,12 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 6 May 2014, 15:00
+ * 
+ * Add extra fields for Nodes into HTML front end
+ * Fix fault that rejected version number updates to Nodes
+ * 
+ * 
  * 5 May 2014, 12:50
  * 
  * Add connect to Galera commands that must be exclusive across a system

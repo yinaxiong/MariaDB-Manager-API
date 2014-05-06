@@ -174,10 +174,35 @@
 			<strong>repusername</strong><br />
 			The user name for the node database replication user (text).
 			</span></a>&nbsp;
-			<a class="tooltip" href="#">reppassword<span class="custom info">
+			<a class="tooltip" href="#">reppassword,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>reppassword</strong><br />
 			The password for the node database replication user (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">scriptrelease,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Script Release parameter" height="48" width="48" />
+			<strong>scriptrelease</strong><br />
+			The current release number for the scripts on the node.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbtype,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbpassword</strong><br />
+			The password for the node for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbversion,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>repusername</strong><br />
+			Version of the database system installed on the node.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">linuxname<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			Name of the Linux distribution installed on the node.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">linuxversion<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			Version of the Linux distribution installed on the node
 			</span></a>
 		</p>
 		<p class="formfields">
@@ -203,6 +228,16 @@
 			<input type="text" id="repusernamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
 			<label for="reppasswdc">DB Repln Password</label>
 			<input type="text" id="reppasswdc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
+			<label for="scriptreleasec">Script Release</label>
+			<input type="text" id="scriptreleasec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'scriptrelease');" /><br />
+			<label for="dbtypec">DB System Name</label>
+			<input type="text" id="dbtypec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbtype');" /><br />
+			<label for="dbversionc">DB System Version</label>
+			<input type="text" id="dbversionc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbversion');" /><br />
+			<label for="linuxnamec">Linux Name</label>
+			<input type="text" id="linuxnamec" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'linuxname');" /><br />
+			<label for="linuxversionc">Linux Version</label>
+			<input type="text" id="linuxversionc" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'linuxversion');" /><br />
 			<input type="submit" class="submit" value="Create" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->
@@ -230,7 +265,7 @@
 			The state code to be given to the node, must be selected from valid node states (string).
 			</span></a>&nbsp;
 			<a class="tooltip" href="#">stateid,<span class="custom info">
-			<img src="testresources/images/Info.png" alt="State parameter" height="48" width="48" />
+			<img src="testresources/images/Info.png" alt="StateID parameter" height="48" width="48" />
 			<strong>stateid</strong><br />
 			The state ID number (integer) that refers to the state to be given to the node.  It will only be
 			used if state is not provided.  The ID will be used to look up the state in the API
@@ -277,10 +312,35 @@
 			<strong>repusername</strong><br />
 			The user name for the node database replication user (text).
 			</span></a>&nbsp;
-			<a class="tooltip" href="#">reppassword<span class="custom info">
+			<a class="tooltip" href="#">reppassword,<span class="custom info">
 			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
 			<strong>reppassword</strong><br />
 			The password for the node database replication user (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">scriptrelease,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Script Release parameter" height="48" width="48" />
+			<strong>scriptrelease</strong><br />
+			The current release number for the scripts on the node.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbtype,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>dbpassword</strong><br />
+			The password for the node for general queries, process list etc. (text).
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">dbversion,<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>repusername</strong><br />
+			Version of the database system installed on the node.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">linuxname<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			Name of the Linux distribution installed on the node.
+			</span></a>&nbsp;
+			<a class="tooltip" href="#">linuxversion<span class="custom info">
+			<img src="testresources/images/Info.png" alt="Fields parameter" height="48" width="48" />
+			<strong>reppassword</strong><br />
+			Version of the Linux distribution installed on the node
 			</span></a>
 		</p>
 		<p class="formfields">
@@ -312,6 +372,16 @@
 			<input type="text" id="repusername" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'repusername');" /><br />
 			<label for="reppasswd">DB Repln Password</label>
 			<input type="text" id="reppasswd" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'reppassword');" /><br />
+			<label for="scriptreleaseu">Script Release</label>
+			<input type="text" id="scriptreleaseu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'scriptrelease');" /><br />
+			<label for="dbtypeu">DB System Name</label>
+			<input type="text" id="dbtypeu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbtype');" /><br />
+			<label for="dbversionu">DB System Version</label>
+			<input type="text" id="dbversionu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'dbversion');" /><br />
+			<label for="linuxnameu">Linux Name</label>
+			<input type="text" id="linuxnameu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'linuxname');" /><br />
+			<label for="linuxversionu">Linux Version</label>
+			<input type="text" id="linuxversionu" ondblclick="unsetName(this.id);" onfocus="setName(this.id,'linuxversion');" /><br />
 			<input type="submit" class="submit" value="Update" />
 			<input type="hidden" name="_accept" value="text/html" />
 			<!-- The following two inputs will be set automatically -->

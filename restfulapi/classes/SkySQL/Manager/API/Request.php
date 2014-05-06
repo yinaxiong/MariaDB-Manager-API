@@ -459,7 +459,7 @@ abstract class Request {
 	        else {
 	            $result = $arr[$name];
 	            if (!($mask&_MOS_NOTRIM)) $result = trim($result);
-	            if (!is_numeric($result)) {
+	            if (!is_numeric($result) AND !$this->isVersion($result)) {
 	            	if (get_magic_quotes_gpc() AND !($mask & _MOS_NOSTRIP)) $result = stripslashes($result);
 					if (!(bool) preg_match('//u', $result)) $this->sendErrorResponse('Request contained one or more characters that are not UTF-8', 501);
 	                if (!($mask&_MOS_ALLOWRAW) AND is_numeric($def)) $result = $def;
@@ -467,6 +467,10 @@ abstract class Request {
 	        }
 	    }
 	    return isset($result) ? $result : $def;
+	}
+	
+	protected function isVersion ($field) {
+		return preg_match('/^[0-9]+(\.[0-9]+)*$/', $field);
 	}
 	
 	public function putParam ($arrname, $name, $value) {
