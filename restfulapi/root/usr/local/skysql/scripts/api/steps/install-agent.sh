@@ -205,7 +205,7 @@ if [[ "$ssh_return" != "0" ]]; then
 fi
 
 # Updating node state
-if [[ "$distro_type" == "debian" ]]; then
+if [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
         state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxname=Debian" "linuxversion=$distro_version")
         return_status=$?
 else
