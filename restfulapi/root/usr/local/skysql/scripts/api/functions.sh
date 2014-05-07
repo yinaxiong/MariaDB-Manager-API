@@ -245,6 +245,28 @@ ssh_agent_command() {
 	echo $ssh_output
 }
 
+# ssh_agent_put_file()
+# This function invokes an scp command to put a file on a specific node using skysqlagent login.
+#
+# Parameters:
+# $1: node IP
+# $2: local file path (source)
+# $3: remote file path (destination)
+ssh_agent_put_file() {
+        ssh_output=$(scp -i $HOME/.ssh/id_rsa "$2" skysqlagent@"$1":"$3" 2>/tmp/ssh_call.$$.log)
+        ssh_return=$?
+        if [[ "$ssh_return" != "0" ]]; then
+                ssh_error_output=$(cat /tmp/ssh_call.$$.log)
+                logger -p user.error -t MariaDB-Manager-Task "Error in scp connection to $1 with skysqlagent user. $ssh_error_output"
+                set_error "Error in scp connection to $1 with skysqlagent user. $ssh_error_output"
+                rm -f /tmp/ssh_call.$$.log
+                echo $ssh_output
+                exit "$ssh_return"
+        elif [[ "$ssh_output" != "" ]]; then
+                logger -p user.error -t MariaDB-Manager-Task "$ssh_output"
+        fi
+}
+
 # json_error
 # Look at the JSON return from an API call and process any error information
 # contained in that return
@@ -276,4 +298,5 @@ export -f rsync_send_file
 export -f ssh_test_agent
 export -f ssh_test_agent_command
 export -f ssh_agent_command
+export -f ssh_agent_put_file
 export -f json_error
