@@ -3,6 +3,11 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 7 May 2014, 17:15
+ * 
+ * Add stop,upgrade,start instead of just upgrade when node release behind API
+ * 
+ * 
  * 6 May 2014, 15:00
  * 
  * Add extra fields for Nodes into HTML front end
