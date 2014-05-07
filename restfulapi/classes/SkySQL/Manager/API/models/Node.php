@@ -108,7 +108,10 @@ class Node extends EntityModel {
 		$commands = NodeCommand::getRunnable($this->getSystemType(), $this->state);
 		foreach ($commands as $sub=>&$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
-			else $this->checkForUpgrade($command);
+			else $doablecommands[] = $command->command;
+		}
+		foreach ($commands as $sub=>&$command) {
+			$this->checkForUpgrade($command, (array) @$doablecommands);
 		}
 		return array_values($commands);
 	}
@@ -119,9 +122,10 @@ class Node extends EntityModel {
 		return $commandobject ? $commandobject->steps : '';
 	}
 	
-	protected function checkForUpgrade ($commandobject) {
+	protected function checkForUpgrade ($commandobject, $doablecommands) {
 		if ($commandobject instanceof NodeCommand AND 'connect' != $commandobject->command AND $commandobject->steps AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
-			$commandobject->steps = 'stop,upgrade,start,'.$commandobject->steps;
+			if (in_array('stop', $doablecommands)) $commandobject->steps = 'stop,upgrade';
+			else $commandobject->steps = 'upgrade';
 		} 
 	}
 	
