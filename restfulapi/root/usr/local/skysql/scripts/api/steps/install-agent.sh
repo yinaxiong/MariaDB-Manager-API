@@ -69,9 +69,15 @@ fi
 ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         if [[ \$(echo \"\$release_info\" | grep 'Red Hat') != \"\" || \$(echo \"\$release_info\" | grep 'CentOS') != \"\" ]]; then \
                 echo \"redhat\"; \
-        elif [[ \$(echo \"\$release_info\" | grep 'Ubuntu') != \"\" || \$(echo \"\$release_info\" | grep 'Debian') != \"\" ]]; then \
+        elif [[ \$(echo \"\$release_info\" | grep 'Debian') != \"\" ]]; then \
                 echo \"debian\"; \
+	elif [[ \$(echo \"\$release_info\" | grep 'Ubuntu') != \"\" ]] ; then \
+		echo \"ubuntu\"; \
         fi;")
+if [[ "x$ssh_return" == "x" ]] ; then       # debian 6 may not have any /etc/*-release
+	ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version)")
+	[[ "$ssh_return" =~ 6\..* ]] && ssh_return="debian"
+fi
 
 if [[ "$ssh_return" == "" ]]; then
         logger -p user.error -t MariaDB-Manager-Task "Error: unable to determine target machine OS version."
@@ -80,8 +86,34 @@ if [[ "$ssh_return" == "" ]]; then
 fi
 
 distro_type="$ssh_return"
-distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
-        [[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
+case "$distro_type" in
+	"redhat")
+		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
+        		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
+		;;
+	"debian")
+		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version); \
+        		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
+		case "$distro_version" in
+			"6"*) distro_version_name="squeeze"
+				;;
+			"7"*) distro_version_name="wheezy"
+                                ;;
+			"8"*) distro_version_name="sid"
+                                ;;
+		esac
+		;;
+	"ubuntu")
+		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
+        		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
+                case "$distro_version" in
+                        "12.04"*) distro_version_name="precise"
+                                ;;
+                        "14.04"*) distro_version_name="trusty"
+                                ;;
+                esac
+		;;
+esac
 
 trap cleanup SIGTERM
 cleanup() {
@@ -117,12 +149,7 @@ if [[ "$distro_type" == "redhat" ]]; then
         else
                 ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
         fi
-elif [[ "$distro_type" == "debian" ]]; then
-	if [[ "$distro_version" =~ 6.* ]] ; then
-		distro_version_name="squeeze"
-	elif [[ "$distro_version" =~ 7.* ]] ; then 
-                distro_version_name="wheezy"
-	fi
+elif [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
 	if ! grep -q ${api_host}/repo /etc/apt/sources.list ; then
         	ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo ${distro_version_name}  main\" >> /etc/apt/sources.list"
 	        ssh_command "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
