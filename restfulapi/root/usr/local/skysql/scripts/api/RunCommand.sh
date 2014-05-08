@@ -67,11 +67,15 @@ die() {
 index=1
 for stepscript in ${steps//,/ } # Iterating the list of steps for the command
 do
-        # Setting current step for the command
-        api_call "PUT" "task/$taskid" "stepindex=$index"
-
+	# Setting current step for the command
+	api_call "PUT" "task/$taskid" "stepindex=$index"
+	
+	remoteExecution=$(ssh_agent_command "$node_ip" \
+		"[[ -f "/usr/local/sbin/skysql/steps/$stepscript.sh" ]] && echo \"yes\" || echo \"no\"")
+	
 	# Checking if step is executed from API node
-	if [[ -f "./steps/$stepscript.sh" ]]; then
+	#	if [[ -f "./steps/$stepscript.sh" ]]; then
+	if [[ "x$remoteExecution" != "xyes" ]] ; then
 		# Executing step locally
 		bash ./steps/$stepscript.sh "$node_ip" "$taskid" "$params" \
 					>/tmp/step.$$.log 2>&1
@@ -79,7 +83,7 @@ do
 		logger -p user.info -t MariaDB-Manager-Task -f /tmp/step.$$.log
 		rm -f /tmp/step.$$.log
 	else
-	        # Executing step remotely
+        # Executing step remotely
 		return=$(ssh_agent_command "$node_ip" \
 		"sudo /usr/local/sbin/skysql/NodeCommand.sh $stepscript $taskid $api_host \"$params\"")
 		ssh_exit_code=$?
@@ -96,9 +100,9 @@ do
 done
 
 if [[ "$return" == "0" ]]; then
-        cmdstate='done'
+	cmdstate='done'
 else
-        cmdstate='error'
+	cmdstate='error'
 	logger -p user.error -t MariaDB-Manager-Task "Task $taskid: Execution of command failed in step $stepscript."
 fi
 

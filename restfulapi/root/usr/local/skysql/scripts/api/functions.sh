@@ -145,15 +145,16 @@ ssh_put_file() {
 		ssh_return=$?
 	fi
 	if [[ "$ssh_return" != "0" ]]; then
-                ssh_error_output=$(cat /tmp/ssh_call.$$.log)
-                logger -p user.error -t MariaDB-Manager-Task "Error in ssh file transfer to $nodeip with root user. $ssh_error_output"
-		set_error "Error in ssh file transfer to $nodeip with root user. $ssh_error_output"
-                rm -f /tmp/ssh_call.$$.log
+		ssh_error_output=$(cat /tmp/ssh_call.$$.log)
+		errorMessage="Error in ssh file transfer to $nodeip with root user. $ssh_error_output"
+		logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+		set_error "$errorMessage"
+		rm -f /tmp/ssh_call.$$.log
 		echo $ssh_return
-                exit $ssh_return
-        elif [[ "$ssh_output" != "" ]]; then
-                logger -p user.error -t MariaDB-Manager-Task "$ssh_output"
-        fi
+		exit $ssh_return
+	elif [[ "$ssh_output" != "" ]]; then
+		logger -p user.error -t MariaDB-Manager-Task "$ssh_output"
+	fi
 }
 
 # rsync_get_file()
