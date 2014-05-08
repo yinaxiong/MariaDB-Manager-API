@@ -121,7 +121,7 @@ class Node extends EntityModel {
 	
 	public function getSteps ($commandname) {
 		$commandobject = NodeCommand::getByID($commandname, $this->getSystemType(), $this->state);
-		$this->checkForUpgrade($commandobject);
+		$this->checkForUpgrade($commandobject, array('probe'));
 		return $commandobject ? $commandobject->steps : '';
 	}
 	
