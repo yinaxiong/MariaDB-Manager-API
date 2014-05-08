@@ -71,7 +71,7 @@ do
 	api_call "PUT" "task/$taskid" "stepindex=$index"
 	
 	remoteExecution=$(ssh_agent_command "$node_ip" \
-		"[[ -f "/usr/local/sbin/skysql/steps/$stepscript.sh" ]] && echo \"yes\" || echo \"no\"")
+		"bash -c \"[[ -f /usr/local/sbin/skysql/steps/$stepscript.sh ]] && echo yes || echo no\"")
 	
 	# Checking if step is executed from API node
 	#	if [[ -f "./steps/$stepscript.sh" ]]; then
