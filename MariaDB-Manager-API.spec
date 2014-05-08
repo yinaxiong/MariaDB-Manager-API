@@ -68,6 +68,9 @@ service iptables save
 service atd start
 chkconfig atd on
 
+php /var/www/html/restfulapi/api.php "UPGRADE"
+
+
 %install
 mkdir -p $RPM_BUILD_ROOT%{install_path}{consoleAPI,restfulapi,restfulapitest}
 mkdir -p $RPM_BUILD_ROOT/etc/httpd/conf.d/
