@@ -39,4 +39,4 @@ service apache2 restart
 service atd start
 update-rc.d atd defaults
 
-php /var/www/html/restfulapi/api.php "UPGRADE"
+php /var/www/restfulapi/api.php "UPGRADE"
