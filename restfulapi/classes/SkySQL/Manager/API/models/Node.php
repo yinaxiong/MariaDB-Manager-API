@@ -108,10 +108,13 @@ class Node extends EntityModel {
 		$commands = NodeCommand::getRunnable($this->getSystemType(), $this->state);
 		foreach ($commands as $sub=>&$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
-			else $doablecommands[] = $command->command;
+			// else $doablecommands[] = $command->command;
 		}
-		foreach ($commands as $sub=>&$command) {
-			$this->checkForUpgrade($command, (array) @$doablecommands);
+		// foreach ($commands as $sub=>&$command) {
+		//	$this->checkForUpgrade($command, (array) @$doablecommands);
+		// }
+		if (version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
+			return array(Command::upgradeCommandFactory($this, $commands));
 		}
 		return array_values($commands);
 	}

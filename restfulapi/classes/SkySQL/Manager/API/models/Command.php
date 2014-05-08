@@ -51,4 +51,16 @@ class Command extends EntityModel {
 	public function __construct ($command) {
 		$this->command = $command;
 	}
+	
+	public static function upgradeCommandFactory ($node, $commands) {
+		$upgrade = new self('upgrade');
+		$upgrade->systemid = $node->systemid;
+		$upgrade->nodeid = $node->nodeid;
+		$upgrade->steps = 'upgrade';
+		foreach ($commands as $command) if ('stop' == $command->command) {
+			$upgrade->steps = 'stop,upgrade';
+			break;
+		}
+		return $upgrade;
+	}
 }
