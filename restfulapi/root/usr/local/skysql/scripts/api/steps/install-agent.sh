@@ -66,26 +66,29 @@ else
 fi
 
 # Determining Linux distro available on the machine
-ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
-        if [[ \$(echo \"\$release_info\" | grep 'Red Hat') != \"\" || \$(echo \"\$release_info\" | grep 'CentOS') != \"\" ]]; then \
-                echo \"redhat\"; \
-        elif [[ \$(echo \"\$release_info\" | grep 'Debian') != \"\" ]]; then \
-                echo \"debian\"; \
+ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release 2>/dev/null); \
+	if [[ \$(echo \"\$release_info\" | grep 'Red Hat') != \"\" || \$(echo \"\$release_info\" | grep 'CentOS') != \"\" ]]; then \
+		echo \"redhat\"; \
 	elif [[ \$(echo \"\$release_info\" | grep 'Ubuntu') != \"\" ]] ; then \
 		echo \"ubuntu\"; \
-        fi;")
+	elif [[ \$(echo \"\$release_info\" | grep 'Debian') != \"\" ]]; then \
+		echo \"debian\"; \
+	fi;")
 if [[ "x$ssh_return" == "x" ]] ; then       # debian 6 may not have any /etc/*-release
-	ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version)")
+	ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version 2>/dev/null)")
 	[[ "$ssh_return" =~ 6\..* ]] && ssh_return="debian"
 fi
 
 if [[ "$ssh_return" == "" ]]; then
-        logger -p user.error -t MariaDB-Manager-Task "Error: unable to determine target machine OS version."
-        set_error "Error: unable to determine target machine OS version."
-        exit 1
+	errorMessage="Error: unable to determine target machine OS version."
+	logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+	set_error "$errorMessage"
+	exit 1
 fi
 
 distro_type="$ssh_return"
+
+# Now distro version
 case "$distro_type" in
 	"redhat")
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
@@ -98,20 +101,20 @@ case "$distro_type" in
 			"6"*) distro_version_name="squeeze"
 				;;
 			"7"*) distro_version_name="wheezy"
-                                ;;
+				;;
 			"8"*) distro_version_name="sid"
-                                ;;
+				;;
 		esac
 		;;
 	"ubuntu")
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
-                case "$distro_version" in
-                        "12.04"*) distro_version_name="precise"
-                                ;;
-                        "14.04"*) distro_version_name="trusty"
-                                ;;
-                esac
+        case "$distro_version" in
+        	"12.04"*) distro_version_name="precise"
+        		;;
+        	"14.04"*) distro_version_name="trusty"
+        		;;
+        esac
 		;;
 esac
 
