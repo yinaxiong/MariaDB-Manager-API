@@ -8,6 +8,8 @@ sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php5/apache2/php.ini
 
 mkdir -p /usr/local/skysql/cache/api
 chown -R www-data:www-data /usr/local/skysql/cache
+mkdir -p /usr/local/skysql/backups
+chown -R www-data:www-data /usr/local/skysql/backups
 mkdir -p /var/www/.ssh
 touch /var/www/.ssh/known_hosts
 chown www-data:www-data /var/www/.ssh/known_hosts
