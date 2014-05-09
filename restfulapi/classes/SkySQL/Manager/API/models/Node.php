@@ -108,28 +108,17 @@ class Node extends EntityModel {
 		$commands = NodeCommand::getRunnable($this->getSystemType(), $this->state);
 		foreach ($commands as $sub=>&$command) {
 			if (Task::tasksNotFinished($command->command, $this)) unset($commands[$sub]);
-			else $doablecommands[] = $command->command;
+			elseif ('stop' == $command->command) $stoppable = true;
 		}
-		foreach ($commands as $sub=>&$command) {
-			$this->checkForUpgrade($command, (array) @$doablecommands);
+		if (version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt') AND !isset(API::$provisionstates[$this->state])) {
+			return array(Command::upgradeCommandFactory($this, (bool) @$stoppable));
 		}
-		// if ('created' != $this->state AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
-		//	return array(Command::upgradeCommandFactory($this, $commands));
-		// }
 		return array_values($commands);
 	}
 	
 	public function getSteps ($commandname) {
 		$commandobject = NodeCommand::getByID($commandname, $this->getSystemType(), $this->state);
-		$this->checkForUpgrade($commandobject, array('probe'));
 		return $commandobject ? $commandobject->steps : '';
-	}
-	
-	protected function checkForUpgrade ($commandobject, $doablecommands) {
-		if ($commandobject instanceof NodeCommand AND 'connect' != $commandobject->command AND $commandobject->steps AND version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt')) {
-			if (in_array('stop', $doablecommands)) $commandobject->steps = 'stop,upgrade';
-			else $commandobject->steps = 'upgrade';
-		} 
 	}
 	
 	public function insert ($alwaysrespond = true) {
