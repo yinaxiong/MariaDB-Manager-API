@@ -52,15 +52,11 @@ class Command extends EntityModel {
 		$this->command = $command;
 	}
 	
-	public static function upgradeCommandFactory ($node, $commands) {
+	public static function upgradeCommandFactory ($node, $stoppable) {
 		$upgrade = new self('upgrade');
 		$upgrade->systemid = $node->systemid;
 		$upgrade->nodeid = $node->nodeid;
-		$upgrade->steps = 'upgrade';
-		foreach ($commands as $command) if ('stop' == $command->command) {
-			$upgrade->steps = 'stop,upgrade';
-			break;
-		}
+		$upgrade->steps = $stoppable ? 'stop,upgrade' : 'upgrade';
 		return $upgrade;
 	}
 }

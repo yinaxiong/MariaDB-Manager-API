@@ -3,6 +3,15 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 9 May 2014, 11:40
+ * 
+ * Following discussions, implement revised upgrade logic, so that no action is
+ * taken on a node that is still at a provisioning stage, but a node that is
+ * recorded as having an older than current release will only offer an upgrade
+ * command as the sole runnable command.  If the node is not already down (or
+ * just provisioned) the upgrade command will include a "stop" step.
+ * 
+ * 
  * 7 May 2014, 17:15
  * 
  * Add stop,upgrade,start instead of just upgrade when node release behind API
