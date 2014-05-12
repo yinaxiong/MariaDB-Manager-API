@@ -66,4 +66,12 @@ class NodeCommand extends EntityModel {
 	public static function getRunnable ($systemtype, $state) {
 		return NodeCommandManager::getInstance()->getRunnable($systemtype, $state);
 	}
+	
+	public static function upgradeCommandFactory ($node, $stoppable) {
+		$upgrade = new self('upgrade', $node->getSystemType(), $node->state);
+		unset($upgrade->state, $upgrade->systemtype);
+		$upgrade->description = 'Upgrade a Node';
+		$upgrade->steps = $stoppable ? 'stop,upgrade' : 'upgrade';
+		return $upgrade;
+	}
 }

@@ -111,7 +111,7 @@ class Node extends EntityModel {
 			elseif ('stop' == $command->command) $stoppable = true;
 		}
 		if (version_compare($this->scriptrelease, _API_RELEASE_NUMBER, 'lt') AND !isset(API::$provisionstates[$this->state])) {
-			return array(Command::upgradeCommandFactory($this, (bool) @$stoppable));
+			return array(NodeCommand::upgradeCommandFactory($this, (bool) @$stoppable));
 		}
 		return array_values($commands);
 	}
