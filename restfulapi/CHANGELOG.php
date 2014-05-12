@@ -3,6 +3,11 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 12 May 2014, 11:15
+ * 
+ * Fix bug in updating schedules.
+ * 
+ * 
  * 9 May 2014, 11:40
  * 
  * Following discussions, implement revised upgrade logic, so that no action is

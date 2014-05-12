@@ -122,7 +122,7 @@ class Schedule extends TaskScheduleCommon {
 	
 	protected function validateUpdate () {
 		$this->processCalendarEntry();
-		if ($request->compareVersion('1.0', 'gt')) $this->processParameters();
+		if (Request::getInstance()->compareVersion('1.0', 'gt')) $this->processParameters();
 		else $this->removeSensitiveParameters();
 	}
 	
