@@ -3,8 +3,6 @@
 chown -R www-data:www-data /var/www
 #mkdir -p /var/www/html/consoleAPI
 #ln -s /var/www/html/restfulapi/ /var/www/html/consoleAPI/api
-timezone=$(cat /etc/timezone)
-sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php5/apache2/php.ini
 
 mkdir -p /usr/local/skysql/cache/api
 chown -R www-data:www-data /usr/local/skysql/cache

@@ -33,8 +33,6 @@ and management functionality.
 
 chown -R apache:apache /var/www
 ln -s %{install_path}restfulapi/  %{install_path}/consoleAPI/api
-timezone=`grep ZONE /etc/sysconfig/clock | sed 's/ZONE="\([^"]*\)"/\1/'`
-sed -i "s|;date.timezone =|date.timezone = $timezone|" /etc/php.ini
 sed -i '/^#[ ]*LoadModule[ ]*proxy_module/ {s/#//;}' /etc/httpd/conf/httpd.conf
 sed -i '/^#[ ]*LoadModule[ ]*proxy_ajp_module/ {s/#//;}' /etc/httpd/conf/httpd.conf
 
