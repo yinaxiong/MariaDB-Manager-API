@@ -33,7 +33,7 @@ iptables-save > /etc/iptables/rules.v4
 a2enmod rewrite
 a2enmod proxy_ajp
 apacheMod=$(sed 's/[]\/()$*.^|[]/\\&/g' /etc/apache2/conf.d/skysql_rewrite.conf | sed -e ':a;N;$!ba;s/\n/\\\n/g')
-if ! grep -q ProxyPass /etc/apache2/sites-enabled/000-default ; then
+if ! grep -q 'RewriteRule ^(/restfulapi/.*) /restfulapi/api.php [L]' /etc/apache2/sites-enabled/000-default ; then
     sed -i "/\/VirtualHost/i $apacheMod" /etc/apache2/sites-enabled/000-default
 fi
 service apache2 restart
