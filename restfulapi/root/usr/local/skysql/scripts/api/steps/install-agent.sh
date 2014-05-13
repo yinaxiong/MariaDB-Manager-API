@@ -75,7 +75,7 @@ ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release 2>/dev/nu
 		echo \"debian\"; \
 	fi;")
 if [[ "x$ssh_return" == "x" ]] ; then       # debian 6 may not have any /etc/*-release
-	ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version 2>/dev/null)")
+	ssh_return=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version 2>/dev/null) ; echo \$release_info")
 	[[ "$ssh_return" =~ 6\..* ]] && ssh_return="debian"
 fi
 
