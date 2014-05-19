@@ -17,6 +17,7 @@
 # Copyright 2012-2014 SkySQL Corporation Ab
 #
 # Author: Marcos Amaral
+# Author: Massimo Siani
 # Date: March 2014
 #
 #
@@ -55,13 +56,26 @@ backup_id=${params#id=}
 config_json=$(api_call "GET" "config/backups/path")
 json_error "$config_json"
 if [[ "$json_err" != "0" ]]; then
-        logger -p user.error -t MariaDB-Manager-Task "Error: Unable to determine System ID."
-        set_error "Error: Unable to determine System ID."
+	errorMessage="Error: Unable to determine the backups path on the Manager Node. Check the configuration file."
+        logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+        set_error "$errorMessage"
         exit 1
 fi
-
 backups_path=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
 backups_path=${backups_path//\\/}
+
+# Getting remote backups directory
+config_json=$(api_call "GET" "config/backups/remotepath")
+json_error "$config_json"
+if [[ "$json_err" != "0" ]]; then
+	errorMessage="Error: Unable to determine the backups path on the Data Node. Check the configuration file."
+        logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+        set_error "$errorMessage"
+        exit 1
+fi
+backups_remotepath=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
+backups_remotepath=${backups_remotepath//\\/}
+
 
 while [[ "$backup_id" != "0" ]]; do
 	# Getting backup info
@@ -82,7 +96,7 @@ while [[ "$backup_id" != "0" ]]; do
 	parent_id=$(echo $backup_fields | awk 'BEGIN { RS=","; FS=":" } \
         	{ gsub("\"", "", $0); if ($1 == "parentid") print $2; }')
 
-	rsync_return=$(rsync_send_file "$nodeip" "${backups_path}/${backup_file}.tgz" "/var/backups/${backup_file}.tgz")
+	rsync_return=$(rsync_send_file "$nodeip" "${backups_path}/${backup_file}.tgz" "${backups_remotepath}/${backup_file}.tgz")
 	rsync_err_code=$?
 	if [[ "$rsync_err_code" != "0" ]]; then
        		logger -p user.error -t MariaDB-Manager-Task "Failed to send backup file to data node $nodeip."

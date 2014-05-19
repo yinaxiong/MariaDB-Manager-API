@@ -17,6 +17,7 @@
 # Copyright 2012-2014 SkySQL Corporation Ab
 #
 # Author: Marcos Amaral
+# Author: Massimo Siani
 # Date: March 2014
 #
 #
@@ -77,17 +78,30 @@ log_file=$(echo $backup_fields | awk 'BEGIN { RS=","; FS=":" } \
 config_json=$(api_call "GET" "config/backups/path")
 json_error "$config_json"
 if [[ "$json_err" != "0" ]]; then
-        logger -p user.error -t MariaDB-Manager-Task "Error: Unable to determine System ID."
-        set_error "Error: Unable to determine System ID."
+	errorMessage="Error: Unable to determine the backup folder. Check your configuration file."
+        logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+        set_error "$errorMessage"
         exit 1
 fi
-
 backups_path=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
 backups_path=${backups_path//\\/}
 
+# Getting remote backups directory
+config_json=$(api_call "GET" "config/backups/remotepath")
+json_error "$config_json"
+if [[ "$json_err" != "0" ]]; then
+	errorMessage="Error: Unable to determine the remote backup folder. Check your configuration file."
+        logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+        set_error "$errorMessage"
+        exit 1
+fi
+backups_remotepath=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
+backups_remotepath=${backups_remotepath//\\/}
+
+
 #logger -p user.info -t MariaDB-Manager-Task "store-backup - log_file: $log_file"
 
-rsync_return=$(rsync_get_file "$nodeip" "/var/backups/${backup_file}.tgz" "${backups_path}/${backup_file}.tgz")
+rsync_return=$(rsync_get_file "$nodeip" "${backups_remotepath}/${backup_file}.tgz" "${backups_path}/${backup_file}.tgz")
 rsync_err_code=$?
 if [[ "$rsync_err_code" != "0" ]]; then
         logger -p user.error -t MariaDB-Manager-Task "Failed to get backup file from data node $nodeip."
@@ -97,7 +111,7 @@ fi
 
 logger -p user.info -t MariaDB-Manager-Task "store-backup - backup file stored: ${backups_path}/${backup_file}.tgz"
 
-ssh_return=$(ssh_agent_command "$nodeip" "rm -f \"/var/backups/${backup_file}.tgz\"")
+ssh_return=$(ssh_agent_command "$nodeip" "rm -f \"${backups_remotepath}/${backup_file}.tgz\"")
 ssh_err_code=$?
 if [[ "$ssh_err_code" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Failed to delete backup file on data node $nodeip."
