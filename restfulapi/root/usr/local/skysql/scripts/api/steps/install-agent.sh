@@ -112,6 +112,8 @@ case "$distro_type" in
         case "$distro_version" in
         	"12.04"*) distro_version_name="precise"
         		;;
+        	"13.10"*) distro_version_name="saucy"
+        		;;
         	"14.04"*) distro_version_name="trusty"
         		;;
         esac
