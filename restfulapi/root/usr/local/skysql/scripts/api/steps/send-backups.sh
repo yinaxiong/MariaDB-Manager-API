@@ -73,7 +73,7 @@ if [[ "$json_err" != "0" ]]; then
         set_error "$errorMessage"
         exit 1
 fi
-backups_remotepath=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
+backups_remotepath=$(echo $config_json | sed -e 's/{"remotepath":"//' -e 's/",".*//')
 backups_remotepath=${backups_remotepath//\\/}
 
 
@@ -96,6 +96,7 @@ while [[ "$backup_id" != "0" ]]; do
 	parent_id=$(echo $backup_fields | awk 'BEGIN { RS=","; FS=":" } \
         	{ gsub("\"", "", $0); if ($1 == "parentid") print $2; }')
 
+	ssh_agent_command "$nodeip" "mkdir -p $backups_remotepath"
 	rsync_return=$(rsync_send_file "$nodeip" "${backups_path}/${backup_file}.tgz" "${backups_remotepath}/${backup_file}.tgz")
 	rsync_err_code=$?
 	if [[ "$rsync_err_code" != "0" ]]; then
