@@ -109,14 +109,14 @@ case "$distro_type" in
 	"ubuntu")
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
-        case "$distro_version" in
-        	"12.04"*) distro_version_name="precise"
-        		;;
-        	"13.10"*) distro_version_name="saucy"
-        		;;
-        	"14.04"*) distro_version_name="trusty"
-        		;;
-        esac
+		case "$distro_version" in
+			"12.04"*) distro_version_name="precise"
+				;;
+			"13.10"*) distro_version_name="saucy"
+				;;
+			"14.04"*) distro_version_name="trusty"
+				;;
+		esac
 		;;
 esac
 
