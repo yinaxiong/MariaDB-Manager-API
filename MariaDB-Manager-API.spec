@@ -63,6 +63,9 @@ setsebool httpd_can_network_connect true
 iptables -I INPUT -p tcp --dport 80 -j ACCEPT
 service iptables save
 
+if ! grep -q ^apache$ /etc/at.allow ; then
+	echo apache >> /etc/at.allow
+fi
 service atd start
 chkconfig atd on
 
