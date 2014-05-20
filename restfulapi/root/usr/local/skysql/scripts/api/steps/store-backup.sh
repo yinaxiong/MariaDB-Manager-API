@@ -95,12 +95,10 @@ if [[ "$json_err" != "0" ]]; then
         set_error "$errorMessage"
         exit 1
 fi
-backups_remotepath=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
+backups_remotepath=$(echo $config_json | sed -e 's/{"remotepath":"//' -e 's/",".*//')
 backups_remotepath=${backups_remotepath//\\/}
 
-
-#logger -p user.info -t MariaDB-Manager-Task "store-backup - log_file: $log_file"
-
+# Getting the backup from the Manager node
 rsync_return=$(rsync_get_file "$nodeip" "${backups_remotepath}/${backup_file}.tgz" "${backups_path}/${backup_file}.tgz")
 rsync_err_code=$?
 if [[ "$rsync_err_code" != "0" ]]; then
