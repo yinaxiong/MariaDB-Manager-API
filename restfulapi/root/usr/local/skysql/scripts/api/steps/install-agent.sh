@@ -91,10 +91,12 @@ distro_type="$ssh_return"
 # Now distro version
 case "$distro_type" in
 	"redhat")
+		linuxname="CentOS"
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 		;;
 	"debian")
+		linuxname="Debian"
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 		case "$distro_version" in
@@ -107,6 +109,7 @@ case "$distro_type" in
 		esac
 		;;
 	"ubuntu")
+		linuxname="Ubuntu"
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 		case "$distro_version" in
@@ -210,13 +213,8 @@ if [[ "$ssh_return" != "0" ]]; then
 fi
 
 # Updating node state
-if [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
-        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxname=Debian" "linuxversion=$distro_version")
-        return_status=$?
-else
-        state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxversion=$distro_version")
-        return_status=$?
-fi
+state_json=$(api_call "PUT" "system/$system_id/node/$node_id" "state=connected" "linuxname=$linuxname" "linuxversion=$distro_version")
+return_status=$?
 if [[ "$return_status" != "0" ]]; then
 	logger -p user.error -t MariaDB-Manager-Task "Error: Failed to update the node state."
 	set_error "Failed to update the node state."
