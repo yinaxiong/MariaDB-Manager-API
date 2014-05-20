@@ -163,7 +163,7 @@ elif [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
 fi
 
 if [[ "$scripts_installed" == "0" ]]; then
-	# Getting API key for GREX from components.ini
+	# Getting API key for GREX from manager.ini
 	newKey=$(sed -n '/\[apikeys\]/,$p' /etc/mariadbmanager/manager.ini | tail -n +2 | sed '/[;\[]/,$d' | awk -F " = " '/^3/ { gsub("\"", "", $2); print $2 }')
 
 	# Generating credentials.ini file on remote server
