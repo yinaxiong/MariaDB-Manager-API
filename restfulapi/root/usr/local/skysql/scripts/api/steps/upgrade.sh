@@ -47,6 +47,8 @@ ssh_agent_put_file "$nodeIP" "./steps/upgradefirst.sh" "~/tmp/upgradefirst.sh"
 [[ "$?" != "0" ]] && cmd_logger_error "Cannot copy the upgradefirst script on the data node $nodeIP" && exit 1
 ssh_agent_put_file "$nodeIP" "./steps/upgradenode.sh" "~/tmp/upgrade.sh"
 [[ "$?" != "0" ]] && cmd_logger_error "Cannot copy the upgradenode script on the data node $nodeIP" && exit 1
+ssh_agent_put_file "$nodeIP" "./steps/mysql-config.sh" "~/tmp/mysql-config.sh"
+[[ "$?" != "0" ]] && cmd_logger_error "Cannot copy the mysql-config script on the data node $nodeIP" && exit 1
 
 cmd_logger_info "Upgrade scripts copied to the data node $nodeIP"
 

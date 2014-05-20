@@ -39,15 +39,16 @@ current_dir=$(pwd)
 cd $(dirname $0)
 
 if [[ ! -f "upgrade.sh" ]] ; then
-	cmd_logger_error "upgrade script not found in $(pwd): skipping upgrade"
+	cmd_logger_error "Upgrade script not found in $(pwd): skipping upgrade"
 	exit 1
 fi
 
 mv upgrade.sh /usr/local/sbin/skysql/steps/
+mv mysql-config.sh /usr/local/sbin/skysql/
 cd /usr/local/sbin/skysql/
 /usr/local/sbin/skysql/steps/upgrade.sh
 return=$?
 
 cd $current_dir
 
-cmd_logger_info "upgrade ended with code $return"
+cmd_logger_info "Upgrade ended with code $return"

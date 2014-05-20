@@ -20,23 +20,32 @@
 # Date: May 2014
 
 . ./remote-scripts-config.sh
+. ./mysql-config.sh
+mkdir -p $backups_remotepath
+chown skysqlagent:skysqlagent $backups_remotepath
+
+packageAPI="MariaDB-Manager-API"
+packageRepo="MariaDB-Manager-internalrepo"
+packageName="MariaDB-Manager-GREX"
+toBeScriptRelease=$(api_call "GET" "system/0/node/0/component/api" "fieldselect=apiproperties~release" 2>/dev/null)
+scriptRelease=$(cat GREX-release 2>/dev/null)
+
+if [[ "x$scriptRelease" == "x$toBeScriptRelease" ]] ; then
+	api_call "PUT" "system/$system_id/node/$node_id" "scriptrelease=$scriptRelease"
+	exit 0
+fi
 
 logger -p user.info -t MariaDB-Manager-Remote "Command start: upgrade"
 
 #Setting the state of the command to running
 api_call "PUT" "task/$taskid" "state=running"
 
-packageAPI="MariaDB-Manager-API"
-packageRepo="MariaDB-Manager-internalrepo"
-packageName="MariaDB-Manager-GREX"
-toBeScriptRelease=$(api_call "GET" "system/0/node/0/component/api" "fieldselect=apiproperties~release" 2>/dev/null)
-
 if [[ "$linux_name" == "CentOS" ]] ; then
 	cmd_clean="yum clean all"
-	cmd_update="yum -y update $packageName MariaDB-Galera-server galera"
-elif [[ "$linux_name" == "Debian" ]] ; then
+	cmd_update="yum -y update $packageName MariaDB-Galera-server galera --disablerepo=* --enablerepo=MariaDB-Manager"
+elif [[ "$linux_name" == "Debian" || "$linux_name" == "Ubuntu" ]] ; then
 	cmd_clean="aptitude update"
-        cmd_update="aptitude -y safe-upgrade $packageName mariadb-galera-server galera"
+	cmd_update="aptitude -y safe-upgrade $packageName mariadb-galera-server galera"
 fi
 
 $cmd_clean &>/dev/null
@@ -54,5 +63,7 @@ else
 	set_error "$errorMessage"
 	exit 1
 fi
+
+cmd_logger_info "Command end: upgrade"
 
 exit 0
