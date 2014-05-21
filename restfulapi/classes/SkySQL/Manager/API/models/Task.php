@@ -172,7 +172,10 @@ class Task extends TaskScheduleCommon {
 		}
 		$this->setCorrectFormatDate('completed');
 		$this->setCorrectFormatDateWithDefault('started');
-		if ($request->compareVersion('1.0', 'gt')) $this->processParameters();
+		if ($request->compareVersion('1.0', 'gt')) {
+			if ($this->parameters) $this->bind[':parameters'] = json_encode($this->parameters);
+			else $this->processParameters();
+		}
 		else $this->removeSensitiveParameters();
 	}
 	

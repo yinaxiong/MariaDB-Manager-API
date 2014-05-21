@@ -151,7 +151,7 @@ class Schedule extends TaskScheduleCommon {
 	protected function updateNextStart ($dtstart, $rrule, $nextstart) {
 		$event = new When();
 		$event->recur($dtstart);
-		if ($rrule) $event->rrule($rrule);
+		$event->rrule($rrule ? $rrule : 'RRULE:FREQ=DAILY;COUNT=1');
 		$unixtime = $nextstart ? strtotime($nextstart) : false;
 		$nextevent = $event->nextAfter($unixtime ? new DateTime("@$unixtime") : null);
 		$this->setInsertValue('nextstart', date('Y-m-d H:i:s', ($nextevent instanceof DateTime ? $nextevent->getTimeStamp() : 0)));
