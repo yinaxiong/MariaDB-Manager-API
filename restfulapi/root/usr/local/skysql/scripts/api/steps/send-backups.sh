@@ -57,9 +57,9 @@ config_json=$(api_call "GET" "config/backups/path")
 json_error "$config_json"
 if [[ "$json_err" != "0" ]]; then
 	errorMessage="Error: Unable to determine the backups path on the Manager Node. Check the configuration file."
-        logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
-        set_error "$errorMessage"
-        exit 1
+	logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+	set_error "$errorMessage"
+	exit 1
 fi
 backups_path=$(echo $config_json | sed -e 's/{"path":"//' -e 's/",".*//')
 backups_path=${backups_path//\\/}
@@ -75,6 +75,13 @@ if [[ "$json_err" != "0" ]]; then
 fi
 backups_remotepath=$(echo $config_json | sed -e 's/{"remotepath":"//' -e 's/",".*//')
 backups_remotepath=${backups_remotepath//\\/}
+isRemotePathWriteable=$(ssh_agent_command "$nodeip" "[[ -w $backups_remotepath ]] ; echo $?")
+if [[ "x$isRemotePathWriteable" != "x0" ]] ; then
+	errorMessage="Error: the remote path is not writeable by the skysqlagent user."
+	logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+	set_error "$errorMessage"
+	exit 1
+fi
 
 
 while [[ "$backup_id" != "0" ]]; do

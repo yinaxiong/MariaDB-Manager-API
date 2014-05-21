@@ -114,7 +114,7 @@ fi
 
 ssh_command "$nodeip" \
 	"cd /home/skysqlagent/.ssh/; cat id_rsa.pub >> authorized_keys; \
-	chown -R skysqlagent.skysqlagent /home/skysqlagent/; chmod 600 authorized_keys"
+	chown -R skysqlagent:skysqlagent /home/skysqlagent/; chmod 600 authorized_keys"
 
 # Setting up skysqlagent sudoer permissions
 ssh_return=$(ssh_command "$nodeip" \
