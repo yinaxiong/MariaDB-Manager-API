@@ -117,15 +117,15 @@ ssh_command() {
 		ssh_return=$?
 	fi
 	if [[ "$ssh_return" != "0" ]]; then
-                ssh_error_output=$(cat /tmp/ssh_call.$$.log)
-                logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $nodeip with root user. $ssh_error_output"
+		ssh_error_output=$(cat /tmp/ssh_call.$$.log)
+		logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $nodeip with root user. $ssh_error_output"
 		set_error "Error in ssh connection to $nodeip with root user. $ssh_error_output"
-                rm -f /tmp/ssh_call.$$.log
+		rm -f /tmp/ssh_call.$$.log
 		echo $ssh_return
-                exit 1
-        elif [[ "$ssh_output" != "" ]]; then
-                logger -p user.info -t MariaDB-Manager-Task "$ssh_output"
-        fi
+		exit 1
+	elif [[ "$ssh_output" != "" ]]; then
+		logger -p user.info -t MariaDB-Manager-Task "$ssh_output"
+	fi
 	echo $ssh_output
 }
 

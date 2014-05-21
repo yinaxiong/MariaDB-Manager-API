@@ -54,15 +54,15 @@ done
 IFS=$oldIFS
 
 if [[ "$sshkey" != "" ]]; then
-        ssh_key_file=$(mktemp /tmp/sshrsa.XXXXXXXX)
-        echo "$sshkey" > $ssh_key_file
+	ssh_key_file=$(mktemp /tmp/sshrsa.XXXXXXXX)
+	echo "$sshkey" > $ssh_key_file
 else
-        if [[ "$rootpwd" == "" ]]; then
-                logger -p user.error -t MariaDB-Manager-Task \
-                        "Error: neither system root password nor ssh key was provided."
-                set_error "Error: neither system root password nor ssh key was provided."
-                exit 1
-        fi
+	if [[ "$rootpwd" == "" ]]; then
+		errorMessage="Error: neither system root password nor ssh key was provided."
+		logger -p user.error -t MariaDB-Manager-Task "$errorMessage"
+		set_error "$errorMessage"
+		exit 1
+	fi
 fi
 
 # Determining Linux distro available on the machine
@@ -92,11 +92,13 @@ distro_type="$ssh_return"
 case "$distro_type" in
 	"redhat")
 		linuxname="CentOS"
+		repoArch=""
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 		;;
 	"debian")
 		linuxname="Debian"
+		repoArch=""
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/debian_version); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 		case "$distro_version" in
@@ -110,6 +112,7 @@ case "$distro_type" in
 		;;
 	"ubuntu")
 		linuxname="Ubuntu"
+		repoArch="[arch=amd64]"
 		distro_version=$(ssh_command "$nodeip" "release_info=\$(cat /etc/*-release); \
         		[[ \"\$release_info\" =~ [[:space:]]*([0-9]*\.[0-9]*) ]] && echo \${BASH_REMATCH[1]}")
 		case "$distro_version" in
@@ -126,8 +129,8 @@ esac
 trap cleanup SIGTERM
 cleanup() {
         ssh_command "$nodeip" "rpm -q MariaDB-Manager-GREX; \
-                if [[ $? == 0 ]]; then yum -y remove MariaDB-Manager-GREX; fi"
-				exit 1
+			if [[ $? == 0 ]]; then yum -y remove MariaDB-Manager-GREX; fi"
+		exit 1
 }
 
 scripts_installed=0;
@@ -158,11 +161,12 @@ if [[ "$distro_type" == "redhat" ]]; then
                 ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
         fi
 elif [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
-	if ! grep -q ${api_host}/repo /etc/apt/sources.list ; then
-        	ssh_command "$nodeip" "echo \"deb       http://${api_host}/repo ${distro_version_name}  main\" >> /etc/apt/sources.list"
-	        ssh_command "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
-		ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
+	repoActive=$(ssh_command "$nodeip" "grep -q ${api_host}/repo /etc/apt/sources.list ; echo $?" 2>/dev/null)
+	if [[ "x$repoActive" != "x0" ]] ; then
+		ssh_command "$nodeip" "echo \"deb $repoArch		http://${api_host}/repo ${distro_version_name}  main\" >> /etc/apt/sources.list"
 	fi
+	ssh_command "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
+	ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
 fi
 
 if [[ "$scripts_installed" == "0" ]]; then
