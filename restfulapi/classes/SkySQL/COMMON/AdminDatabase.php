@@ -105,7 +105,15 @@ class AdminDatabase extends APIDatabase {
 	}
 
 	protected function upgradeNodeCommandTable () {
-		$this->query("update NodeCommands set Steps = 'isolate,restore'
+		$this->query("update NodeCommands set Steps = 'backup,store-backup'
+			where Command = 'backup' AND SystemType = 'galera' AND State = 'isolated'");
+		$this->query("update NodeCommands set Steps = 'isolate,backup,store-backup'
+			where Command = 'backup' AND SystemType = 'galera' AND State = 'joined'");
+		$this->query("update NodeCommands set Steps = 'send-backups,restore'
+			where Command = 'restore' AND SystemType = 'galera' AND State = 'provisioned'");
+		$this->query("update NodeCommands set Steps = 'send-backups,restore'
+			where Command = 'restore' AND SystemType = 'galera' AND State = 'isolated'");
+		$this->query("update NodeCommands set Steps = 'isolate,send-backups,restore'
 			where Command = 'restore' AND SystemType = 'galera' AND State = 'joined'");
 	}
 

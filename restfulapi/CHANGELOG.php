@@ -3,6 +3,12 @@
 /*
  * Change log for the MariaDB Manager API
  * 
+ * 22 May 2014, 17:30
+ * 
+ * Fix node commands to ensure backup and restore have the correct steps
+ * in all cases, and upgrades work correctly.
+ * 
+ * 
  * 22 May 2014, 10:15
  * 
  * Fix bug in update of schedule
