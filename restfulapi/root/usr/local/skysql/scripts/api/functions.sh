@@ -129,6 +129,31 @@ ssh_command() {
 	echo $ssh_output
 }
 
+# ssh_command_no_exit()
+# This function invokes an ssh command on a specific node using root login. Does not exit on errors.
+#
+# Parameters:
+# $1: node IP
+# $2: ssh command
+ssh_command_no_exit() {
+	if [[ "$ssh_key_file" != "" ]]; then
+		ssh_output=$(ssh -i "$ssh_key_file" root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
+		ssh_return=$?
+	else
+		ssh_output=$(sshpass -p "$rootpwd" ssh root@"$1" "$2" 2>/tmp/ssh_call.$$.log)
+		ssh_return=$?
+	fi
+	if [[ "$ssh_return" != "0" ]]; then
+		ssh_error_output=$(cat /tmp/ssh_call.$$.log)
+		logger -p user.error -t MariaDB-Manager-Task "Error in ssh connection to $nodeip with root user. $ssh_error_output"
+		rm -f /tmp/ssh_call.$$.log
+		echo $ssh_return
+	elif [[ "$ssh_output" != "" ]]; then
+		logger -p user.info -t MariaDB-Manager-Task "$ssh_output"
+	fi
+	echo $ssh_output
+}
+
 # ssh_put_file()
 # This function invokes an scp command to put a file on a specific node using root login.
 #       
@@ -293,6 +318,7 @@ json_error() {
 export -f api_call
 export -f set_error
 export -f ssh_command
+export -f ssh_command_no_exit
 export -f ssh_put_file
 export -f rsync_get_file
 export -f rsync_send_file

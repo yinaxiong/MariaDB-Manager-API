@@ -163,9 +163,9 @@ if [[ "$distro_type" == "redhat" ]]; then
 elif [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
 	repoActive=$(ssh_command "$nodeip" "grep ${api_host} /etc/apt/sources.list && echo 0 || echo 1")
 	if [[ "x$repoActive" != "x0" ]] ; then
-		ssh_command "$nodeip" "echo \"deb $repoArch		http://${api_host}/repo ${distro_version_name}  main\" >> /etc/apt/sources.list"
+		ssh_command_no_exit "$nodeip" "echo \"deb $repoArch		http://${api_host}/repo ${distro_version_name}  main\" >> /etc/apt/sources.list"
 	fi
-	ssh_command "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
+	ssh_command_no_exit "$nodeip" "rm -rf /var/lib/apt/lists/*; apt-get update"
 	ssh_command "$nodeip" "apt-get -y --force-yes install mariadb-manager-grex"
 fi
 
