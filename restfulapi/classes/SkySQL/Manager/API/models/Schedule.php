@@ -122,7 +122,7 @@ class Schedule extends TaskScheduleCommon {
 	
 	protected function validateUpdate () {
 		$this->processCalendarEntry();
-		if (Request::getInstance()->compareVersion('1.0', 'gt')) $this->processParameters();
+		if (Request::getInstance()->compareVersion('1.0', 'gt')) $this->processParametersUpdate();
 		else $this->removeSensitiveParameters();
 	}
 	
@@ -130,13 +130,14 @@ class Schedule extends TaskScheduleCommon {
 		$calines = preg_split('/(\R|\|)/', $this->icalentry);
 		while (!end($calines)) array_pop($calines);
 		$this->icalentry = implode("\r\n", $calines);
+		$this->bind[':icalentry'] = $this->icalentry;
 		$lastone = count($calines) - 1;
 		foreach ($calines as $i=>$line) {
 			$parts = explode(':', $line, 2);
-			if (0 == $i AND ('BEGIN' != $parts[0] OR 'VEVENT' != $parts[1])) $errors[] = "iCalendar event should start with BEGIN:VEVENT";
-			if ($lastone == $i AND ('END' != $parts[0] OR 'VEVENT' != $parts[1])) $errors[] = "iCalendar event should end with END:VEVENT";
-			if ('DTSTART' == $parts[0]) $dtstart = $parts[1];
-			elseif ('RRULE' == $parts[0]) $rrule = $parts[1];
+			if (0 == $i AND ('BEGIN' != $parts[0] OR 'VEVENT' != @$parts[1])) $errors[] = "iCalendar event should start with BEGIN:VEVENT";
+			if ($lastone == $i AND ('END' != $parts[0] OR 'VEVENT' != @$parts[1])) $errors[] = "iCalendar event should end with END:VEVENT";
+			if ('DTSTART' == $parts[0]) $dtstart = @$parts[1];
+			elseif ('RRULE' == $parts[0]) $rrule = @$parts[1];
 		}
 		if (empty($dtstart)) {
 			$dtstart = $this->calendarDate();

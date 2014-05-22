@@ -34,6 +34,7 @@ use SkySQL\Manager\API\API;
 use SkySQL\Manager\API\Request;
 use SkySQL\Manager\API\managers\EncryptionManager;
 use PDO;
+use stdClass;
 
 abstract class EntityModel {
 	
@@ -106,21 +107,38 @@ abstract class EntityModel {
 	}
 	
 	final protected function processParameters () {
-		$request = Request::getInstance();
-		foreach ($request->getAllParamNames($request->getMethod()) as $paramname) {
-			$split = explode('param-', $paramname);
-			if (empty($split[0]) AND !empty($split[1])) $parameters[$split[1]] = $request->getParam($request->getMethod(), $paramname);
-			$split = explode('xparam-', $paramname);
-			if (empty($split[0]) AND !empty($split[1])) {
-				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
-				$method = $request->compareVersion('1.0', 'gt') ? 'decrypt' : 'decryptOneField';
-				$encrypted[$split[1]] = EncryptionManager::$method($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
-			}
-		}
-		$this->setInsertValue('parameters', (isset($parameters) ? json_encode($parameters) : "{}"));
-		$this->xparameters = (isset($encrypted) ? json_encode($encrypted) : "{}");
+		list($parameters, $encrypted) = $this->parametersFromRequest();
+		$this->setInsertValue('parameters', json_encode($parameters));
+		$this->xparameters = json_encode($encrypted);
 	}
 
+	// Used only for schedules, where encrypted parameters are not permitted
+	final protected function processParametersUpdate () {
+		list($parameters) = $this->parametersFromRequest();
+		$this->setInsertValue('parameters', json_encode(count((array)$parameters) ? $parameters : $this->parameters));
+	}
+	
+	final protected function parametersFromRequest () {
+		$request = Request::getInstance();
+		$parameters = new stdClass();
+		$encrypted = new stdClass();
+		foreach ($request->getAllParamNames($request->getMethod()) as $paramname) {
+			$split = explode('param-', $paramname);
+			if (empty($split[0]) AND !empty($split[1])) {
+				$property = $split[1];
+				$parameters->$property = $request->getParam($request->getMethod(), $paramname);
+			}
+			$xsplit = explode('xparam-', $paramname);
+			if (empty($xsplit[0]) AND !empty($xsplit[1])) {
+				if ('Schedule' == get_class()) $request->sendErrorResponse("Encrypted parameters are not permitted for scheduled commands", 400);
+				$method = $request->compareVersion('1.0', 'gt') ? 'decrypt' : 'decryptOneField';
+				$property = $xsplit[1];
+				$encrypted->$property = EncryptionManager::$method($request->getParam($request->getMethod(), $paramname), $request->getAPIKey());
+			}
+		}
+		return array($parameters, $encrypted);
+	}
+	
 	final private static function fixDate (&$entity) {
 		foreach (static::$fields as $name=>$about) {
 			if (!empty($entity->$name) AND ('datetime' == @$about['validate'] OR 'datetime' == @$about['forced'])) $entity->$name = date('r', strtotime($entity->$name));
@@ -434,7 +452,7 @@ abstract class EntityModel {
 	
 	// Validation method for date/time
 	protected static function datetime ($data) {
-		return empty($data) OR (strtotime($data) ? true : false);
+		return empty($data) OR (false !== strtotime($data) ? true : false);
 	}
 
 	final private static function getSelects ($selects=array()) {

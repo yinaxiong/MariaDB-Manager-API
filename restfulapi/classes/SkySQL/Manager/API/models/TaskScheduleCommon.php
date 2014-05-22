@@ -67,7 +67,7 @@ abstract class TaskScheduleCommon extends EntityModel {
 	
 	public function getParameterObject () {
 		if (empty($this->parameters)) return new stdClass();
-		$parmobject = json_decode($this->parameters);
+		$parmobject = is_object($this->parameters) ? $this->parameters : json_decode($this->parameters);
 		if (!$parmobject) $parmobject = $this->makeParameterObjectVersion1();
 		return $parmobject;
 	}
