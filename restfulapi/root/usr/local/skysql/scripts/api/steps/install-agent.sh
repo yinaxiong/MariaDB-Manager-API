@@ -161,7 +161,7 @@ if [[ "$distro_type" == "redhat" ]]; then
                 ssh_command "$nodeip" "yum -y install MariaDB-Manager-GREX --disablerepo=* --enablerepo=MariaDB-Manager"
         fi
 elif [[ "$distro_type" == "debian" || "$distro_type" == "ubuntu" ]]; then
-	repoActive=$(ssh_command "$nodeip" "grep -q ${api_host} /etc/apt/sources.list ; echo $?" 2>/dev/null)
+	repoActive=$(ssh_command "$nodeip" "grep ${api_host} /etc/apt/sources.list && echo 0 || echo 1")
 	if [[ "x$repoActive" != "x0" ]] ; then
 		ssh_command "$nodeip" "echo \"deb $repoArch		http://${api_host}/repo ${distro_version_name}  main\" >> /etc/apt/sources.list"
 	fi
