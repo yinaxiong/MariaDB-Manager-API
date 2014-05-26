@@ -14,7 +14,7 @@ Release: 		%{release}
 Source: 		%{name}-%{version}-%{release}.tar.gz
 Prefix: 		/
 Group: 			Development/Tools
-Requires:		php coreutils curl php-process php-pdo php-mysql php-mcrypt sshpass openssh openssh-clients gawk iproute at MariaDB-Manager-internalrepo rsync
+Requires:		php coreutils curl php-process php-pdo php-mysql sshpass openssh openssh-clients gawk iproute at MariaDB-Manager-internalrepo rsync
 #BuildRequires:		
 
 %description
