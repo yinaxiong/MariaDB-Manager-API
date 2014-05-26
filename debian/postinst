@@ -20,8 +20,8 @@ if [ ! -f /var/www/.ssh/id_rsa.pub ] ; then
 	chown www-data:www-data /var/www/.ssh/id_rsa /var/www/.ssh/id_rsa.pub
 fi
 
-# disabling selinux! TO BE FIXED! 
-echo 0 >/selinux/enforce
+# disabling selinux! TO BE FIXED!
+[[ -f /selinux/enforce ]] && echo 0 >/selinux/enforce
 # permanently disabling SELinux: on GRUB configuration [/etc/grub/...]?
 
 # add firewall rule to allow port 80 
@@ -42,7 +42,7 @@ fi
 service apache2 restart
 
 sed -i '/www-data/d' /etc/at.deny
-if ! grep -q ^www-data$ /etc/at.allow ; then
+if ! grep -q ^www-data$ /etc/at.allow 2>/dev/null; then
 	echo www-data >> /etc/at.allow
 fi
 service atd start
