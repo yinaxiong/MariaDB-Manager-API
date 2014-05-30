@@ -20,9 +20,12 @@
 # Date: May 2014
 
 . ./remote-scripts-config.sh
+sed -i 's/Accept:application\/json/Accept:text\/plain/' functions.sh
+. ./functions.sh
 . ./mysql-config.sh
 mkdir -p $backups_remotepath
 chown skysqlagent:skysqlagent $backups_remotepath
+export linux_name=$(api_call "GET" "system/$system_id/node/$node_id" "fieldselect=node~linuxname")
 
 packageAPI="MariaDB-Manager-API"
 packageRepo="MariaDB-Manager-internalrepo"
