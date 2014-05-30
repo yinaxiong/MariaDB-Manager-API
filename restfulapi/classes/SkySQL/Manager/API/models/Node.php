@@ -117,8 +117,8 @@ class Node extends EntityModel {
 	}
 	
 	public function getSteps ($commandname) {
-		$commandobject = NodeCommand::getByID($commandname, $this->getSystemType(), $this->state);
-		return $commandobject ? $commandobject->steps : '';
+		foreach ($this->getCommands() as $commandobject) if ($commandname == $commandobject->command) return $commandobject->steps;
+		return '';
 	}
 	
 	public function insert ($alwaysrespond = true) {
