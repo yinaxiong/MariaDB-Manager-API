@@ -67,6 +67,6 @@ else
 	exit 1
 fi
 
-cmd_logger_info "Command end: upgrade"
+logger -p user.info -t MariaDB-Manager-Remote "Command end: upgrade"
 
 exit 0
