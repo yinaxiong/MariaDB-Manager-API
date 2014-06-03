@@ -27,10 +27,10 @@
 # $2 TaskID for the invoking Task
 
 cmd_logger_info () {
-	logger -p user.info -t MariaDB-Manager-Task "$1"
+	logger -p user.info -t MariaDB-Manager-Remote "$1"
 }
 cmd_logger_error () {
-        logger -p user.error -t MariaDB-Manager-Task "$1"
+        logger -p user.error -t MariaDB-Manager-Remote "$1"
 }
 
 cmd_logger_info "Starting the upgrade from Script Release 1.0"
@@ -52,3 +52,5 @@ return=$?
 cd $current_dir
 
 cmd_logger_info "Upgrade ended with code $return"
+
+exit 0
