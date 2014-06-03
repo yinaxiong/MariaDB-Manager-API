@@ -56,4 +56,6 @@ cmd_logger_info "Starting the upgrade of the data node"
 
 # Run the remote script
 ./RunCommand.sh "$taskid" "../../../../../home/skysqlagent/tmp/upgradefirst" "$nodeIP"
-[[ "$?" != "0" ]] && cmd_logger_error "Upgrade failed on the data node $nodeIP" && exit 1
+[[ "$?" != "0" ]] && cmd_logger_error "Upgrade failed on the data node $nodeIP" && echo 1 && exit 1
+
+echo 0

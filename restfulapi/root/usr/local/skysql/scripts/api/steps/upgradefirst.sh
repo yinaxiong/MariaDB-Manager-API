@@ -53,4 +53,4 @@ cd $current_dir
 
 cmd_logger_info "Upgrade ended with code $return"
 
-exit 0
+echo 0
